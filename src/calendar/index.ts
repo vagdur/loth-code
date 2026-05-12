@@ -5,24 +5,16 @@
  * describing every parameter needed by the hour builders.
  */
 
+import { addDays } from "./computus.js";
 import {
   getBounds, getOrdinaryTimeWeek, getPsalterWeek, getReadingYear,
   getSeason, getSeasonalDayKey, getWeekday,
 } from "./liturgicalYear.js";
+import { getSaintsOnDate, type CalendarSaint } from "./saints.js";
 import type {
   AssemblyContext, Celebration, DayClass, EveningContext, LiturgicalDay, Season,
 } from "../types/calendar.js";
-import type { CommonType, SeasonalDayKey } from "../types/proper.js";
-
-// ---------------------------------------------------------------------------
-// General Roman Calendar entries (stub — extend with real data)
-// ---------------------------------------------------------------------------
-
-// TODO: load from data/calendar/general_roman_calendar.yaml
-// For now: an empty map; saints can be added as SaintEntry items in the
-// proper_of_saints collection.
-const GENERAL_ROMAN_CALENDAR: Map<string, { saintId: string; rank: DayClass }[]> =
-  new Map();
+import type { SeasonalDayKey } from "../types/proper.js";
 
 /**
  * Solemnities that fall on a weekday and therefore need First Vespers
@@ -80,11 +72,17 @@ function resolveCelebration(
   season: Season,
   seasonalKey: SeasonalDayKey | null,
 ): Celebration {
-  // TODO: look up saints from the calendar for this date,
-  // rank them, apply privileged-season suppression rules,
-  // and pick the highest-ranking celebration.
-  //
-  // For now: return a basic ferial or Sunday celebration.
+  // A saint solemnity celebrated on this date — either nominally here
+  // or transferred onto this date — outranks Sundays of OT / Christmastide
+  // and any ferial day (GNLY 59, Class I.3).  Transferable solemnities have
+  // already been moved off Class I.1–I.2 days by their celebrationDate()
+  // function, so any solemnity still landing here may simply win.
+  // TODO: feasts and memorias, with privileged-season suppression.
+  const saintsToday = getSaintsOnDate(date);
+  const solemnity = saintsToday.find((s) => s.rank === "solemnity");
+  if (solemnity) {
+    return saintSolemnityCelebration(solemnity);
+  }
 
   const weekday = getWeekday(date);
   const isSunday = weekday === "Sunday";
@@ -119,6 +117,19 @@ function resolveCelebration(
   };
 }
 
+function saintSolemnityCelebration(saint: CalendarSaint): Celebration {
+  return {
+    type: "solemnity",
+    source: "saint",
+    saintId: saint.saintId,
+    applicableCommons: saint.applicableCommons,
+    memoriaFullySuppressed: false,
+    memoriaReducedToOptional: false,
+    allowMemoriaAddendum: false,
+    isTriduum: false,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Evening / First Vespers resolution
 // ---------------------------------------------------------------------------
@@ -129,25 +140,33 @@ function resolveCelebration(
  * Deliberately does NOT call resolveDay (would recurse).  Instead it
  * re-derives only the minimal properties needed to answer the question:
  * is tomorrow a Sunday or a high-ranking feast?
- *
- * TODO: once saint lookup is implemented, check tomorrow's calendar entry
- * here so that solemnities of saints also trigger First Vespers.
  */
 function resolveEvening(date: Date, _calendarId: string): EveningContext {
-  const tomorrow = new Date(date);
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  const tomorrow = addDays(date, 1);
 
   const tomorrowWeekday = getWeekday(tomorrow);
   const tomorrowSeason  = getSeason(tomorrow);
   const tomorrowSeasonalKey = getSeasonalDayKey(tomorrow);
 
-  // First Vespers for Sundays, the Triduum, and weekday solemnities.
-  // Solemnities of saints will be added here once the calendar is populated.
-  const hasFirstVespers =
+  // First Vespers for Sundays, the Triduum, and weekday solemnities of the
+  // season (seasonal moveables, e.g. Ascension, Corpus Christi).
+  const seasonalFirstVespers =
     tomorrowWeekday === "Sunday" ||
     tomorrowSeason === "easter_triduum" ||
     (tomorrowSeasonalKey !== null &&
       SOLEMNITY_FIRST_VESPERS_KEYS.has(tomorrowSeasonalKey));
+
+  // First Vespers of a saint solemnity celebrated tomorrow (whether on its
+  // nominal date or transferred here).  GNLY 61: if today is itself a higher-
+  // ranking day (Class I.1–I.2) its Second Vespers outranks the saint's First
+  // Vespers, so the latter is suppressed.
+  const tomorrowSaintSolemnity =
+    getSaintsOnDate(tomorrow).find((s) => s.rank === "solemnity");
+  const saintFirstVespers =
+    tomorrowSaintSolemnity !== undefined &&
+    !todayOutranksI3FirstVespers(date);
+
+  const hasFirstVespers = seasonalFirstVespers || saintFirstVespers;
 
   if (hasFirstVespers) {
     return {
@@ -156,6 +175,34 @@ function resolveEvening(date: Date, _calendarId: string): EveningContext {
     };
   }
   return { hasFirstVespers: false };
+}
+
+/**
+ * True if today's Second Vespers belongs to a Class I.1–I.2 liturgical day
+ * (GNLY 59) and therefore outranks First Vespers of a Class I.3 solemnity
+ * (universal-calendar saint) that would otherwise begin this evening.
+ *
+ * Class I.2 includes: Sundays of Advent, Lent, and Easter; all of Holy Week;
+ * the Easter Triduum; and every day of the Easter Octave.
+ */
+function todayOutranksI3FirstVespers(date: Date): boolean {
+  const season = getSeason(date);
+  if (season === "holy_week" || season === "easter_triduum") return true;
+
+  const weekday = getWeekday(date);
+  if (weekday === "Sunday" &&
+      (season === "advent" || season === "lent" || season === "eastertide")) {
+    return true;
+  }
+
+  // Weekdays Mon–Sat of the Easter Octave (the Octave Sunday is caught above).
+  if (season === "eastertide") {
+    const b = getBounds(date);
+    const easter = b.easterSunday;
+    if (date > easter && date <= addDays(easter, 7)) return true;
+  }
+
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,3 +222,4 @@ export function defaultContext(calendarId = "general"): AssemblyContext {
 
 export * from "./computus.js";
 export * from "./liturgicalYear.js";
+export * from "./saints.js";
