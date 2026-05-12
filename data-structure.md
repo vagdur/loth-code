@@ -114,6 +114,9 @@ Antiphon {
   // unless assembly_context.suppress_alleluia == true for this antiphon
   suppress_alleluia?: boolean
   melody?: Melody
+  // GABC notation for the psalm tone used with this antiphon's psalm/canticle.
+  // Kept as raw GABC for now; can be promoted to a structured type later.
+  psalm_tone?: string
 }
 
 PsalmAssignment {

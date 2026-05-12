@@ -51,6 +51,8 @@ export interface Antiphon {
    *  so the Eastertide Alleluia should NOT be appended. */
   suppressAlleluia?: true;
   melody?: Melody;
+  /** GABC notation for the psalm tone used with this antiphon's psalm/canticle. */
+  psalmTone?: string;
 }
 
 export interface PsalmAssignment {
