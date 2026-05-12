@@ -8,6 +8,24 @@ export interface Verse {
   text: string;
 }
 
+/**
+ * Optional musical setting for a chanted or sung text. Present on the
+ * subset of texts for which melodies are recorded; absent otherwise.
+ *
+ * `gabc` is the canonical storage format — Gregorio plain-text notation,
+ * the de facto standard for Gregorian chant. `mode` is held alongside
+ * the notation so consumers that need it (psalm-tone selection, etc.)
+ * don't have to parse the GABC source.
+ */
+export interface Melody {
+  /** Gregorian mode 1–8, when applicable. */
+  mode?: number;
+  /** GABC notation source. */
+  gabc?: string;
+  /** Free-form note (edition, "simple tone", "solemn tone", etc.). */
+  note?: string;
+}
+
 export interface Psalm {
   id: string;           // e.g. "psalm_94", "psalm_118_i"
   number: number;       // 1–150
@@ -24,6 +42,7 @@ export interface Canticle {
   source: string;       // e.g. "Is 12:1-6"
   title: string;
   verses: Verse[];
+  melody?: Melody;
 }
 
 export interface Antiphon {
@@ -31,6 +50,9 @@ export interface Antiphon {
   /** Set true when the antiphon's meaning conflicts with Alleluia
    *  so the Eastertide Alleluia should NOT be appended. */
   suppressAlleluia?: true;
+  melody?: Melody;
+  /** GABC notation for the psalm tone used with this antiphon's psalm/canticle. */
+  psalmTone?: string;
 }
 
 export interface PsalmAssignment {
@@ -41,6 +63,7 @@ export interface PsalmAssignment {
 export interface Hymn {
   stanzas: string[];
   doxology: string;
+  melody?: Melody;
 }
 
 /** Two hymns used on alternate psalter weeks (Weeks I/III vs II/IV). */
@@ -64,18 +87,21 @@ export interface ShortReading {
 export interface ShortResponsory {
   text: string;
   versicle: string;
+  melody?: Melody;
 }
 
 /** Versicle between psalmody and readings (OoR) or after reading (Daytime). */
 export interface Versicle {
   verse: string;
   response: string;
+  melody?: Melody;
 }
 
 export interface LongResponsory {
   text: string;       // full text, with the repeated section included
   verse: string;
   repeatCue: string;  // the word/phrase at which the repeat begins
+  melody?: Melody;
 }
 
 export interface BiblicalReading {

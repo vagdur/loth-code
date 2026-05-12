@@ -55,6 +55,7 @@ Canticle {
   source:    string   // e.g. "Is 12:1-6", "Eph 1:3-10", "Lk 1:68-79"
   title:     string
   verses:    Verse[]
+  melody?:   Melody   // optional; mostly used for Gospel canticles with proper tones
 }
 ```
 
@@ -112,6 +113,10 @@ Antiphon {
   // Alleluia appended by the assembly algorithm during Eastertide (§7)
   // unless assembly_context.suppress_alleluia == true for this antiphon
   suppress_alleluia?: boolean
+  melody?: Melody
+  // GABC notation for the psalm tone used with this antiphon's psalm/canticle.
+  // Kept as raw GABC for now; can be promoted to a structured type later.
+  psalm_tone?: string
 }
 
 PsalmAssignment {
@@ -135,6 +140,16 @@ OorHymnSet {
 Hymn {
   stanzas:   string[]
   doxology:  string
+  melody?:   Melody     // single melody for all stanzas (and doxology, unless noted)
+}
+
+Melody {
+  // Optional musical setting attached to sung texts (hymns, antiphons,
+  // responsories, versicles, Gospel canticles, etc.). Present only for
+  // those texts whose melodies are recorded; absent otherwise.
+  mode?: int            // Gregorian mode 1–8, when applicable
+  gabc?: string         // GABC notation source (Gregorio plain-text format)
+  note?: string         // edition, "simple tone", "solemn tone", etc.
 }
 
 ShortReading {
@@ -147,6 +162,7 @@ ShortResponsory {
   // May be omitted (§3.2 item 7).
   text:     string
   versicle: string
+  melody?:  Melody
 }
 
 Versicle {
@@ -154,6 +170,7 @@ Versicle {
   // after the short reading in Daytime Prayer.
   verse:    string
   response: string
+  melody?:  Melody
 }
 
 BiblicalReading {
@@ -186,6 +203,7 @@ LongResponsory {
   text:        string   // main responsory text (with repeat section marked)
   verse:       string
   repeat_cue:  string   // text cue from which the repetition begins
+  melody?:     Melody
 }
 
 Intercessions {
