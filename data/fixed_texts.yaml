@@ -1,0 +1,33 @@
+# Fixed texts — invariable across the entire liturgical year.
+# These are the texts that do not vary by day, season, or celebration.
+# Populate with a licensed translation before use in production.
+
+marian_antiphons:
+  # Advent through the Purification (Feb 2): Alma Redemptoris Mater
+  advent_through_feb2:
+    text: "[Alma Redemptoris Mater]"
+  # Feb 2 through Wednesday of Holy Week: Ave Regina Caelorum
+  lent:
+    text: "[Ave Regina Caelorum]"
+  # Eastertide: Regina Caeli
+  eastertide:
+    text: "[Regina Caeli, laetare]"
+    suppress_alleluia: true   # the antiphon itself contains Alleluia; don't append a second one
+  # Ordinary Time (outside above periods): Salve Regina
+  ordinary_time:
+    text: "[Salve Regina]"
+
+te_deum:
+  text: "[Te Deum laudamus — full text]"
+
+benedictus:
+  reference: "Lk 1:68-79"
+  text: "[Benedictus — full text]"
+
+magnificat:
+  reference: "Lk 1:46-55"
+  text: "[Magnificat — full text]"
+
+nunc_dimittis:
+  reference: "Lk 2:29-32"
+  text: "[Nunc Dimittis — full text]"
