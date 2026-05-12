@@ -6,26 +6,13 @@
  */
 
 import type { AssemblyContext, LiturgicalDay } from "../types/calendar.js";
-import type { AbstractLauds, LiturgicalFlags, PsalmSlot, SlotSource } from "../types/hours.js";
-import type { PsalterWeek, Weekday } from "../types/psalter.js";
+import type { AbstractLauds, PsalmSlot, SlotSource } from "../types/hours.js";
 
 import {
   antiphonRef, concludingPrayerRef, hymnRef, intercessionsRef,
   psalmAssignmentRef, shortReadingRef, SlotContext,
 } from "./resolver.js";
-
-// ---------------------------------------------------------------------------
-// Flags
-// ---------------------------------------------------------------------------
-
-function makeFlags(day: LiturgicalDay): LiturgicalFlags {
-  return {
-    alleluiaInAntiphons: day.season === "eastertide",
-    alleluiaInIntroVerse:
-      day.season !== "lent" && day.season !== "holy_week" && day.season !== "easter_triduum",
-    teDeum: false, // Lauds has no Te Deum
-  };
-}
+import { makeCtx, makeFlags } from "./shared.js";
 
 // ---------------------------------------------------------------------------
 // Psalmody
@@ -82,19 +69,10 @@ export function buildLauds(
   day: LiturgicalDay,
   context: AssemblyContext,
 ): AbstractLauds {
-  const { celebration: c, psalterWeek, psalterDay, season, readingYear } = day;
-  const hymnSeries: "seriesA" | "seriesB" =
-    psalterWeek === 1 || psalterWeek === 3 ? "seriesA" : "seriesB";
+  const { celebration: c, psalterWeek, psalterDay } = day;
+  const ctx: SlotContext = makeCtx(day);
 
-  const ctx: SlotContext = {
-    celebration: c,
-    psalterWeek,
-    psalterDay,
-    season,
-    hymnSeries,
-  };
-
-  const flags = makeFlags(day);
+  const flags = makeFlags(day, false);
   const suppressIntroVerse = context.oorIsFirstHour && context.laudsFollowsOorDirectly;
 
   const hymn = hymnRef(ctx, "lauds.hymns");
