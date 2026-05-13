@@ -7,7 +7,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "smoke:lauds-tex": "npm run build && node dist/smokeLaudsTex.js"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:fixtures:update": "cross-env UPDATE_FIXTURES=1 vitest run tests/integration"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
@@ -15,6 +17,8 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
-    "typescript": "^5.5.0"
+    "cross-env": "^7.0.3",
+    "typescript": "^5.5.0",
+    "vitest": "^3.1.0"
   }
 }

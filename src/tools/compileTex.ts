@@ -11,15 +11,22 @@ export async function writeTexFile(outPath: string, content: string): Promise<vo
   await fs.writeFile(outPath, content, "utf-8");
 }
 
+export type LualatexStdio = "inherit" | "pipe" | "ignore";
+
 /**
  * Run `lualatex` twice in `jobDir` on `jobName.tex` (Gregorio often needs a second pass).
  */
-export async function runLualatex(jobDir: string, jobName: string): Promise<void> {
+export async function runLualatex(
+  jobDir: string,
+  jobName: string,
+  options?: { stdio?: LualatexStdio },
+): Promise<void> {
+  const stdio = options?.stdio ?? "inherit";
   const texFile = `${jobName}.tex`;
   for (let i = 0; i < 2; i++) {
     await spawnAsync("lualatex", ["-interaction=nonstopmode", texFile], {
       cwd: jobDir,
-      stdio: "inherit",
+      stdio,
     });
   }
 }
@@ -27,7 +34,7 @@ export async function runLualatex(jobDir: string, jobName: string): Promise<void
 function spawnAsync(
   command: string,
   args: string[],
-  options: { cwd: string; stdio: "inherit" },
+  options: { cwd: string; stdio: LualatexStdio },
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {

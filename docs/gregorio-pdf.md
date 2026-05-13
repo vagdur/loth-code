@@ -4,24 +4,19 @@ The [`LaudsTexAssembler`](../src/assemblers/laudsTex.ts) builds a single UTF-8 `
 
 `npm run build` does **not** require TeX. Producing a PDF is optional and needs a working **LuaLaTeX** installation plus **Gregorio** (GregorioTeX).
 
-## Generate LaTeX
+## Integration tests (LaTeX + PDF)
 
-From the repository root:
+From the repository root, `npm test` runs Vitest integration tests. One of them assembles the sample Lauds `.tex` into a temporary directory and runs **LuaLaTeX** twice there (same pattern as before for stable references).
 
-```powershell
-npm run smoke:lauds-tex
-```
+Golden `.tex` and a reference `.pdf` for the sample day live under [`tests/fixtures/`](../tests/fixtures/) (for example `lauds-2026-05-10-general.tex` and `lauds-2026-05-10-general.pdf`). The test suite compares the generated TeX to the fixture text; it does **not** byte-compare PDFs, but when you refresh goldens you can commit an updated PDF for human review.
 
-This writes `out/lauds-build/lauds.tex` (and leaves intermediate `.gabc` creation to the first LuaLaTeX run, via `filecontents`).
-
-To also invoke the compiler:
+To rewrite the TeX fixture and copy a freshly built PDF into `tests/fixtures/`:
 
 ```powershell
-npm run build
-node dist/smokeLaudsTex.js --compile
+npm run test:fixtures:update
 ```
 
-That runs `lualatex` twice in `out/lauds-build/` (standard for stable references). The PDF path is `out/lauds-build/lauds.pdf` if the build succeeds.
+That requires LuaLaTeX + Gregorio on `PATH`, same as a normal `npm test` on a machine that runs the compile test.
 
 ## Install LuaLaTeX + Gregorio (Windows)
 
@@ -39,4 +34,4 @@ That runs `lualatex` twice in `out/lauds-build/` (standard for stable references
 
 - The plain-text placeholder `[Benedictus text — Lk 1:68-79]` matches [`PlainTextAssembler`](../src/assemblers/plainText.ts) until the Gospel canticle text is wired into data.
 - GABC is written literally into `filecontents` blocks; avoid placing the substring `\end{filecontents}` inside real GABC sources.
-- CI or machines without TeX should only run the TypeScript build and treat PDF compilation as an optional local step.
+- CI or machines without TeX cannot pass `npm test` as long as the Lauds compile integration test is enabled; use a TeX-capable runner or adjust that test for your pipeline.
