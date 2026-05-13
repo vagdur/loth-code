@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "smoke:lauds-tex": "npm run build && node dist/smokeLaudsTex.js"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"

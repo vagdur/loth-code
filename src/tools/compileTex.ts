@@ -1,0 +1,44 @@
+/**
+ * Write LaTeX source to disk and optionally run LuaLaTeX (for GregorioTeX scores).
+ */
+
+import { spawn } from "child_process";
+import fs from "fs/promises";
+import path from "path";
+
+export async function writeTexFile(outPath: string, content: string): Promise<void> {
+  await fs.mkdir(path.dirname(outPath), { recursive: true });
+  await fs.writeFile(outPath, content, "utf-8");
+}
+
+/**
+ * Run `lualatex` twice in `jobDir` on `jobName.tex` (Gregorio often needs a second pass).
+ */
+export async function runLualatex(jobDir: string, jobName: string): Promise<void> {
+  const texFile = `${jobName}.tex`;
+  for (let i = 0; i < 2; i++) {
+    await spawnAsync("lualatex", ["-interaction=nonstopmode", texFile], {
+      cwd: jobDir,
+      stdio: "inherit",
+    });
+  }
+}
+
+function spawnAsync(
+  command: string,
+  args: string[],
+  options: { cwd: string; stdio: "inherit" },
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: options.cwd,
+      stdio: options.stdio,
+      shell: process.platform === "win32",
+    });
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`"${command}" exited with code ${code ?? "unknown"}`));
+    });
+  });
+}
