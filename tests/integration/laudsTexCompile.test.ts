@@ -3,13 +3,14 @@
  * `npm run test:fixtures:update` (sets UPDATE_FIXTURES=1).
  */
 
-import { cpSync, mkdirSync, mkdtempSync, rmSync, statSync } from "fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync } from "fs";
 import os from "os";
 import path from "path";
 import { afterEach, expect, test } from "vitest";
 import { LaudsTexAssembler } from "../../src/assemblers/laudsTex.js";
 import { buildSampleAbstractDay, loadSampleRepo } from "../helpers/buildSampleDay.js";
 import { normalizeLf } from "../helpers/normalizeLf.js";
+import { parseLualatexLog, partitionHboxWarnings } from "../helpers/parseLualatexLog.js";
 import { fixturesDir } from "../helpers/paths.js";
 import { runLualatex, writeTexFile } from "../../src/tools/compileTex.js";
 
@@ -41,6 +42,27 @@ test(
     await writeTexFile(texPath, tex);
 
     await runLualatex(tempDir, jobName, { stdio: "ignore" });
+
+    const logPath = path.join(tempDir, `${jobName}.log`);
+    const logText = readFileSync(logPath, "utf-8");
+    const { errors, warnings } = parseLualatexLog(logText);
+    if (errors.length > 0) {
+      throw new Error(
+        `lualatex reported errors in ${jobName}.log:\n\n${errors.join("\n\n---\n\n")}`,
+      );
+    }
+
+    const { hbox, other } = partitionHboxWarnings(warnings);
+    for (const w of other) {
+      console.warn(`[lualatex] ${w}`);
+    }
+    if (hbox.length > 0) {
+      const sample = hbox.slice(0, 3).join("\n");
+      const extra = hbox.length > 3 ? `\n… and ${hbox.length - 3} more \\hbox warnings` : "";
+      console.warn(
+        `[lualatex] ${hbox.length} Underfull/Overfull \\hbox warning(s) (showing up to 3):\n${sample}${extra}`,
+      );
+    }
 
     const pdfPath = path.join(tempDir, `${jobName}.pdf`);
     const st = statSync(pdfPath);
