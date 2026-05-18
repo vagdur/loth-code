@@ -21,6 +21,8 @@ export interface SanctoralCalendarEntry {
   applicableCommons: CommonType[];
   /** Key into the TS transfer-rule registry (e.g. annunciation_gnly60). */
   transferRule?: string;
+  /** Feasts of the Lord (enables feast_of_lord_on_sunday when falling on an OT Sunday). */
+  observanceOf?: "lord" | "saint";
 }
 
 /** Partial patch applied to an existing universal entry. */
@@ -58,6 +60,8 @@ export interface CalendarSaint {
   saintId: string;
   rank: SanctoralRank;
   applicableCommons: CommonType[];
+  /** Defaults to "saint" when omitted. */
+  observanceOf?: "lord" | "saint";
   nominalDate(year: number): Date;
   celebrationDate(year: number): Date;
 }

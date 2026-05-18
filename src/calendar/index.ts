@@ -7,25 +7,19 @@
 
 import { addDays } from "./computus.js";
 import {
-  getBounds, getOrdinaryTimeWeek, getPsalterWeek, getReadingYear,
+  resolveCelebrationFromParts,
+  todayOutranksI3FirstVespers,
+  tomorrowHasFirstVespers,
+} from "./celebrationRanking.js";
+import {
+  getOrdinaryTimeWeek, getPsalterWeek, getReadingYear,
   getSeason, getSeasonalDayKey, getWeekday,
 } from "./liturgicalYear.js";
-import { getSaintsOnDate, type CalendarSaint } from "./saints.js";
+import { getSaintsOnDate } from "./saints.js";
 import type {
-  AssemblyContext, Celebration, DayClass, EveningContext, LiturgicalDay, Season,
+  AssemblyContext, Celebration, EveningContext, LiturgicalDay, Season,
 } from "../types/calendar.js";
 import type { SeasonalDayKey } from "../types/proper.js";
-
-/**
- * Solemnities that fall on a weekday and therefore need First Vespers
- * detected explicitly (Sundays and the Triduum are handled elsewhere).
- */
-const SOLEMNITY_FIRST_VESPERS_KEYS = new Set<SeasonalDayKey>([
-  "ascension",
-  "corpus_christi",
-  "sacred_heart",
-  "immaculate_heart",
-]);
 
 // ---------------------------------------------------------------------------
 // Main resolution function
@@ -73,62 +67,8 @@ function resolveCelebration(
   seasonalKey: SeasonalDayKey | null,
   calendarId: string,
 ): Celebration {
-  // A saint solemnity celebrated on this date — either nominally here
-  // or transferred onto this date — outranks Sundays of OT / Christmastide
-  // and any ferial day (GNLY 59, Class I.3).  Transferable solemnities have
-  // already been moved off Class I.1–I.2 days by their celebrationDate()
-  // function, so any solemnity still landing here may simply win.
-  // TODO: feasts and memorias, with privileged-season suppression.
   const saintsToday = getSaintsOnDate(date, calendarId);
-  const solemnity = saintsToday.find((s) => s.rank === "solemnity");
-  if (solemnity) {
-    return saintSolemnityCelebration(solemnity);
-  }
-
-  const weekday = getWeekday(date);
-  const isSunday = weekday === "Sunday";
-
-  // Privileged-season ferials (non-Sunday days in Advent, Christmas octave,
-  // Holy Week, Lent, Eastertide) override ordinary memorias.
-  const isPrivilegedFerial =
-    !isSunday &&
-    (season === "advent" ||
-      season === "christmas" ||
-      season === "lent" ||
-      season === "holy_week" ||
-      season === "easter_triduum" ||
-      season === "eastertide");
-
-  const type: DayClass = isSunday
-    ? "sunday"
-    : isPrivilegedFerial
-    ? "privileged_ferial"
-    : "ordinary_ferial";
-
-  return {
-    type,
-    source: "seasonal",
-    // exactOptionalPropertyTypes: only include seasonalKey when it has a value.
-    ...(seasonalKey !== null ? { seasonalKey } : {}),
-    applicableCommons: [],
-    memoriaFullySuppressed: false,
-    memoriaReducedToOptional: false,
-    allowMemoriaAddendum: false,
-    isTriduum: season === "easter_triduum",
-  };
-}
-
-function saintSolemnityCelebration(saint: CalendarSaint): Celebration {
-  return {
-    type: "solemnity",
-    source: "saint",
-    saintId: saint.saintId,
-    applicableCommons: saint.applicableCommons,
-    memoriaFullySuppressed: false,
-    memoriaReducedToOptional: false,
-    allowMemoriaAddendum: false,
-    isTriduum: false,
-  };
+  return resolveCelebrationFromParts(date, season, seasonalKey, saintsToday);
 }
 
 // ---------------------------------------------------------------------------
@@ -139,76 +79,47 @@ function saintSolemnityCelebration(saint: CalendarSaint): Celebration {
  * Determine whether this evening is First Vespers of tomorrow.
  *
  * Deliberately does NOT call resolveDay (would recurse).  Instead it
- * re-derives only the minimal properties needed to answer the question:
- * is tomorrow a Sunday or a high-ranking feast?
+ * re-derives only the minimal properties needed to answer the question.
  */
-function resolveEvening(date: Date, _calendarId: string): EveningContext {
+function resolveEvening(date: Date, calendarId: string): EveningContext {
   const tomorrow = addDays(date, 1);
-
+  const tomorrowSeason = getSeason(tomorrow, calendarId);
+  const tomorrowSeasonalKey = getSeasonalDayKey(tomorrow, calendarId);
   const tomorrowWeekday = getWeekday(tomorrow);
-  const tomorrowSeason  = getSeason(tomorrow, _calendarId);
-  const tomorrowSeasonalKey = getSeasonalDayKey(tomorrow, _calendarId);
+  const todaySeason = getSeason(date, calendarId);
+  const todaySeasonalKey = getSeasonalDayKey(date, calendarId);
 
-  // First Vespers for Sundays, the Triduum, and weekday solemnities of the
-  // season (seasonal moveables, e.g. Ascension, Corpus Christi).
-  const seasonalFirstVespers =
-    tomorrowWeekday === "Sunday" ||
-    tomorrowSeason === "easter_triduum" ||
-    (tomorrowSeasonalKey !== null &&
-      SOLEMNITY_FIRST_VESPERS_KEYS.has(tomorrowSeasonalKey));
+  const tomorrowCelebration = resolveCelebration(
+    tomorrow,
+    tomorrowSeason,
+    tomorrowSeasonalKey,
+    calendarId,
+  );
 
-  // First Vespers of a saint solemnity celebrated tomorrow (whether on its
-  // nominal date or transferred here).  GNLY 61: if today is itself a higher-
-  // ranking day (Class I.1–I.2) its Second Vespers outranks the saint's First
-  // Vespers, so the latter is suppressed.
-  const tomorrowSaintSolemnity =
-    getSaintsOnDate(tomorrow, _calendarId).find((s) => s.rank === "solemnity");
+  const seasonalFirstVespers = tomorrowHasFirstVespers(
+    tomorrowCelebration,
+    tomorrowSeasonalKey,
+    tomorrowWeekday,
+    tomorrowSeason,
+  );
+
+  const tomorrowHasSaintSolemnity =
+    tomorrowCelebration.type === "solemnity" &&
+    tomorrowCelebration.source === "saint";
+
   const saintFirstVespers =
-    tomorrowSaintSolemnity !== undefined &&
-    !todayOutranksI3FirstVespers(date);
+    tomorrowHasSaintSolemnity &&
+    !todayOutranksI3FirstVespers(date, todaySeason, todaySeasonalKey);
 
   const hasFirstVespers = seasonalFirstVespers || saintFirstVespers;
 
   if (hasFirstVespers) {
     return {
       hasFirstVespers: true,
-      firstVespersCelebration: resolveCelebration(
-        tomorrow,
-        tomorrowSeason,
-        tomorrowSeasonalKey,
-        _calendarId,
-      ),
+      firstVespersCelebration: tomorrowCelebration,
     };
   }
   return { hasFirstVespers: false };
-}
-
-/**
- * True if today's Second Vespers belongs to a Class I.1–I.2 liturgical day
- * (GNLY 59) and therefore outranks First Vespers of a Class I.3 solemnity
- * (universal-calendar saint) that would otherwise begin this evening.
- *
- * Class I.2 includes: Sundays of Advent, Lent, and Easter; all of Holy Week;
- * the Easter Triduum; and every day of the Easter Octave.
- */
-function todayOutranksI3FirstVespers(date: Date): boolean {
-  const season = getSeason(date);
-  if (season === "holy_week" || season === "easter_triduum") return true;
-
-  const weekday = getWeekday(date);
-  if (weekday === "Sunday" &&
-      (season === "advent" || season === "lent" || season === "eastertide")) {
-    return true;
-  }
-
-  // Weekdays Mon–Sat of the Easter Octave (the Octave Sunday is caught above).
-  if (season === "eastertide") {
-    const b = getBounds(date);
-    const easter = b.easterSunday;
-    if (date > easter && date <= addDays(easter, 7)) return true;
-  }
-
-  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,3 +143,8 @@ export * from "./saints.js";
 export * from "./sanctoralRegistry.js";
 export * from "./transferRules.js";
 export * from "./seasonalObservance.js";
+export {
+  resolveCelebrationFromParts,
+  SEASONAL_SOLEMNITY_KEYS,
+  SOLEMNITY_FIRST_VESPERS_KEYS,
+} from "./celebrationRanking.js";

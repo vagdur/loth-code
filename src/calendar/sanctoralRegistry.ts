@@ -147,6 +147,7 @@ export function compileToCalendarSaint(entry: SanctoralCalendarEntry): CalendarS
     saintId: entry.id,
     rank: entry.rank,
     applicableCommons: entry.applicableCommons,
+    ...(entry.observanceOf !== undefined ? { observanceOf: entry.observanceOf } : {}),
     nominalDate: (year) => nominalDateFromEntry(entry, year),
     celebrationDate: (year) => {
       const nominal = nominalDateFromEntry(entry, year);

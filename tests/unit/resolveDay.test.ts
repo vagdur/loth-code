@@ -60,6 +60,33 @@ describe("resolveDay", () => {
     expect(d.celebration.source).toBe("saint");
     expect(d.celebration.saintId).toBe("immaculate_conception");
   });
+
+  test("St. Francis obligatory memoria on a weekday in Ordinary Time", () => {
+    const d = resolveDay(utcDate(2024, 10, 4), cal);
+    expect(d.celebration.type).toBe("obligatory_memoria");
+    expect(d.celebration.saintId).toBe("francis_of_assisi");
+  });
+
+  test("St. Francis suppressed when 4 October is Sunday", () => {
+    const d = resolveDay(utcDate(2026, 10, 4), cal);
+    expect(d.celebration.type).toBe("sunday");
+    expect(d.celebration.memoriaFullySuppressed).toBe(true);
+    expect(d.celebration.saintId).toBeUndefined();
+  });
+
+  test("St. Birgitta feast on 23 July in general calendar", () => {
+    const d = resolveDay(utcDate(2026, 7, 23), cal);
+    expect(d.celebration.type).toBe("feast");
+    expect(d.celebration.source).toBe("saint");
+    expect(d.celebration.saintId).toBe("st_birgitta");
+  });
+
+  test("Ascension Thursday is a seasonal solemnity", () => {
+    const d = resolveDay(utcDate(2026, 5, 14), cal);
+    expect(d.celebration.type).toBe("solemnity");
+    expect(d.celebration.source).toBe("seasonal");
+    expect(d.celebration.seasonalKey).toBe("ascension");
+  });
 });
 
 describe("resolveDay seasonal observance (stockholm)", () => {
@@ -70,7 +97,8 @@ describe("resolveDay seasonal observance (stockholm)", () => {
     const stockholm = resolveDay(date, "stockholm");
     const general = resolveDay(date, "general");
     expect(stockholm.celebration.seasonalKey).toBe("corpus_christi");
-    expect(stockholm.celebration.type).toBe("sunday");
+    expect(stockholm.celebration.type).toBe("solemnity");
+    expect(stockholm.celebration.source).toBe("seasonal");
     expect(general.celebration.seasonalKey).not.toBe("corpus_christi");
   });
 
@@ -92,4 +120,11 @@ describe("resolveDay seasonal observance (stockholm)", () => {
     expect(resolveDay(date, "stockholm").celebration.seasonalKey).toBe("ascension");
     expect(resolveDay(date, "general").celebration.seasonalKey).toBe("ascension");
   });
+
+  test("St. Birgitta optional memoria on 23 July in stockholm", () => {
+    const d = resolveDay(utcDate(2026, 7, 23), "stockholm");
+    expect(d.celebration.type).toBe("optional_memoria");
+    expect(d.celebration.saintId).toBe("st_birgitta");
+  });
+
 });
