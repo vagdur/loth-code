@@ -525,10 +525,15 @@ ParticularCalendarOverlay {
   additions?:    SanctoralCalendarEntry[]
   overrides?:    Partial<SanctoralCalendarEntry> & { id: string }[]
   suppressions?: string[]                  // saint ids omitted in this calendar
+  seasonal_observance?: {                   // conference norms for seasonal solemnities
+    epiphany?:        "fixed_jan_6" | "sunday_jan_2_8"
+    corpus_christi?: "thursday_after_trinity" | "second_sunday_after_pentecost"
+    ascension?:      "thursday" | "sunday"
+  }
 }
 ```
 
-`AssemblyContext.calendar_id` selects the merged calendar at runtime. Transfer algorithms (e.g. Annunciation GNLY 60) live in code, referenced by `transfer_rule` keys.
+`AssemblyContext.calendar_id` selects the merged calendar at runtime. Sanctoral solemnity transfer algorithms (e.g. Annunciation GNLY 60) live in code, referenced by `transfer_rule` keys on saint entries. Seasonal solemnity dates (Epiphany, Corpus Christi, Ascension) use `seasonal_observance` on particular overlays; omitted keys inherit universal defaults from `DEFAULT_SEASONAL_OBSERVANCE` in code.
 
 ---
 

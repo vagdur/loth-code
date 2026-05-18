@@ -6,6 +6,8 @@
  */
 
 import type { CalendarSaint } from "../types/sanctoralCalendar.js";
+import type { SeasonalObservancePolicy } from "../types/seasonalObservance.js";
+import { DEFAULT_SEASONAL_OBSERVANCE } from "../types/seasonalObservance.js";
 import type { SanctoralCalendarRegistry } from "./sanctoralRegistry.js";
 
 export type { CalendarSaint };
@@ -23,6 +25,21 @@ export function getSanctoralRegistry(): SanctoralCalendarRegistry {
     );
   }
   return registry;
+}
+
+/** Seasonal solemnity dates for a calendar (defaults when registry not loaded). */
+export function getSeasonalObservance(
+  calendarId = "general",
+): SeasonalObservancePolicy {
+  if (registry) {
+    return registry.getSeasonalObservance(calendarId);
+  }
+  if (calendarId === "general") {
+    return DEFAULT_SEASONAL_OBSERVANCE;
+  }
+  throw new Error(
+    "Sanctoral calendar not loaded; call initSanctoralRegistry() first",
+  );
 }
 
 function sameUtcDay(a: Date, b: Date): boolean {

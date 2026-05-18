@@ -37,6 +37,21 @@ describe("SanctoralCalendarRegistry", () => {
       /Unknown sanctoral calendar id/,
     );
   });
+
+  test("general seasonal observance uses universal defaults", () => {
+    expect(registry.getSeasonalObservance("general")).toEqual({
+      epiphany: "fixed_jan_6",
+      corpusChristi: "thursday_after_trinity",
+      ascension: "thursday",
+    });
+  });
+
+  test("stockholm seasonal observance merges Corpus Christi to Sunday", () => {
+    const policy = registry.getSeasonalObservance("stockholm");
+    expect(policy.epiphany).toBe("fixed_jan_6");
+    expect(policy.corpusChristi).toBe("second_sunday_after_pentecost");
+    expect(policy.ascension).toBe("thursday");
+  });
 });
 
 describe("getSaintsOnDate with calendarId", () => {

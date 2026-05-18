@@ -114,17 +114,15 @@ export function epiphany(year: number): Date {
 }
 
 /**
- * Baptism of the Lord: the Sunday after Epiphany.
- * If Epiphany is already on Sunday Jan 7 or 8, Baptism of the Lord is Jan 13.
+ * Baptism of the Lord: the Sunday after Epiphany (universal: Epiphany 6 Jan).
+ * If Epiphany is already on Sunday, Baptism is the next Sunday.
  */
 export function baptismOfTheLord(year: number): Date {
   const ep = epiphany(year);
   const dow = ep.getUTCDay();
   if (dow === 0) {
-    // Epiphany is itself a Sunday; Baptism is the next Sunday.
     return addDays(ep, 7);
   }
-  // Otherwise: next Sunday after Epiphany.
   return addDays(ep, 7 - dow);
 }
 

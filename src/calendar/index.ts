@@ -35,12 +35,12 @@ export function resolveDay(
   date: Date,
   _calendarId: string,
 ): LiturgicalDay {
-  const season = getSeason(date);
-  const psalterWeek = getPsalterWeek(date);
+  const season = getSeason(date, _calendarId);
+  const psalterWeek = getPsalterWeek(date, _calendarId);
   const psalterDay = getWeekday(date);
   const readingYear = getReadingYear(date);
-  const ordinaryTimeWeek = getOrdinaryTimeWeek(date);
-  const seasonalKey = getSeasonalDayKey(date);
+  const ordinaryTimeWeek = getOrdinaryTimeWeek(date, _calendarId);
+  const seasonalKey = getSeasonalDayKey(date, _calendarId);
 
   const celebration = resolveCelebration(date, season, seasonalKey, _calendarId);
   const evening = resolveEvening(date, _calendarId);
@@ -146,8 +146,8 @@ function resolveEvening(date: Date, _calendarId: string): EveningContext {
   const tomorrow = addDays(date, 1);
 
   const tomorrowWeekday = getWeekday(tomorrow);
-  const tomorrowSeason  = getSeason(tomorrow);
-  const tomorrowSeasonalKey = getSeasonalDayKey(tomorrow);
+  const tomorrowSeason  = getSeason(tomorrow, _calendarId);
+  const tomorrowSeasonalKey = getSeasonalDayKey(tomorrow, _calendarId);
 
   // First Vespers for Sundays, the Triduum, and weekday solemnities of the
   // season (seasonal moveables, e.g. Ascension, Corpus Christi).
@@ -231,3 +231,4 @@ export * from "./liturgicalYear.js";
 export * from "./saints.js";
 export * from "./sanctoralRegistry.js";
 export * from "./transferRules.js";
+export * from "./seasonalObservance.js";

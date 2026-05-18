@@ -4,11 +4,16 @@
  */
 
 import {
-  addDays, ascensionThursday, ashWednesday, baptismOfTheLord, christTheKing,
-  corpusChristiThursday, daysBetween, easterSunday, firstOrdinaryTimeSunday,
-  firstSundayOfAdvent, goodFriday, holyThursday, holySaturday, immaculateHeartOfMary,
-  palmSunday, pentecost, sacredHeart, trinitySunday, utcDate,
+  addDays, ashWednesday, christTheKing, daysBetween, easterSunday,
+  firstOrdinaryTimeSunday, firstSundayOfAdvent, goodFriday, holyThursday,
+  holySaturday, immaculateHeartOfMary, palmSunday, pentecost, sacredHeart,
+  trinitySunday, utcDate,
 } from "./computus.js";
+import { getSeasonalObservance } from "./saints.js";
+import {
+  baptismOfTheLordForPolicy,
+  observanceDate,
+} from "./seasonalObservance.js";
 import type { ReadingYear, Season } from "../types/calendar.js";
 import type { PsalterWeek, Weekday } from "../types/psalter.js";
 import type { SeasonalDayKey } from "../types/proper.js";
@@ -35,7 +40,7 @@ interface LiturgicalYearBounds {
 }
 
 /** Compute the boundaries of the liturgical year that CONTAINS the given civil date. */
-export function getBounds(date: Date): LiturgicalYearBounds {
+export function getBounds(date: Date, calendarId = "general"): LiturgicalYearBounds {
   // Determine which civil year the current liturgical year started in.
   // Advent for liturgical year Y starts in civil year Y-1.
   const year = date.getUTCFullYear();
@@ -50,7 +55,8 @@ export function getBounds(date: Date): LiturgicalYearBounds {
   const liturgicalYearStart = date >= adventThisYear ? year : year - 1;
   const liturgicalYearEnd = liturgicalYearStart + 1;
 
-  const bap = baptismOfTheLord(liturgicalYearEnd);
+  const policy = getSeasonalObservance(calendarId);
+  const bap = baptismOfTheLordForPolicy(liturgicalYearEnd, policy.epiphany);
   const easter = easterSunday(liturgicalYearEnd);
 
   return {
@@ -72,8 +78,8 @@ export function getBounds(date: Date): LiturgicalYearBounds {
 // Season
 // ---------------------------------------------------------------------------
 
-export function getSeason(date: Date): Season {
-  const b = getBounds(date);
+export function getSeason(date: Date, calendarId = "general"): Season {
+  const b = getBounds(date, calendarId);
   if (date >= b.adventStart && date < b.christmasStart)  return "advent";
   if (date >= b.christmasStart && date < b.otIStart)     return "christmas";
   if (date >= b.otIStart && date < b.lentStart)          return "ordinary_time";
@@ -101,8 +107,9 @@ export function getSeason(date: Date): Season {
  * Between anchors the cycle runs continuously; weeks before an anchor
  * that would precede its Week I are simply omitted.
  */
-export function getPsalterWeek(date: Date): PsalterWeek {
-  const b = getBounds(date);
+export function getPsalterWeek(date: Date, calendarId = "general"): PsalterWeek {
+  const b = getBounds(date, calendarId);
+  const policy = getSeasonalObservance(calendarId);
 
   // Find the most recent anchor Sunday on or before `date`.
   const anchors: Date[] = [
@@ -120,7 +127,10 @@ export function getPsalterWeek(date: Date): PsalterWeek {
   anchors[2] = firstSundayOfLent;
 
   // Replace the first Sunday of OT for the correct year:
-  const baptism = baptismOfTheLord(b.easterSunday.getUTCFullYear());
+  const baptism = baptismOfTheLordForPolicy(
+    b.easterSunday.getUTCFullYear(),
+    policy.epiphany,
+  );
   anchors[1] = addDays(baptism, 7); // first OT Sunday
 
   // Find the latest anchor that is <= date
@@ -148,13 +158,17 @@ export function getPsalterWeek(date: Date): PsalterWeek {
  * Returns the Ordinary Time week number (1–34), or 0 if not in OT.
  * After Pentecost the numbering continues from where it was interrupted by Lent.
  */
-export function getOrdinaryTimeWeek(date: Date): number {
-  const season = getSeason(date);
+export function getOrdinaryTimeWeek(date: Date, calendarId = "general"): number {
+  const season = getSeason(date, calendarId);
   if (season !== "ordinary_time") return 0;
 
-  const b = getBounds(date);
+  const b = getBounds(date, calendarId);
   const year = b.easterSunday.getUTCFullYear();
-  const otIStart = addDays(baptismOfTheLord(year), 1); // Monday after Baptism
+  const policy = getSeasonalObservance(calendarId);
+  const otIStart = addDays(
+    baptismOfTheLordForPolicy(year, policy.epiphany),
+    1,
+  );
 
   if (date >= b.otIIStart) {
     // After Pentecost: determine how many OT weeks elapsed before Lent,
@@ -203,9 +217,13 @@ export function getReadingYear(date: Date): ReadingYear {
  * Returns null if the date is not covered by the seasonal proper
  * (e.g., an ordinary ferial day with no seasonal key needed).
  */
-export function getSeasonalDayKey(date: Date): SeasonalDayKey | null {
-  const season = getSeason(date);
-  const b = getBounds(date);
+export function getSeasonalDayKey(
+  date: Date,
+  calendarId = "general",
+): SeasonalDayKey | null {
+  const policy = getSeasonalObservance(calendarId);
+  const season = getSeason(date, calendarId);
+  const b = getBounds(date, calendarId);
   const year = b.easterSunday.getUTCFullYear();
   const wd = getWeekday(date).toLowerCase().slice(0, 3); // "sun", "mon", ...
   const dow = date.getUTCDay();
@@ -227,15 +245,13 @@ export function getSeasonalDayKey(date: Date): SeasonalDayKey | null {
       if (m === 12) return `christmas_dec${d}`;
       if (m === 1 && d === 1) return "christmas_jan01";
       if (m === 1 && d >= 2 && d <= 5) return `christmas_jan0${d}`;
-      const ep = b.otIStart; // day after Baptism = start of OT
-      // Days from Jan 6 onwards, before Baptism of Lord
-      if (m === 1 && d === 6) return "epiphany";
-      if (date >= utcDate(year, 1, 7) && date < ep) {
+      const epiphanyDate = observanceDate("epiphany", year, policy);
+      const baptismDate = baptismOfTheLordForPolicy(year, policy.epiphany);
+      if (daysBetween(date, epiphanyDate) === 0) return "epiphany";
+      if (date > epiphanyDate && date < baptismDate) {
         return `epiphany_${wd}`;
       }
-      // Baptism of Lord itself:
-      const bap = addDays(ep, -1);
-      if (daysBetween(date, bap) === 0) return "baptism_of_lord";
+      if (daysBetween(date, baptismDate) === 0) return "baptism_of_lord";
       return null;
     }
 
@@ -274,7 +290,9 @@ export function getSeasonalDayKey(date: Date): SeasonalDayKey | null {
         ];
         return names[diff] ?? null;
       }
-      if (daysBetween(date, ascensionThursday(year)) === 0) return "ascension";
+      if (daysBetween(date, observanceDate("ascension", year, policy)) === 0) {
+        return "ascension";
+      }
       if (daysBetween(date, pentecost(year)) === 0) return "pentecost";
       const week = Math.floor((diff - 1) / 7) + 1;
       return `easter_w${week}_${wd}`;
@@ -282,7 +300,9 @@ export function getSeasonalDayKey(date: Date): SeasonalDayKey | null {
 
     case "ordinary_time": {
       if (daysBetween(date, trinitySunday(year)) === 0) return "trinity_sunday";
-      if (daysBetween(date, corpusChristiThursday(year)) === 0) return "corpus_christi";
+      if (daysBetween(date, observanceDate("corpus_christi", year, policy)) === 0) {
+        return "corpus_christi";
+      }
       if (daysBetween(date, sacredHeart(year)) === 0) return "sacred_heart";
       if (daysBetween(date, immaculateHeartOfMary(year)) === 0) return "immaculate_heart";
       if (
@@ -290,7 +310,7 @@ export function getSeasonalDayKey(date: Date): SeasonalDayKey | null {
       ) {
         return "christ_the_king";
       }
-      const otWeek = getOrdinaryTimeWeek(date);
+      const otWeek = getOrdinaryTimeWeek(date, calendarId);
       if (otWeek > 0) return `ot_w${otWeek}_${wd}`;
       return null;
     }

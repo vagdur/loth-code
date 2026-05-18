@@ -61,3 +61,35 @@ describe("resolveDay", () => {
     expect(d.celebration.saintId).toBe("immaculate_conception");
   });
 });
+
+describe("resolveDay seasonal observance (stockholm)", () => {
+  beforeAll(() => ensureSanctoralCalendar());
+
+  test("Corpus Christi on 7 Jun 2026 is corpus_christi for stockholm, not general", () => {
+    const date = utcDate(2026, 6, 7);
+    const stockholm = resolveDay(date, "stockholm");
+    const general = resolveDay(date, "general");
+    expect(stockholm.celebration.seasonalKey).toBe("corpus_christi");
+    expect(stockholm.celebration.type).toBe("sunday");
+    expect(general.celebration.seasonalKey).not.toBe("corpus_christi");
+  });
+
+  test("Corpus Christi Thursday 2026 is not corpus_christi for stockholm", () => {
+    const stockholm = resolveDay(utcDate(2026, 6, 4), "stockholm");
+    expect(stockholm.celebration.seasonalKey).not.toBe("corpus_christi");
+    const general = resolveDay(utcDate(2026, 6, 4), "general");
+    expect(general.celebration.seasonalKey).toBe("corpus_christi");
+  });
+
+  test("Saturday before Stockholm Corpus Christi has First Vespers", () => {
+    const sat = resolveDay(utcDate(2026, 6, 6), "stockholm");
+    expect(sat.evening.hasFirstVespers).toBe(true);
+    expect(sat.evening.firstVespersCelebration?.seasonalKey).toBe("corpus_christi");
+  });
+
+  test("Ascension Thursday 14 May 2026 for stockholm and general", () => {
+    const date = utcDate(2026, 5, 14);
+    expect(resolveDay(date, "stockholm").celebration.seasonalKey).toBe("ascension");
+    expect(resolveDay(date, "general").celebration.seasonalKey).toBe("ascension");
+  });
+});

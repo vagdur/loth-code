@@ -1,6 +1,11 @@
 calendar_id: stockholm
 extends: general
 
+seasonal_observance:
+  epiphany: fixed_jan_6
+  corpus_christi: second_sunday_after_pentecost
+  ascension: thursday
+
 overrides:
   # Universal feast (23 Jul) → optional memoria of her heavenly birthday;
   # diocesan solemnity is 7 Oct (st_birgitta_patron).

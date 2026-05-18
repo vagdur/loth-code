@@ -5,6 +5,7 @@
  */
 
 import type { CalendarPosition, CommonType } from "./proper.js";
+import type { SeasonalObservanceOverride } from "./seasonalObservance.js";
 
 export type SanctoralRank =
   | "solemnity"
@@ -33,6 +34,8 @@ export interface ParticularCalendarOverlay {
   additions?: SanctoralCalendarEntry[];
   overrides?: SanctoralCalendarOverride[];
   suppressions?: string[];
+  /** Conference norms for seasonal solemnity dates (merged over universal defaults). */
+  seasonalObservance?: SeasonalObservanceOverride;
 }
 
 export interface SanctoralCalendarIndexEntry {

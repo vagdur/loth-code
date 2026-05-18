@@ -15,6 +15,16 @@ import type {
   SanctoralCalendarEntry,
   SanctoralCalendarIndex,
 } from "../types/sanctoralCalendar.js";
+import type {
+  SeasonalObservanceOverride,
+  SeasonalObservancePolicy,
+} from "../types/seasonalObservance.js";
+import {
+  ASCENSION_OBSERVANCE_VALUES,
+  CORPUS_CHRISTI_OBSERVANCE_VALUES,
+  DEFAULT_SEASONAL_OBSERVANCE,
+  EPIPHANY_OBSERVANCE_VALUES,
+} from "../types/seasonalObservance.js";
 
 function camelCaseKeys(obj: unknown): unknown {
   if (Array.isArray(obj)) return obj.map(camelCaseKeys);
@@ -71,6 +81,54 @@ function mergeEntries(
   return [...map.values()];
 }
 
+function assertEnumValue<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  field: string,
+  calendarId: string,
+): T {
+  if (typeof value !== "string" || !allowed.includes(value as T)) {
+    throw new Error(
+      `Invalid seasonal_observance.${field} for calendar "${calendarId}": ${String(value)}`,
+    );
+  }
+  return value as T;
+}
+
+function mergeSeasonalObservance(
+  base: SeasonalObservancePolicy,
+  overlay?: SeasonalObservanceOverride,
+  calendarId = "general",
+): SeasonalObservancePolicy {
+  if (!overlay) return { ...base };
+  const merged = { ...base };
+  if (overlay.epiphany !== undefined) {
+    merged.epiphany = assertEnumValue(
+      overlay.epiphany,
+      EPIPHANY_OBSERVANCE_VALUES,
+      "epiphany",
+      calendarId,
+    );
+  }
+  if (overlay.corpusChristi !== undefined) {
+    merged.corpusChristi = assertEnumValue(
+      overlay.corpusChristi,
+      CORPUS_CHRISTI_OBSERVANCE_VALUES,
+      "corpus_christi",
+      calendarId,
+    );
+  }
+  if (overlay.ascension !== undefined) {
+    merged.ascension = assertEnumValue(
+      overlay.ascension,
+      ASCENSION_OBSERVANCE_VALUES,
+      "ascension",
+      calendarId,
+    );
+  }
+  return merged;
+}
+
 export function nominalDateFromEntry(
   entry: SanctoralCalendarEntry,
   year: number,
@@ -103,11 +161,17 @@ export function compileToCalendarSaint(entry: SanctoralCalendarEntry): CalendarS
 export class SanctoralCalendarRegistry {
   private readonly mergedEntries = new Map<string, SanctoralCalendarEntry[]>();
   private readonly saintsByCalendar = new Map<string, CalendarSaint[]>();
+  private readonly seasonalObservanceByCalendar = new Map<
+    string,
+    SeasonalObservancePolicy
+  >();
 
   private constructor(
     merged: Map<string, SanctoralCalendarEntry[]>,
+    seasonalObservance: Map<string, SeasonalObservancePolicy>,
   ) {
     this.mergedEntries = merged;
+    this.seasonalObservanceByCalendar = seasonalObservance;
     for (const [calendarId, entries] of merged) {
       this.saintsByCalendar.set(
         calendarId,
@@ -135,6 +199,9 @@ export class SanctoralCalendarRegistry {
     const merged = new Map<string, SanctoralCalendarEntry[]>();
     merged.set("general", generalEntries);
 
+    const seasonalObservance = new Map<string, SeasonalObservancePolicy>();
+    seasonalObservance.set("general", { ...DEFAULT_SEASONAL_OBSERVANCE });
+
     for (const [calendarId, meta] of Object.entries(index.calendars)) {
       if (calendarId === "general") continue;
       if (meta.layer !== "particular" || !meta.overlay) continue;
@@ -151,9 +218,16 @@ export class SanctoralCalendarRegistry {
         path.join(calendarsDir, meta.overlay),
       );
       merged.set(calendarId, mergeEntries(base, overlay));
+
+      const basePolicy =
+        seasonalObservance.get(baseId) ?? DEFAULT_SEASONAL_OBSERVANCE;
+      seasonalObservance.set(
+        calendarId,
+        mergeSeasonalObservance(basePolicy, overlay.seasonalObservance, calendarId),
+      );
     }
 
-    return new SanctoralCalendarRegistry(merged);
+    return new SanctoralCalendarRegistry(merged, seasonalObservance);
   }
 
   hasCalendar(calendarId: string): boolean {
@@ -174,5 +248,13 @@ export class SanctoralCalendarRegistry {
       throw new Error(`Unknown sanctoral calendar id: ${calendarId}`);
     }
     return saints;
+  }
+
+  getSeasonalObservance(calendarId: string): SeasonalObservancePolicy {
+    const policy = this.seasonalObservanceByCalendar.get(calendarId);
+    if (!policy) {
+      throw new Error(`Unknown sanctoral calendar id: ${calendarId}`);
+    }
+    return policy;
   }
 }
