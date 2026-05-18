@@ -1,6 +1,13 @@
 calendar_id: stockholm
 extends: general
 
+overrides:
+  # Universal feast (23 Jul) → optional memoria of her heavenly birthday;
+  # diocesan solemnity is 7 Oct (st_birgitta_patron).
+  - id: st_birgitta
+    name: Heavenly birthday of St. Birgitta
+    rank: optional_memoria
+
 additions:
   - id: st_henrik
     name: St. Henrik, bishop and martyr
@@ -21,3 +28,13 @@ additions:
       day: 18
     applicable_commons:
       - martyrs
+
+  - id: st_birgitta_patron
+    name: St. Birgitta, patron of Sweden and Europe
+    rank: solemnity
+    calendar_position:
+      type: fixed
+      month: 10
+      day: 7
+    applicable_commons:
+      - holy_men_women

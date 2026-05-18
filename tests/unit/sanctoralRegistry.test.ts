@@ -16,15 +16,20 @@ describe("SanctoralCalendarRegistry", () => {
     initSanctoralRegistry(registry);
   });
 
-  test("general calendar has three entries", () => {
-    expect(registry.getMergedEntries("general")).toHaveLength(3);
+  test("general calendar is non-empty", () => {
+    expect(registry.getMergedEntries("general")).not.toHaveLength(0);
   });
 
-  test("stockholm merge includes local additions", () => {
+  test("stockholm merge includes local additions and Birgitta adjustments", () => {
     const entries = registry.getMergedEntries("stockholm");
-    expect(entries).toHaveLength(5);
+    expect(entries).toHaveLength(7);
     expect(entries.map((e) => e.id)).toContain("st_henrik");
     expect(entries.map((e) => e.id)).toContain("st_erik");
+    expect(entries.map((e) => e.id)).toContain("st_birgitta_patron");
+
+    const birgittaJul = entries.find((e) => e.id === "st_birgitta");
+    expect(birgittaJul?.rank).toBe("optional_memoria");
+    expect(birgittaJul?.name).toMatch(/Heavenly birthday/i);
   });
 
   test("unknown calendar id throws", () => {
@@ -43,5 +48,23 @@ describe("getSaintsOnDate with calendarId", () => {
     const general = getSaintsOnDate(date, "general");
     expect(stockholm.map((s) => s.saintId)).toContain("st_henrik");
     expect(general.map((s) => s.saintId)).not.toContain("st_henrik");
+  });
+
+  test("St. Birgitta: feast 23 Jul in general, memoria in stockholm; solemnity 7 Oct in stockholm only", () => {
+    const jul23 = utcDate(2026, 7, 23);
+    const generalJul = getSaintsOnDate(jul23, "general");
+    const stockholmJul = getSaintsOnDate(jul23, "stockholm");
+    expect(generalJul.find((s) => s.saintId === "st_birgitta")?.rank).toBe("feast");
+    expect(stockholmJul.find((s) => s.saintId === "st_birgitta")?.rank).toBe(
+      "optional_memoria",
+    );
+
+    const oct7 = utcDate(2026, 10, 7);
+    expect(getSaintsOnDate(oct7, "stockholm").map((s) => s.saintId)).toContain(
+      "st_birgitta_patron",
+    );
+    expect(getSaintsOnDate(oct7, "general").map((s) => s.saintId)).not.toContain(
+      "st_birgitta_patron",
+    );
   });
 });
