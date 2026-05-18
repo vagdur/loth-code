@@ -42,7 +42,7 @@ export function resolveDay(
   const ordinaryTimeWeek = getOrdinaryTimeWeek(date);
   const seasonalKey = getSeasonalDayKey(date);
 
-  const celebration = resolveCelebration(date, season, seasonalKey);
+  const celebration = resolveCelebration(date, season, seasonalKey, _calendarId);
   const evening = resolveEvening(date, _calendarId);
 
   const saturdayBvmPermitted =
@@ -71,6 +71,7 @@ function resolveCelebration(
   date: Date,
   season: Season,
   seasonalKey: SeasonalDayKey | null,
+  calendarId: string,
 ): Celebration {
   // A saint solemnity celebrated on this date — either nominally here
   // or transferred onto this date — outranks Sundays of OT / Christmastide
@@ -78,7 +79,7 @@ function resolveCelebration(
   // already been moved off Class I.1–I.2 days by their celebrationDate()
   // function, so any solemnity still landing here may simply win.
   // TODO: feasts and memorias, with privileged-season suppression.
-  const saintsToday = getSaintsOnDate(date);
+  const saintsToday = getSaintsOnDate(date, calendarId);
   const solemnity = saintsToday.find((s) => s.rank === "solemnity");
   if (solemnity) {
     return saintSolemnityCelebration(solemnity);
@@ -161,7 +162,7 @@ function resolveEvening(date: Date, _calendarId: string): EveningContext {
   // ranking day (Class I.1–I.2) its Second Vespers outranks the saint's First
   // Vespers, so the latter is suppressed.
   const tomorrowSaintSolemnity =
-    getSaintsOnDate(tomorrow).find((s) => s.rank === "solemnity");
+    getSaintsOnDate(tomorrow, _calendarId).find((s) => s.rank === "solemnity");
   const saintFirstVespers =
     tomorrowSaintSolemnity !== undefined &&
     !todayOutranksI3FirstVespers(date);
@@ -171,7 +172,12 @@ function resolveEvening(date: Date, _calendarId: string): EveningContext {
   if (hasFirstVespers) {
     return {
       hasFirstVespers: true,
-      firstVespersCelebration: resolveCelebration(tomorrow, tomorrowSeason, tomorrowSeasonalKey),
+      firstVespersCelebration: resolveCelebration(
+        tomorrow,
+        tomorrowSeason,
+        tomorrowSeasonalKey,
+        _calendarId,
+      ),
     };
   }
   return { hasFirstVespers: false };
@@ -223,3 +229,5 @@ export function defaultContext(calendarId = "general"): AssemblyContext {
 export * from "./computus.js";
 export * from "./liturgicalYear.js";
 export * from "./saints.js";
+export * from "./sanctoralRegistry.js";
+export * from "./transferRules.js";

@@ -1,0 +1,23 @@
+calendar_id: stockholm
+extends: general
+
+additions:
+  - id: st_henrik
+    name: St. Henrik, bishop and martyr
+    rank: obligatory_memoria
+    calendar_position:
+      type: fixed
+      month: 1
+      day: 19
+    applicable_commons:
+      - pastors
+
+  - id: st_erik
+    name: St. Erik, king and martyr
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 5
+      day: 18
+    applicable_commons:
+      - martyrs

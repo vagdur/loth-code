@@ -1,0 +1,8 @@
+calendars:
+  general:
+    layer: universal
+    entries: general/entries.yaml
+  stockholm:
+    layer: particular
+    extends: general
+    overlay: local/stockholm.yaml

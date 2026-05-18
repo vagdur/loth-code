@@ -1,0 +1,31 @@
+entries:
+  - id: annunciation
+    name: Annunciation of the Lord
+    rank: solemnity
+    calendar_position:
+      type: fixed
+      month: 3
+      day: 25
+    applicable_commons:
+      - bvm
+    transfer_rule: annunciation_gnly60
+
+  - id: immaculate_conception
+    name: Immaculate Conception of the Blessed Virgin Mary
+    rank: solemnity
+    calendar_position:
+      type: fixed
+      month: 12
+      day: 8
+    applicable_commons:
+      - bvm
+
+  - id: francis_of_assisi
+    name: St. Francis of Assisi
+    rank: obligatory_memoria
+    calendar_position:
+      type: fixed
+      month: 10
+      day: 4
+    applicable_commons:
+      - holy_men_women

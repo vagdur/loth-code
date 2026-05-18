@@ -3,13 +3,15 @@
  * §20 step 1 — resolveDay output for representative civil dates.
  */
 
-import { describe, expect, test } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
 import { resolveDay } from "../../src/calendar/index.js";
 import { utcDate } from "../../src/calendar/computus.js";
+import { ensureSanctoralCalendar } from "../helpers/initSanctoralCalendar.js";
 
 const cal = "general";
 
 describe("resolveDay", () => {
+  beforeAll(() => ensureSanctoralCalendar());
   test("Eastertide Sunday is a Sunday celebration", () => {
     // office-spec §4 — Sunday in Eastertide
     const d = resolveDay(new Date("2026-05-10T12:00:00Z"), cal);
@@ -45,10 +47,17 @@ describe("resolveDay", () => {
   });
 
   test("Annunciation transferred onto civil date yields saint solemnity", () => {
-    // 2024: 25 March falls in Holy Week; celebration moves to 8 April (see saints.ts).
+    // 2024: 25 March falls in Holy Week; celebration moves to 8 April.
     const d = resolveDay(new Date("2024-04-08T12:00:00Z"), cal);
     expect(d.celebration.type).toBe("solemnity");
     expect(d.celebration.source).toBe("saint");
     expect(d.celebration.saintId).toBe("annunciation");
+  });
+
+  test("Immaculate Conception on 8 December is a saint solemnity", () => {
+    const d = resolveDay(utcDate(2026, 12, 8), cal);
+    expect(d.celebration.type).toBe("solemnity");
+    expect(d.celebration.source).toBe("saint");
+    expect(d.celebration.saintId).toBe("immaculate_conception");
   });
 });

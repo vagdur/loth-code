@@ -19,8 +19,9 @@ The data falls into five categories:
 | **Text primitives** | `psalms`, `canticles`, `fixed_texts` |
 | **Ferial defaults** | `psalter`, `complementary_psalmody` |
 | **Seasonal overrides** | `proper_of_seasons` |
+| **Sanctoral schedule** | `calendars` (universal + particular overlays; §6.1) |
 | **Sanctoral overrides** | `proper_of_saints`, `commons` |
-| **Calendar logic** | `calendar` (algorithms + General Roman Calendar) |
+| **Calendar logic** | `calendar` (algorithms + sanctoral registry) |
 
 ---
 
@@ -498,6 +499,37 @@ CalendarPosition =
   // Transferable solemnities have their own transfer rules per calendar rubrics.
 ```
 
+### 6.1 Sanctoral calendar (schedule)
+
+**Collections:** `calendars/` — when saints are celebrated (universal + particular overlays). Liturgical **texts** remain in `proper_of_saints`; both layers share the same saint `id`.
+
+| Path | Role |
+|------|------|
+| `calendars/index.yaml` | Registry of `calendar_id` → universal or particular layer |
+| `calendars/general/entries.yaml` | General Roman Calendar entries |
+| `calendars/local/<id>.yaml` | Particular calendar overlay (`additions`, `overrides`, `suppressions`) |
+
+```
+SanctoralCalendarEntry {
+  id:                 string
+  name:               string
+  rank:               "solemnity" | "feast" | "obligatory_memoria" | "optional_memoria"
+  calendar_position:  CalendarPosition
+  applicable_commons: CommonType[]
+  transfer_rule?:     string   // key into TS transfer-rule registry (solemnities only)
+}
+
+ParticularCalendarOverlay {
+  calendar_id:   string
+  extends:       string                    // always "general" for now
+  additions?:    SanctoralCalendarEntry[]
+  overrides?:    Partial<SanctoralCalendarEntry> & { id: string }[]
+  suppressions?: string[]                  // saint ids omitted in this calendar
+}
+```
+
+`AssemblyContext.calendar_id` selects the merged calendar at runtime. Transfer algorithms (e.g. Annunciation GNLY 60) live in code, referenced by `transfer_rule` keys.
+
 ---
 
 ## 7. Commons
@@ -733,14 +765,15 @@ AssemblyContext {
 | `psalter` | `(week, day)` | 28 | Full ferial defaults for all Hours |
 | `complementary_psalmody` | group id | ~5 | Gradual-psalm groups for Daytime Prayer |
 | `proper_of_seasons` | `SeasonalDayKey` | ~280 | Sparse; privileged-season days have more fields populated |
-| `proper_of_saints` | saint id | ~200+ | General Roman Calendar; extendable for particular calendars |
+| `calendars` | `calendar_id` | 1 universal + N particular | Sanctoral schedule; see §6.1 |
+| `proper_of_saints` | saint id | ~200+ | Liturgical texts only; same `id` as §6.1 |
 | `commons` | `CommonType` | ~8 types × 1–4 variants | Complete texts; no absent fields |
 
 ---
 
 ## 12. Extension Points
 
-- **Particular calendars** — additional or modified `SaintEntry` items and modified rankings. The `calendar_id` in `AssemblyContext` selects which set of overrides to apply on top of the General Roman Calendar.
+- **Particular calendars** — `calendars/local/<id>.yaml` overlays on the General Roman Calendar (additions, rank/date overrides, suppressions). The `calendar_id` in `AssemblyContext` selects the merged sanctoral schedule. Optional `proper_of_saints` texts use the same saint `id`.
 - **Two-year supplement** — `proper_of_seasons` entries carry `_yr1` / `_yr2` variants for the optional two-year biblical reading cycle. The assembly algorithm selects based on `LiturgicalDay.reading_year`.
 - **Optional Lectionary** — an additional collection of patristic reading alternatives per day, structured identically to the `patristic_reading` fields. The user/implementer selects whether to use the standard assignment or the Optional Lectionary reading.
 - **Votive Offices** — a small collection of `VotiveOffice` entries (e.g., for the BVM, for peace, for the dead), each structured as a `CommonVariant`. Subject to the day-class restrictions of §spec-§18.
