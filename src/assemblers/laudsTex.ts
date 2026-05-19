@@ -22,6 +22,12 @@ import {
   resolvePsalmAssignment, resolveShortReading, resolveShortResponsory,
 } from "./types.js";
 import {
+  alleluiaAntiphonSuffix,
+  formatConcludingPrayerPlain,
+  getLabels,
+  type SectionLabelKey,
+} from "./labels.js";
+import {
   formatDismissalTex, formatGospelCanticleTex, formatIntroductoryVerseTex,
   formatLordsPrayerTex, resolvePsalmText,
 } from "./liturgicalText.js";
@@ -58,7 +64,7 @@ export class LaudsTexAssembler implements Assembler<string> {
     const { flags } = hour;
     const body: string[] = [];
 
-    body.push(texHeading("Lauds — Morning Prayer"));
+    body.push(texHeading(repo, "lauds"));
 
     if (!hour.suppressIntroVerse) body.push(formatIntroductoryVerseTex(repo, flags));
 
@@ -78,27 +84,29 @@ export class LaudsTexAssembler implements Assembler<string> {
 
     if (hour.shortResponsoryRef) {
       const resp = resolveShortResponsory(hour.shortResponsoryRef, repo);
-      if (resp) body.push(this.texShortResponsory(resp));
+      if (resp) body.push(this.texShortResponsory(repo, resp));
     }
 
-    body.push(texSubheading("Benedictus"));
+    body.push(texSectionHeading(repo, "benedictus"));
     const benAntiphon = resolveAntiphon(hour.benedictuAntiphonRef, repo);
-    if (benAntiphon) body.push(this.texAntiphonBlock(benAntiphon, flags, true));
+    if (benAntiphon) body.push(this.texAntiphonBlock(repo, benAntiphon, flags, true));
     body.push(formatGospelCanticleTex(repo, "benedictus"));
-    if (benAntiphon) body.push(this.texAntiphonBlock(benAntiphon, flags, false));
+    if (benAntiphon) body.push(this.texAntiphonBlock(repo, benAntiphon, flags, false));
 
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo);
-    if (intercessions) body.push(texIntercessions(intercessions, "morning"));
+    if (intercessions) body.push(texIntercessions(repo, intercessions));
 
-    body.push(texSubheading("Our Father") + "\\par\\smallskip\n" + formatLordsPrayerTex(repo));
+    body.push(
+      texSectionHeading(repo, "ourFather") + "\\par\\smallskip\n" + formatLordsPrayerTex(repo),
+    );
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
-    if (prayer) body.push(texConcludingPrayer(prayer.text));
+    if (prayer) body.push(texConcludingPrayer(repo, prayer.text));
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo);
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo);
-      if (addAntiphon) body.push(this.texAntiphonBlock(addAntiphon, flags, true));
+      if (addAntiphon) body.push(this.texAntiphonBlock(repo, addAntiphon, flags, true));
       if (addPrayer) body.push(escapeTexPlain(addPrayer.text));
     }
 
@@ -147,7 +155,12 @@ ${body}
   /**
    * @param includePsalmTone — opening psalmody antiphon includes tone GABC; closing repeat omits it.
    */
-  private texAntiphonBlock(a: Antiphon, flags: LiturgicalFlags, includePsalmTone: boolean): string {
+  private texAntiphonBlock(
+    repo: DataRepository,
+    a: Antiphon,
+    flags: LiturgicalFlags,
+    includePsalmTone: boolean,
+  ): string {
     const chunks: string[] = [];
     const rubric = this.melodyRubric(a.melody);
     if (rubric) chunks.push(rubric);
@@ -155,11 +168,12 @@ ${body}
       const line = this.emitScore(a.melody.gabc);
       if (line) chunks.push(line);
     }
-    const alleluia =
-      flags.alleluiaInAntiphons && !a.suppressAlleluia ? " Alleluia." : "";
-    chunks.push(`\\textbf{Ant.} ${escapeTexPlain(a.text + alleluia)}`);
+    const prefix = getLabels(repo).rubrics.antiphonPrefix;
+    const alleluia = alleluiaAntiphonSuffix(repo, flags, a.suppressAlleluia);
+    chunks.push(`\\textbf{${escapeTexPlain(prefix)}} ${escapeTexPlain(a.text + alleluia)}`);
     if (includePsalmTone && a.psalmTone?.trim()) {
-      chunks.push("{\\small\\textit{Psalm tone}\\par}");
+      const psalmToneLabel = getLabels(repo).rubrics.psalmTone ?? "Psalm tone";
+      chunks.push(`{\\small\\textit{${escapeTexPlain(psalmToneLabel)}}\\par}`);
       const toneLine = this.emitScore(a.psalmTone);
       if (toneLine) chunks.push(toneLine);
     }
@@ -185,7 +199,7 @@ ${body}
     flags: LiturgicalFlags,
     repo: DataRepository,
   ): string {
-    const open = this.texAntiphonBlock(assignment.antiphon, flags, true);
+    const open = this.texAntiphonBlock(repo, assignment.antiphon, flags, true);
     const canticleMelody: string[] = [];
     const canticle = repo.getCanticle(assignment.psalmOrCanticleId);
     if (canticle?.melody?.gabc?.trim()) {
@@ -195,11 +209,11 @@ ${body}
       if (line) canticleMelody.push(line);
     }
     const body = escapeTexPlain(psalmText);
-    const close = this.texAntiphonBlock(assignment.antiphon, flags, false);
+    const close = this.texAntiphonBlock(repo, assignment.antiphon, flags, false);
     return [open, ...canticleMelody, body, close].join("\n\n");
   }
 
-  private texShortResponsory(r: ShortResponsory): string {
+  private texShortResponsory(repo: DataRepository, r: ShortResponsory): string {
     const chunks: string[] = [];
     const rubric = this.melodyRubric(r.melody);
     if (rubric) chunks.push(rubric);
@@ -207,42 +221,46 @@ ${body}
       const line = this.emitScore(r.melody.gabc);
       if (line) chunks.push(line);
     }
+    const { responseSymbol, versicleSymbol } = getLabels(repo).rubrics;
     chunks.push(
       [
-        `\\textbf{℟.} ${escapeTexPlain(r.text)}`,
-        `\\textbf{℣.} ${escapeTexPlain(r.versicle)}`,
-        `\\textbf{℟.} ${escapeTexPlain(r.text)}`,
+        `\\textbf{${responseSymbol}} ${escapeTexPlain(r.text)}`,
+        `\\textbf{${versicleSymbol}} ${escapeTexPlain(r.versicle)}`,
+        `\\textbf{${responseSymbol}} ${escapeTexPlain(r.text)}`,
       ].join("\\par\\smallskip\n"),
     );
     return chunks.join("\n\n");
   }
 }
 
-function texHeading(text: string): string {
-  return `\\section*{${escapeTexPlain(text)}}`;
+function texHeading(repo: DataRepository, key: "lauds"): string {
+  return `\\section*{${escapeTexPlain(getLabels(repo).hours[key])}}`;
 }
 
-function texSubheading(text: string): string {
-  return `\\subsection*{${escapeTexPlain(text)}}`;
+function texSectionHeading(repo: DataRepository, key: SectionLabelKey): string {
+  return `\\subsection*{${escapeTexPlain(getLabels(repo).sections[key])}}`;
 }
 
 function texShortReading(r: { reference: string; text: string }): string {
   return `${escapeTexPlain(r.reference)}\\par\\smallskip\n${escapeTexPlain(r.text)}`;
 }
 
-function texIntercessions(i: Intercessions, kind: "morning" | "evening"): string {
-  const title = kind === "morning" ? "Intercessions" : "Intercessions";
+function texIntercessions(repo: DataRepository, i: Intercessions): string {
+  const { responseSymbol, versicleSymbol } = getLabels(repo).rubrics;
   const lines = [
-    texSubheading(title),
+    texSectionHeading(repo, "intercessions"),
     escapeTexPlain(i.introduction),
-    `\\textbf{℟.} ${escapeTexPlain(i.response)}`,
+    `\\textbf{${responseSymbol}} ${escapeTexPlain(i.response)}`,
     ...i.intentions.map(
-      (int) => `\\textbf{℣.} ${escapeTexPlain(int.firstPart)}\\par\\smallskip\n\\textbf{℟.} ${escapeTexPlain(int.secondPart)}`,
+      (int) =>
+        `\\textbf{${versicleSymbol}} ${escapeTexPlain(int.firstPart)}\\par\\smallskip\n\\textbf{${responseSymbol}} ${escapeTexPlain(int.secondPart)}`,
     ),
   ];
   return lines.join("\\par\\medskip\n");
 }
 
-function texConcludingPrayer(text: string): string {
-  return `${escapeTexPlain("Let us pray.")}\\par\\smallskip\n${escapeTexPlain(text)}`;
+function texConcludingPrayer(repo: DataRepository, text: string): string {
+  const plain = formatConcludingPrayerPlain(repo, text);
+  const [rubric, ...rest] = plain.split("\n\n");
+  return `${escapeTexPlain(rubric ?? "")}\\par\\smallskip\n${escapeTexPlain(rest.join("\n\n"))}`;
 }

@@ -1,10 +1,16 @@
 /**
- * Fixed liturgical texts resolved from DataRepository (data/fixed_texts.yaml).
+ * Fixed liturgical texts resolved from DataRepository (data/{locale}/fixed_texts.yaml).
  */
 
 import type { DataRepository } from "../data/repository.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type { GospelCanticleKind } from "../types/texts.js";
+import {
+  alleluiaIntroEndPunct,
+  alleluiaIntroTail,
+  formatOurFatherHeadingPlain,
+  formatTextNotLoaded,
+} from "./labels.js";
 import { escapeTexPlain } from "./texEscape.js";
 
 const FALLBACK = {
@@ -26,15 +32,19 @@ export function formatIntroductoryVersePlain(
 ): string {
   const fixed = repo.getFixedTexts()?.introductoryVerse;
   if (!fixed) return FALLBACK.intro;
-  const endPunct = flags.alleluiaInIntroVerse ? ", alleluia." : ".";
-  const tail = flags.alleluiaInIntroVerse ? " Alleluia." : "";
-  return `℣. ${fixed.opening}${endPunct}\n℟. ${fixed.response}${endPunct}\n${fixed.gloria.trim()}${tail}`;
+  const endPunct = alleluiaIntroEndPunct(repo, flags);
+  const tail = alleluiaIntroTail(repo, flags);
+  const v = repo.getAssemblerLabels().rubrics.versicleSymbol;
+  const r = repo.getAssemblerLabels().rubrics.responseSymbol;
+  return `${v} ${fixed.opening}${endPunct}\n${r} ${fixed.response}${endPunct}\n${fixed.gloria.trim()}${tail}`;
 }
 
 export function formatInvitatoryVersePlain(repo: DataRepository): string {
   const fixed = repo.getFixedTexts()?.invitatoryVerse;
   if (!fixed) return FALLBACK.invitatory;
-  return `℣. ${fixed.opening}\n℟. ${fixed.response}`;
+  const v = repo.getAssemblerLabels().rubrics.versicleSymbol;
+  const r = repo.getAssemblerLabels().rubrics.responseSymbol;
+  return `${v} ${fixed.opening}\n${r} ${fixed.response}`;
 }
 
 export function formatGospelCanticlePlain(
@@ -52,7 +62,7 @@ export function formatTeDeumPlain(repo: DataRepository): string {
 
 export function formatLordsPrayerPlain(repo: DataRepository): string {
   const text = repo.getFixedTexts()?.lordsPrayer ?? FALLBACK.lordsPrayer;
-  return `── OUR FATHER ─────────────────────────────\n\n${text}`;
+  return `${formatOurFatherHeadingPlain(repo)}\n\n${text}`;
 }
 
 export function formatComplineResponsoryPlain(repo: DataRepository): string {
@@ -82,7 +92,7 @@ export function resolvePsalmText(id: string, repo: DataRepository): string {
   if (psalm) return psalm.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
   const canticle = repo.getCanticle(id);
   if (canticle) return canticle.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
-  return `[${id} — text not loaded]`;
+  return formatTextNotLoaded(repo, id);
 }
 
 // ---------------------------------------------------------------------------
@@ -93,15 +103,16 @@ export function formatIntroductoryVerseTex(
   repo: DataRepository,
   flags: LiturgicalFlags,
 ): string {
+  const labels = repo.getAssemblerLabels().rubrics;
   const plain = formatIntroductoryVersePlain(repo, flags);
   return plain
     .split("\n")
     .map((line) => {
-      if (line.startsWith("℣. ")) {
-        return `\\textbf{℣.} ${escapeTexPlain(line.slice(3))}`;
+      if (line.startsWith(`${labels.versicleSymbol} `)) {
+        return `\\textbf{${labels.versicleSymbol}} ${escapeTexPlain(line.slice(labels.versicleSymbol.length + 1))}`;
       }
-      if (line.startsWith("℟. ")) {
-        return `\\textbf{℟.} ${escapeTexPlain(line.slice(3))}`;
+      if (line.startsWith(`${labels.responseSymbol} `)) {
+        return `\\textbf{${labels.responseSymbol}} ${escapeTexPlain(line.slice(labels.responseSymbol.length + 1))}`;
       }
       return escapeTexPlain(line);
     })

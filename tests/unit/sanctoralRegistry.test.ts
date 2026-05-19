@@ -6,13 +6,13 @@ import {
   initSanctoralRegistry,
 } from "../../src/calendar/saints.js";
 import { ensureSanctoralCalendar } from "../helpers/initSanctoralCalendar.js";
-import { dataDir } from "../helpers/paths.js";
+import { dataRoot, defaultLocale } from "../helpers/paths.js";
 
 describe("SanctoralCalendarRegistry", () => {
   let registry: SanctoralCalendarRegistry;
 
   beforeAll(async () => {
-    registry = await SanctoralCalendarRegistry.load(dataDir);
+    registry = await SanctoralCalendarRegistry.load(dataRoot, defaultLocale);
     initSanctoralRegistry(registry);
   });
 

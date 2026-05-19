@@ -64,3 +64,34 @@ marian_antiphons:
     suppress_alleluia: true
   ordinary_time:
     text: "[Salve Regina]"
+
+labels:
+  hours:
+    office_of_readings: "OFFICE OF READINGS"
+    lauds: "LAUDS — MORNING PRAYER"
+    terce: "TERCE — BEFORE NOON"
+    sext: "SEXT — MIDDAY"
+    none: "NONE — AFTERNOON"
+    vespers: "VESPERS — EVENING PRAYER"
+    first_vespers: "FIRST VESPERS — EVENING PRAYER"
+    compline: "COMPLINE — NIGHT PRAYER"
+  sections:
+    first_reading: "FIRST READING"
+    second_reading: "SECOND READING"
+    saint_reading: "READING (commemoration of saint)"
+    te_deum: "TE DEUM"
+    benedictus: "BENEDICTUS"
+    magnificat: "MAGNIFICAT"
+    nunc_dimittis: "NUNC DIMITTIS"
+    marian_antiphon: "MARIAN ANTIPHON"
+    intercessions: "INTERCESSIONS"
+    our_father: "OUR FATHER"
+  rubrics:
+    let_us_pray: "Let us pray."
+    antiphon_prefix: "Ant."
+    versicle_symbol: "℣."
+    response_symbol: "℟."
+    alleluia_intro_suffix: ", alleluia."
+    psalm_tone: "Psalm tone"
+  errors:
+    text_not_loaded: "[{id} — text not loaded]"

@@ -10,7 +10,7 @@ import yaml from "js-yaml";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
-const dataDir = path.join(repoRoot, "data");
+const dataDir = path.join(repoRoot, "data", "en");
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const PS118 = [

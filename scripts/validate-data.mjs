@@ -8,7 +8,9 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
-const dataDir = path.join(repoRoot, "data");
+const dataRoot = path.join(repoRoot, "data");
+const defaultLocale = "en";
+const dataDir = path.join(dataRoot, defaultLocale);
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAYTIME_HOURS = ["terce", "sext", "none"];
@@ -42,13 +44,29 @@ async function main() {
   const { PlainTextAssembler } = await loadDistModule("assemblers/plainText.js");
   const { resolvePsalmText } = await loadDistModule("assemblers/liturgicalText.js");
 
-  const registry = await SanctoralCalendarRegistry.load(dataDir);
+  const registry = await SanctoralCalendarRegistry.load(dataRoot, defaultLocale);
   initSanctoralRegistry(registry);
 
-  const repo = await DataRepository.load(dataDir);
+  const repo = await DataRepository.load(dataRoot, defaultLocale);
 
   if (!repo.getFixedTexts()) {
     errors.push("fixed_texts.yaml did not load");
+  }
+
+  try {
+    const labels = repo.getAssemblerLabels();
+    const required = [
+      labels.hours.officeOfReadings,
+      labels.hours.lauds,
+      labels.sections.benedictus,
+      labels.rubrics.letUsPray,
+      labels.rubrics.antiphonPrefix,
+    ];
+    for (const s of required) {
+      if (!s?.trim()) errors.push("assembler labels contain empty required string");
+    }
+  } catch (e) {
+    errors.push(e instanceof Error ? e.message : String(e));
   }
 
   for (const kind of ["benedictus", "magnificat", "nuncDimittis"]) {

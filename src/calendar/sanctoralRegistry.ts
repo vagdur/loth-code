@@ -181,8 +181,8 @@ export class SanctoralCalendarRegistry {
     }
   }
 
-  static async load(dataDir: string): Promise<SanctoralCalendarRegistry> {
-    const calendarsDir = path.join(dataDir, "calendars");
+  static async load(dataRoot: string, locale = "en"): Promise<SanctoralCalendarRegistry> {
+    const calendarsDir = path.join(dataRoot, locale, "calendars");
     const index = await loadYaml<SanctoralCalendarIndex>(
       path.join(calendarsDir, "index.yaml"),
     );

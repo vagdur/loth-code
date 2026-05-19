@@ -140,7 +140,7 @@ export interface ConcludingPrayer {
 }
 
 // ---------------------------------------------------------------------------
-// Fixed texts (singleton collection — data/fixed_texts.yaml)
+// Fixed texts (singleton collection — data/{locale}/fixed_texts.yaml)
 // ---------------------------------------------------------------------------
 
 export interface IntroductoryVerse {
@@ -169,6 +169,43 @@ export interface DismissalFixed {
   response: string;
 }
 
+/** Presentation strings for assemblers (headings, rubrics, prefixes). */
+export interface AssemblerLabels {
+  hours: {
+    officeOfReadings: string;
+    lauds: string;
+    terce: string;
+    sext: string;
+    none: string;
+    vespers: string;
+    firstVespers: string;
+    compline: string;
+  };
+  sections: {
+    firstReading: string;
+    secondReading: string;
+    saintReading: string;
+    teDeum: string;
+    benedictus: string;
+    magnificat: string;
+    nuncDimittis: string;
+    marianAntiphon: string;
+    intercessions: string;
+    ourFather: string;
+  };
+  rubrics: {
+    letUsPray: string;
+    antiphonPrefix: string;
+    versicleSymbol: string;
+    responseSymbol: string;
+    alleluiaIntroSuffix: string;
+    psalmTone?: string;
+  };
+  errors?: {
+    textNotLoaded: string;
+  };
+}
+
 export interface FixedTexts {
   introductoryVerse: IntroductoryVerse;
   invitatoryVerse: InvitatoryVerse;
@@ -190,6 +227,7 @@ export interface FixedTexts {
     eastertide: Antiphon;
     ordinaryTime: Antiphon;
   };
+  labels: AssemblerLabels;
 }
 
 export type GospelCanticleKind = "benedictus" | "magnificat" | "nuncDimittis";

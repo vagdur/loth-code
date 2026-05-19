@@ -68,6 +68,8 @@ Canticle {
 
 ### 1.3 `FixedTexts`
 
+Locale bundles live under `data/{locale}/` (e.g. `data/en/fixed_texts.yaml`). A full translation copies the entire locale tree.
+
 ```
 FixedTexts {
   invitatory_verse:          string   // "Lord, open our lips..."
@@ -99,6 +101,8 @@ FixedTexts {
     eastertide:              Antiphon // Regina caeli (always used in Eastertide)
     ordinary_time:           Antiphon // Salve Regina
   }
+
+  labels: AssemblerLabels   // hour titles, section headings, rubric prefixes (i18n)
 }
 ```
 

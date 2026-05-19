@@ -10,8 +10,8 @@ import path from "path";
 import yaml from "js-yaml";
 
 import type {
-  Antiphon, BiblicalReading, Canticle, ConcludingPrayer, FixedTexts,
-  GospelCanticleFixed, GospelCanticleKind, HagiographicalReading,
+  Antiphon, AssemblerLabels, BiblicalReading, Canticle, ConcludingPrayer,
+  FixedTexts, GospelCanticleFixed, GospelCanticleKind, HagiographicalReading,
   Hymn, HymnSet, Intercessions, OorHymnSet, PatristicReading, Psalm,
   PsalmAssignment, ShortReading, ShortResponsory, TeDeumFixed, Versicle,
 } from "../types/texts.js";
@@ -66,24 +66,30 @@ export class DataRepository {
   private saints:       Map<string, SaintEntry>         = new Map();
   private commons:      Map<CommonType, Common>         = new Map();
   private fixedTexts:   FixedTexts | null               = null;
+  readonly locale: string;
+
+  private constructor(locale: string) {
+    this.locale = locale;
+  }
 
   // -------------------------------------------------------------------------
   // Loading
   // -------------------------------------------------------------------------
 
-  static async load(dataDir: string): Promise<DataRepository> {
-    const repo = new DataRepository();
+  static async load(dataRoot: string, locale = "en"): Promise<DataRepository> {
+    const localeDir = path.join(dataRoot, locale);
+    const repo = new DataRepository(locale);
 
     const [psalms, canticles, psalterDays, compGroups, seasonalDays, saintEntries, commonEntries, fixed] =
       await Promise.all([
-        loadYamlDir<Psalm>(path.join(dataDir, "psalms")),
-        loadYamlDir<Canticle>(path.join(dataDir, "canticles")),
-        loadYamlDir<PsalterDay>(path.join(dataDir, "psalter")),
-        loadYamlDir<ComplementaryPsalmGroup>(path.join(dataDir, "complementary_psalmody")),
-        loadYamlDir<SeasonalProperDay>(path.join(dataDir, "proper_of_seasons")),
-        loadYamlDir<SaintEntry>(path.join(dataDir, "proper_of_saints")),
-        loadYamlDir<Common>(path.join(dataDir, "commons")),
-        loadYaml<FixedTexts>(path.join(dataDir, "fixed_texts.yaml")).catch(() => null),
+        loadYamlDir<Psalm>(path.join(localeDir, "psalms")),
+        loadYamlDir<Canticle>(path.join(localeDir, "canticles")),
+        loadYamlDir<PsalterDay>(path.join(localeDir, "psalter")),
+        loadYamlDir<ComplementaryPsalmGroup>(path.join(localeDir, "complementary_psalmody")),
+        loadYamlDir<SeasonalProperDay>(path.join(localeDir, "proper_of_seasons")),
+        loadYamlDir<SaintEntry>(path.join(localeDir, "proper_of_saints")),
+        loadYamlDir<Common>(path.join(localeDir, "commons")),
+        loadYaml<FixedTexts>(path.join(localeDir, "fixed_texts.yaml")).catch(() => null),
       ]);
 
     for (const p of psalms)       repo.psalms.set(p.id, p);
@@ -149,6 +155,16 @@ export class DataRepository {
 
   getFixedTexts(): FixedTexts | undefined {
     return this.fixedTexts ?? undefined;
+  }
+
+  getAssemblerLabels(): AssemblerLabels {
+    const labels = this.fixedTexts?.labels;
+    if (!labels) {
+      throw new Error(
+        `Assembler labels missing for locale "${this.locale}" (fixed_texts.yaml)`,
+      );
+    }
+    return labels;
   }
 
   getGospelCanticle(kind: GospelCanticleKind): GospelCanticleFixed | undefined {
