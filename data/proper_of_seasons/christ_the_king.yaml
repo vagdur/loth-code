@@ -1,0 +1,53 @@
+key: christ_the_king
+office_of_readings:
+  biblical_reading:
+    reference: '[christ_the_king biblical ref]'
+    text: '[christ_the_king biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[christ_the_king patristic ref]'
+    biographical_note: '[Note]'
+    text: '[christ_the_king patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr1:
+    reference: '[christ_the_king biblical ref]'
+    text: '[christ_the_king biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr2:
+    reference: '[christ_the_king biblical ref]'
+    text: '[christ_the_king biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr1:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[christ_the_king patristic ref]'
+    biographical_note: '[Note]'
+    text: '[christ_the_king patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr2:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[christ_the_king patristic ref]'
+    biographical_note: '[Note]'
+    text: '[christ_the_king patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'

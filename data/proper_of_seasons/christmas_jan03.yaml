@@ -1,0 +1,53 @@
+key: christmas_jan03
+office_of_readings:
+  biblical_reading:
+    reference: '[christmas_jan03 biblical ref]'
+    text: '[christmas_jan03 biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[christmas_jan03 patristic ref]'
+    biographical_note: '[Note]'
+    text: '[christmas_jan03 patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr1:
+    reference: '[christmas_jan03 biblical ref]'
+    text: '[christmas_jan03 biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr2:
+    reference: '[christmas_jan03 biblical ref]'
+    text: '[christmas_jan03 biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr1:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[christmas_jan03 patristic ref]'
+    biographical_note: '[Note]'
+    text: '[christmas_jan03 patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr2:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[christmas_jan03 patristic ref]'
+    biographical_note: '[Note]'
+    text: '[christmas_jan03 patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'

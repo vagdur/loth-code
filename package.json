@@ -7,9 +7,12 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "pretest": "npm run validate:data",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:fixtures:update": "cross-env UPDATE_FIXTURES=1 vitest run tests/integration"
+    "test:fixtures:update": "cross-env UPDATE_FIXTURES=1 vitest run tests/integration",
+    "generate:data": "npm run build && node scripts/generate-data.mjs",
+    "validate:data": "npm run build && node scripts/validate-data.mjs"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"

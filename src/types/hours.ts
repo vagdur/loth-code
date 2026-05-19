@@ -25,7 +25,8 @@ export type SlotSourceDirect =
   | { kind: "common";   type: CommonType; variant: number; field: string }
   | { kind: "fixed";                                      field: string }
   | { kind: "psalm";    id: string }      // looks up Psalm by id
-  | { kind: "canticle"; id: string };     // looks up Canticle by id
+  | { kind: "canticle"; id: string }      // looks up Canticle by id
+  | { kind: "complementary"; groupId: string; index: 0 | 1 | 2 };
 
 /**
  * An ordered list of direct sources.  The assembler resolves each in turn

@@ -1,0 +1,53 @@
+key: immaculate_heart
+office_of_readings:
+  biblical_reading:
+    reference: '[immaculate_heart biblical ref]'
+    text: '[immaculate_heart biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[immaculate_heart patristic ref]'
+    biographical_note: '[Note]'
+    text: '[immaculate_heart patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr1:
+    reference: '[immaculate_heart biblical ref]'
+    text: '[immaculate_heart biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr2:
+    reference: '[immaculate_heart biblical ref]'
+    text: '[immaculate_heart biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr1:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[immaculate_heart patristic ref]'
+    biographical_note: '[Note]'
+    text: '[immaculate_heart patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr2:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[immaculate_heart patristic ref]'
+    biographical_note: '[Note]'
+    text: '[immaculate_heart patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'

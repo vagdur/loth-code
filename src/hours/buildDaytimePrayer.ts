@@ -35,11 +35,11 @@ export function buildDaytimePrayer(
             ...(c.seasonalKey
               ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${hourKind}.antiphons[0]` }]
               : []),
-            { kind: "psalter", week: w, day: d, field: `complementary.${compGroupId}[0]` },
+            { kind: "complementary" as const, groupId: compGroupId, index: 0 },
           ],
         }),
-        psalmSlot({ kind: "psalter", week: w, day: d, field: `complementary.${compGroupId}[1]` }),
-        psalmSlot({ kind: "psalter", week: w, day: d, field: `complementary.${compGroupId}[2]` }),
+        psalmSlot({ kind: "complementary", groupId: compGroupId, index: 1 }),
+        psalmSlot({ kind: "complementary", groupId: compGroupId, index: 2 }),
       ];
 
   const shortReading = shortReadingRef(ctx, `${hourKind}.shortReading`);

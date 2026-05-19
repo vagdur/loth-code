@@ -1,0 +1,53 @@
+key: advent_w2_thu
+office_of_readings:
+  biblical_reading:
+    reference: '[advent_w2_thu biblical ref]'
+    text: '[advent_w2_thu biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[advent_w2_thu patristic ref]'
+    biographical_note: '[Note]'
+    text: '[advent_w2_thu patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr1:
+    reference: '[advent_w2_thu biblical ref]'
+    text: '[advent_w2_thu biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr2:
+    reference: '[advent_w2_thu biblical ref]'
+    text: '[advent_w2_thu biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr1:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[advent_w2_thu patristic ref]'
+    biographical_note: '[Note]'
+    text: '[advent_w2_thu patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr2:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[advent_w2_thu patristic ref]'
+    biographical_note: '[Note]'
+    text: '[advent_w2_thu patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'

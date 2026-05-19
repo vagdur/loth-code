@@ -1,0 +1,11 @@
+id: complementary_sunday_none
+psalm_assignments:
+  - psalm_or_canticle_id: psalm_126
+    antiphon:
+      text: '[complementary_sunday_none antiphon 1]'
+  - psalm_or_canticle_id: psalm_126
+    antiphon:
+      text: '[complementary_sunday_none antiphon 2]'
+  - psalm_or_canticle_id: psalm_126
+    antiphon:
+      text: '[complementary_sunday_none antiphon 3]'

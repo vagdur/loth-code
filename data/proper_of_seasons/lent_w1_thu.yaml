@@ -1,0 +1,53 @@
+key: lent_w1_thu
+office_of_readings:
+  biblical_reading:
+    reference: '[lent_w1_thu biblical ref]'
+    text: '[lent_w1_thu biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[lent_w1_thu patristic ref]'
+    biographical_note: '[Note]'
+    text: '[lent_w1_thu patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr1:
+    reference: '[lent_w1_thu biblical ref]'
+    text: '[lent_w1_thu biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr2:
+    reference: '[lent_w1_thu biblical ref]'
+    text: '[lent_w1_thu biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr1:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[lent_w1_thu patristic ref]'
+    biographical_note: '[Note]'
+    text: '[lent_w1_thu patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr2:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[lent_w1_thu patristic ref]'
+    biographical_note: '[Note]'
+    text: '[lent_w1_thu patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'

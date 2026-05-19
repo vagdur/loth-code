@@ -1,225 +1,213 @@
-# Psalter — Week I, Sunday
-# Structure demonstration. Replace stub text with a licensed translation.
 week: 1
 day: Sunday
-
 invitatory_antiphon:
-  text: "[Invitatory antiphon for Sunday]"
-
+  text: '[Week 1 Sunday invitatory]'
 office_of_readings:
   hymns:
     night:
       stanzas:
-        - "[OoR night hymn, stanza 1]"
-        - "[OoR night hymn, stanza 2]"
-      doxology: "[OoR night hymn, doxology]"
+        - '[Week 1 Sunday OoR night hymn, stanza 1]'
+        - '[Week 1 Sunday OoR night hymn, stanza 2]'
+      doxology: '[Week 1 Sunday OoR night hymn, doxology]'
     day:
       stanzas:
-        - "[OoR day hymn, stanza 1]"
-        - "[OoR day hymn, stanza 2]"
-      doxology: "[OoR day hymn, doxology]"
+        - '[Week 1 Sunday OoR day hymn, stanza 1]'
+        - '[Week 1 Sunday OoR day hymn, stanza 2]'
+      doxology: '[Week 1 Sunday OoR day hymn, doxology]'
   psalm_assignments:
-    - psalm_or_canticle_id: "psalm_94"
+    - psalm_or_canticle_id: psalm_94
       antiphon:
-        text: "[OoR psalm 1 antiphon]"
-    - psalm_or_canticle_id: "psalm_22"
+        text: '[OoR psalm 1]'
+    - psalm_or_canticle_id: psalm_22
       antiphon:
-        text: "[OoR psalm 2 antiphon]"
-    - psalm_or_canticle_id: "psalm_62"
+        text: '[OoR psalm 2]'
+    - psalm_or_canticle_id: psalm_62
       antiphon:
-        text: "[OoR psalm 3 antiphon]"
+        text: '[OoR psalm 3]'
   versicle:
-    verse: "Lord, open our lips."
-    response: "And our mouth shall proclaim your praise."
-
+    verse: Lord, open our lips.
+    response: And our mouth shall proclaim your praise.
 lauds:
   hymns:
     series_a:
       stanzas:
-        - "[Lauds series-A hymn, stanza 1]"
-        - "[Lauds series-A hymn, stanza 2]"
-      doxology: "[Lauds series-A hymn, doxology]"
+        - '[Week 1 Sunday Lauds hymn A, stanza 1]'
+        - '[Week 1 Sunday Lauds hymn A, stanza 2]'
+      doxology: '[Week 1 Sunday Lauds hymn A, doxology]'
     series_b:
       stanzas:
-        - "[Lauds series-B hymn, stanza 1]"
-        - "[Lauds series-B hymn, stanza 2]"
-      doxology: "[Lauds series-B hymn, doxology]"
+        - '[Week 1 Sunday Lauds hymn B, stanza 1]'
+        - '[Week 1 Sunday Lauds hymn B, stanza 2]'
+      doxology: '[Week 1 Sunday Lauds hymn B, doxology]'
   psalm_assignments:
-    - psalm_or_canticle_id: "psalm_62"
+    - psalm_or_canticle_id: psalm_62
       antiphon:
-        text: "[Lauds psalm 1 antiphon — Ps 63]"
-    - psalm_or_canticle_id: "ot_dn3_glory"
+        text: '[Lauds morning psalm]'
+    - psalm_or_canticle_id: ot_dn3_glory
       antiphon:
-        text: "[Lauds canticle antiphon — Dn 3]"
-    - psalm_or_canticle_id: "psalm_148"
+        text: '[Lauds OT canticle]'
+    - psalm_or_canticle_id: psalm_148
       antiphon:
-        text: "[Lauds psalm of praise antiphon — Ps 149]"
+        text: '[Lauds praise psalm]'
   short_reading:
-    reference: "Rev 7:10, 12"
-    text: "[Short reading text: Rev 7:10,12]"
+    reference: Rev 7:10, 12
+    text: '[Short reading: Rev 7:10, 12]'
   short_responsory:
-    text: "[Short responsory text]"
-    versicle: "[Short responsory versicle]"
-  benedictu_antiphon:
-    text: "[Benedictus antiphon for Sunday Week I]"
+    text: '[Short responsory]'
+    versicle: '[Short responsory versicle]'
+  benedictus_antiphon:
+    text: '[Week 1 Sunday Benedictus antiphon]'
   intercessions:
-    introduction: "[Lauds intercessions introduction]"
-    response: "Lord, have mercy."
+    introduction: '[Lauds intercessions introduction]'
+    response: Lord, have mercy.
     intentions:
-      - first_part: "[Intention 1, first part]"
-        second_part: "[Intention 1, second part]"
-      - first_part: "[Intention 2, first part]"
-        second_part: "[Intention 2, second part]"
-      - first_part: "[Intention 3, first part]"
-        second_part: "[Intention 3, second part]"
+      - first_part: '[Intention 1]'
+        second_part: '[Response 1]'
+      - first_part: '[Intention 2]'
+        second_part: '[Response 2]'
+      - first_part: '[Intention 3]'
+        second_part: '[Response 3]'
   concluding_prayer:
-    text: "[Sunday Week I Lauds concluding prayer]"
-
+    text: '[Week 1 Sunday Lauds concluding prayer]'
 terce:
   hymn:
     stanzas:
-      - "[Terce hymn, stanza 1]"
-      - "[Terce hymn, stanza 2]"
-    doxology: "[Terce hymn, doxology]"
+      - '[Week 1 Sunday Terce hymn, stanza 1]'
+      - '[Week 1 Sunday Terce hymn, stanza 2]'
+    doxology: '[Week 1 Sunday Terce hymn, doxology]'
   psalm_assignments:
-    - psalm_or_canticle_id: "psalm_118_i"
+    - psalm_or_canticle_id: psalm_118_i
       antiphon:
-        text: "[Terce psalm 1 antiphon — Ps 119 I]"
-    - psalm_or_canticle_id: "psalm_118_ii"
+        text: '[Terce psalm 1]'
+    - psalm_or_canticle_id: psalm_118_ii
       antiphon:
-        text: "[Terce psalm 2 antiphon — Ps 119 II]"
-    - psalm_or_canticle_id: "psalm_118_iii"
+        text: '[Terce psalm 2]'
+    - psalm_or_canticle_id: psalm_118_iii
       antiphon:
-        text: "[Terce psalm 3 antiphon — Ps 119 III]"
+        text: '[Terce psalm 3]'
   short_reading:
-    reference: "1 Thess 5:19-21"
-    text: "[Short reading: 1 Thess 5:19-21]"
+    reference: Terce reading
+    text: '[Short reading: Terce reading]'
   versicle:
-    verse: "This is the day the Lord has made."
-    response: "Let us rejoice and be glad."
+    verse: '[Terce versicle]'
+    response: '[Terce versicle response]'
   concluding_prayer:
-    text: "[Sunday Week I Terce concluding prayer]"
-
+    text: '[Week 1 Sunday Terce concluding prayer]'
 sext:
   hymn:
     stanzas:
-      - "[Sext hymn, stanza 1]"
-      - "[Sext hymn, stanza 2]"
-    doxology: "[Sext hymn, doxology]"
+      - '[Week 1 Sunday Sext hymn, stanza 1]'
+      - '[Week 1 Sunday Sext hymn, stanza 2]'
+    doxology: '[Week 1 Sunday Sext hymn, doxology]'
   psalm_assignments:
-    - psalm_or_canticle_id: "psalm_118_iv"
+    - psalm_or_canticle_id: psalm_118_i
       antiphon:
-        text: "[Sext psalm 1 antiphon — Ps 119 IV]"
-    - psalm_or_canticle_id: "psalm_118_v"
+        text: '[Sext psalm 1]'
+    - psalm_or_canticle_id: psalm_118_ii
       antiphon:
-        text: "[Sext psalm 2 antiphon — Ps 119 V]"
-    - psalm_or_canticle_id: "psalm_118_vi"
+        text: '[Sext psalm 2]'
+    - psalm_or_canticle_id: psalm_118_iii
       antiphon:
-        text: "[Sext psalm 3 antiphon — Ps 119 VI]"
+        text: '[Sext psalm 3]'
   short_reading:
-    reference: "Col 1:26-27"
-    text: "[Short reading: Col 1:26-27]"
+    reference: Sext reading
+    text: '[Short reading: Sext reading]'
   versicle:
-    verse: "Praise the Lord, all you nations."
-    response: "Extol him, all you peoples."
+    verse: '[Sext versicle]'
+    response: '[Sext versicle response]'
   concluding_prayer:
-    text: "[Sunday Week I Sext concluding prayer]"
-
+    text: '[Week 1 Sunday Sext concluding prayer]'
 none:
   hymn:
     stanzas:
-      - "[None hymn, stanza 1]"
-      - "[None hymn, stanza 2]"
-    doxology: "[None hymn, doxology]"
+      - '[Week 1 Sunday None hymn, stanza 1]'
+      - '[Week 1 Sunday None hymn, stanza 2]'
+    doxology: '[Week 1 Sunday None hymn, doxology]'
   psalm_assignments:
-    - psalm_or_canticle_id: "psalm_118_vii"
+    - psalm_or_canticle_id: psalm_118_i
       antiphon:
-        text: "[None psalm 1 antiphon — Ps 119 VII]"
-    - psalm_or_canticle_id: "psalm_118_viii"
+        text: '[None psalm 1]'
+    - psalm_or_canticle_id: psalm_118_ii
       antiphon:
-        text: "[None psalm 2 antiphon — Ps 119 VIII]"
-    - psalm_or_canticle_id: "psalm_118_ix"
+        text: '[None psalm 2]'
+    - psalm_or_canticle_id: psalm_118_iii
       antiphon:
-        text: "[None psalm 3 antiphon — Ps 119 IX]"
+        text: '[None psalm 3]'
   short_reading:
-    reference: "Heb 2:17-18"
-    text: "[Short reading: Heb 2:17-18]"
+    reference: None reading
+    text: '[Short reading: None reading]'
   versicle:
-    verse: "Blessed are the poor in spirit."
-    response: "For theirs is the kingdom of heaven."
+    verse: '[None versicle]'
+    response: '[None versicle response]'
   concluding_prayer:
-    text: "[Sunday Week I None concluding prayer]"
-
+    text: '[Week 1 Sunday None concluding prayer]'
 vespers:
   hymns:
     series_a:
       stanzas:
-        - "[Vespers series-A hymn, stanza 1]"
-        - "[Vespers series-A hymn, stanza 2]"
-      doxology: "[Vespers series-A hymn, doxology]"
+        - '[Week 1 Sunday Vespers hymn A, stanza 1]'
+        - '[Week 1 Sunday Vespers hymn A, stanza 2]'
+      doxology: '[Week 1 Sunday Vespers hymn A, doxology]'
     series_b:
       stanzas:
-        - "[Vespers series-B hymn, stanza 1]"
-        - "[Vespers series-B hymn, stanza 2]"
-      doxology: "[Vespers series-B hymn, doxology]"
+        - '[Week 1 Sunday Vespers hymn B, stanza 1]'
+        - '[Week 1 Sunday Vespers hymn B, stanza 2]'
+      doxology: '[Week 1 Sunday Vespers hymn B, doxology]'
   psalm_assignments:
-    - psalm_or_canticle_id: "psalm_109"
+    - psalm_or_canticle_id: psalm_109
       antiphon:
-        text: "[Vespers psalm 1 antiphon — Ps 110]"
-    - psalm_or_canticle_id: "psalm_110"
+        text: '[Vespers psalm 1]'
+    - psalm_or_canticle_id: psalm_110
       antiphon:
-        text: "[Vespers psalm 2 antiphon — Ps 111]"
-    - psalm_or_canticle_id: "nt_phil2"
+        text: '[Vespers psalm 2]'
+    - psalm_or_canticle_id: nt_phil2
       antiphon:
-        text: "[Vespers canticle antiphon — Phil 2]"
+        text: '[Vespers NT canticle]'
   short_reading:
-    reference: "1 Pet 1:3-5"
-    text: "[Short reading: 1 Pet 1:3-5]"
+    reference: 1 Pet 1:3-5
+    text: '[Short reading: 1 Pet 1:3-5]'
   short_responsory:
-    text: "[Short responsory text]"
-    versicle: "[Short responsory versicle]"
+    text: '[Short responsory]'
+    versicle: '[Short responsory versicle]'
   magnificat_antiphon:
-    text: "[Magnificat antiphon for Sunday Week I]"
+    text: '[Week 1 Sunday Magnificat antiphon]'
   intercessions:
-    introduction: "[Vespers intercessions introduction]"
-    response: "Lord, have mercy."
+    introduction: '[Vespers intercessions introduction]'
+    response: Lord, have mercy.
     intentions:
-      - first_part: "[Intention 1, first part]"
-        second_part: "[Intention 1, second part]"
-      - first_part: "[Intention 2, first part]"
-        second_part: "[Intention 2, second part]"
-      - first_part: "[Intention 3, first part]"
-        second_part: "[Intention 3, second part]"
+      - first_part: '[Intention 1]'
+        second_part: '[Response 1]'
+      - first_part: '[Intention 2]'
+        second_part: '[Response 2]'
+      - first_part: '[Intention 3]'
+        second_part: '[Response 3]'
   concluding_prayer:
-    text: "[Sunday Week I Vespers concluding prayer]"
-
+    text: '[Week 1 Sunday Vespers concluding prayer]'
 compline:
   hymn:
     stanzas:
-      - "[Compline hymn, stanza 1]"
-      - "[Compline hymn, stanza 2]"
-    doxology: "[Compline hymn, doxology]"
-  # Psalmody after Saturday First Vespers of Sunday: Ps 4 + Ps 133
+      - '[Week 1 Sunday Compline hymn, stanza 1]'
+      - '[Week 1 Sunday Compline hymn, stanza 2]'
+    doxology: '[Week 1 Sunday Compline hymn, doxology]'
   after_first_vespers:
-    - psalm_or_canticle_id: "psalm_4"
+    - psalm_or_canticle_id: psalm_4
       antiphon:
-        text: "[Compline antiphon after First Vespers]"
-    - psalm_or_canticle_id: "psalm_133"
+        text: '[Compline after I Vespers 1]'
+    - psalm_or_canticle_id: psalm_133
       antiphon:
-        text: "[Compline antiphon after First Vespers]"
-  # Psalmody after Sunday Second Vespers: Ps 90
+        text: '[Compline after I Vespers 2]'
   after_second_vespers:
-    - psalm_or_canticle_id: "psalm_90"
+    - psalm_or_canticle_id: psalm_90
       antiphon:
-        text: "[Compline antiphon after Second Vespers]"
+        text: '[Compline after II Vespers]'
   default_psalm_assignments:
-    - psalm_or_canticle_id: "psalm_90"
+    - psalm_or_canticle_id: psalm_90
       antiphon:
-        text: "[Compline default antiphon]"
+        text: '[Compline default]'
   short_reading:
-    reference: "Rev 22:4-5"
-    text: "[Short reading: Rev 22:4-5]"
+    reference: Rev 22:4-5
+    text: '[Short reading: Rev 22:4-5]'
   nunc_dimittis_antiphon:
-    text: "Protect us, Lord, as we stay awake; watch over us as we sleep, that awake, we may keep watch with Christ, and asleep, rest in his peace."
+    text: '[Week 1 Sunday Nunc Dimittis antiphon]'
   concluding_prayer:
-    text: "[Sunday Compline concluding prayer]"
+    text: '[Week 1 Sunday Compline concluding prayer]'

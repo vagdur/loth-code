@@ -10,9 +10,10 @@ import path from "path";
 import yaml from "js-yaml";
 
 import type {
-  Antiphon, BiblicalReading, Canticle, ConcludingPrayer, HagiographicalReading,
+  Antiphon, BiblicalReading, Canticle, ConcludingPrayer, FixedTexts,
+  GospelCanticleFixed, GospelCanticleKind, HagiographicalReading,
   Hymn, HymnSet, Intercessions, OorHymnSet, PatristicReading, Psalm,
-  PsalmAssignment, ShortReading, ShortResponsory, Versicle,
+  PsalmAssignment, ShortReading, ShortResponsory, TeDeumFixed, Versicle,
 } from "../types/texts.js";
 import type { PsalterDay, PsalterWeek, ComplementaryPsalmGroup, Weekday } from "../types/psalter.js";
 import type { Common, CommonType, SeasonalProperDay, SaintEntry } from "../types/proper.js";
@@ -64,7 +65,7 @@ export class DataRepository {
   private seasonal:     Map<string, SeasonalProperDay>  = new Map();
   private saints:       Map<string, SaintEntry>         = new Map();
   private commons:      Map<CommonType, Common>         = new Map();
-  private fixedTexts:   Record<string, unknown>         = {};
+  private fixedTexts:   FixedTexts | null               = null;
 
   // -------------------------------------------------------------------------
   // Loading
@@ -82,7 +83,7 @@ export class DataRepository {
         loadYamlDir<SeasonalProperDay>(path.join(dataDir, "proper_of_seasons")),
         loadYamlDir<SaintEntry>(path.join(dataDir, "proper_of_saints")),
         loadYamlDir<Common>(path.join(dataDir, "commons")),
-        loadYaml<Record<string, unknown>>(path.join(dataDir, "fixed_texts.yaml")).catch(() => ({})),
+        loadYaml<FixedTexts>(path.join(dataDir, "fixed_texts.yaml")).catch(() => null),
       ]);
 
     for (const p of psalms)       repo.psalms.set(p.id, p);
@@ -110,7 +111,7 @@ export class DataRepository {
     switch (source.kind) {
       case "psalm":    return this.psalms.get(source.id);
       case "canticle": return this.canticles.get(source.id);
-      case "fixed":    return getPath(this.fixedTexts, source.field);
+      case "fixed":    return this.fixedTexts ? getPath(this.fixedTexts, source.field) : undefined;
       case "psalter": {
         const day = this.psalterDays.get(psalterKey(source.week, source.day));
         return day ? getPath(day, source.field) : undefined;
@@ -128,6 +129,10 @@ export class DataRepository {
         const variant = common?.variants[source.variant];
         return variant ? getPath(variant, source.field) : undefined;
       }
+      case "complementary": {
+        const group = this.getComplementaryGroup(source.groupId);
+        return group?.psalmAssignments[source.index];
+      }
     }
   }
 
@@ -140,6 +145,20 @@ export class DataRepository {
   getComplementaryGroups(): ComplementaryPsalmGroup[] { return this.compGroups; }
   getComplementaryGroup(id: string): ComplementaryPsalmGroup | undefined {
     return this.compGroups.find((g) => g.id === id);
+  }
+
+  getFixedTexts(): FixedTexts | undefined {
+    return this.fixedTexts ?? undefined;
+  }
+
+  getGospelCanticle(kind: GospelCanticleKind): GospelCanticleFixed | undefined {
+    const fixed = this.fixedTexts;
+    if (!fixed) return undefined;
+    return fixed[kind];
+  }
+
+  getTeDeum(): TeDeumFixed | undefined {
+    return this.fixedTexts?.teDeum;
   }
 
   resolveHymn(source: SlotSourceDirect): Hymn | undefined {

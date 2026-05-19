@@ -138,3 +138,58 @@ export interface Intercessions {
 export interface ConcludingPrayer {
   text: string;
 }
+
+// ---------------------------------------------------------------------------
+// Fixed texts (singleton collection — data/fixed_texts.yaml)
+// ---------------------------------------------------------------------------
+
+export interface IntroductoryVerse {
+  opening: string;
+  response: string;
+  gloria: string;
+}
+
+export interface InvitatoryVerse {
+  opening: string;
+  response: string;
+}
+
+export interface GospelCanticleFixed {
+  reference: string;
+  text: string;
+}
+
+export interface TeDeumFixed {
+  text: string;
+  optionalFinalPart?: string;
+}
+
+export interface DismissalFixed {
+  verse: string;
+  response: string;
+}
+
+export interface FixedTexts {
+  introductoryVerse: IntroductoryVerse;
+  invitatoryVerse: InvitatoryVerse;
+  alleluia: string;
+  benedictus: GospelCanticleFixed;
+  magnificat: GospelCanticleFixed;
+  nuncDimittis: GospelCanticleFixed;
+  teDeum: TeDeumFixed;
+  lordsPrayer: string;
+  complineResponsory: string;
+  complineBlessing: string;
+  oorAcclamation: string;
+  dismissalWithMinister: DismissalFixed;
+  dismissalWithoutMinister: DismissalFixed;
+  examinationOfConscience: string;
+  marianAntiphons: {
+    adventThroughFeb2: Antiphon;
+    lent: Antiphon;
+    eastertide: Antiphon;
+    ordinaryTime: Antiphon;
+  };
+}
+
+export type GospelCanticleKind = "benedictus" | "magnificat" | "nuncDimittis";

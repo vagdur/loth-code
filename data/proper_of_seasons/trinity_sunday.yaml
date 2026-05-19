@@ -1,0 +1,53 @@
+key: trinity_sunday
+office_of_readings:
+  biblical_reading:
+    reference: '[trinity_sunday biblical ref]'
+    text: '[trinity_sunday biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[trinity_sunday patristic ref]'
+    biographical_note: '[Note]'
+    text: '[trinity_sunday patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr1:
+    reference: '[trinity_sunday biblical ref]'
+    text: '[trinity_sunday biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr2:
+    reference: '[trinity_sunday biblical ref]'
+    text: '[trinity_sunday biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr1:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[trinity_sunday patristic ref]'
+    biographical_note: '[Note]'
+    text: '[trinity_sunday patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr2:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[trinity_sunday patristic ref]'
+    biographical_note: '[Note]'
+    text: '[trinity_sunday patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'

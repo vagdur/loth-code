@@ -1,0 +1,53 @@
+key: easter_w2_sun
+office_of_readings:
+  biblical_reading:
+    reference: '[easter_w2_sun biblical ref]'
+    text: '[easter_w2_sun biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[easter_w2_sun patristic ref]'
+    biographical_note: '[Note]'
+    text: '[easter_w2_sun patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr1:
+    reference: '[easter_w2_sun biblical ref]'
+    text: '[easter_w2_sun biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr2:
+    reference: '[easter_w2_sun biblical ref]'
+    text: '[easter_w2_sun biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr1:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[easter_w2_sun patristic ref]'
+    biographical_note: '[Note]'
+    text: '[easter_w2_sun patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr2:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[easter_w2_sun patristic ref]'
+    biographical_note: '[Note]'
+    text: '[easter_w2_sun patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'

@@ -15,13 +15,19 @@ import type {
   Antiphon, Hymn, Intercessions, LongResponsory, PsalmAssignment,
   ShortResponsory, Versicle,
 } from "../types/texts.js";
-import type { Psalm, Canticle } from "../types/texts.js";
 import type { Assembler } from "./types.js";
+import {
+  formatComplineBlessingPlain, formatComplineResponsoryPlain,
+  formatDismissalPlain, formatExaminationOfConsciencePlain,
+  formatGospelCanticlePlain, formatIntroductoryVersePlain,
+  formatInvitatoryVersePlain, formatLordsPrayerPlain, formatOorAcclamationPlain,
+  formatTeDeumPlain, resolvePsalmText,
+} from "./liturgicalText.js";
 import {
   resolveAntiphon, resolveBiblicalReading, resolveConcludingPrayer,
   resolveHagiographicalReading, resolveHymn, resolveIntercessions,
   resolvePatristicReading, resolvePsalmAssignment, resolveShortReading,
-  resolveShortResponsory, resolveVersicle, resolveSource,
+  resolveShortResponsory, resolveVersicle,
 } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -48,9 +54,9 @@ export class PlainTextAssembler implements Assembler<string> {
     const lines: string[] = [heading("OFFICE OF READINGS")];
 
     if (hour.isFirstHour) {
-      lines.push(invitatoryVerse());
+      lines.push(formatInvitatoryVersePlain(repo));
     } else {
-      lines.push(introductoryVerse(flags));
+      lines.push(formatIntroductoryVersePlain(repo, flags));
     }
 
     const hymn = resolveHymn(hour.hymnRef, repo);
@@ -94,13 +100,13 @@ export class PlainTextAssembler implements Assembler<string> {
 
     if (flags.teDeum) {
       lines.push(subheading("TE DEUM"));
-      lines.push("[Te Deum text]");
+      lines.push(formatTeDeumPlain(repo));
     }
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
     if (prayer) lines.push(renderConcludingPrayer(prayer.text));
 
-    lines.push("℣. Let us praise the Lord.\n℟. Thanks be to God.");
+    lines.push(formatOorAcclamationPlain(repo));
     return lines.join("\n\n");
   }
 
@@ -108,7 +114,7 @@ export class PlainTextAssembler implements Assembler<string> {
     const { flags } = hour;
     const lines: string[] = [heading("LAUDS — MORNING PRAYER")];
 
-    if (!hour.suppressIntroVerse) lines.push(introductoryVerse(flags));
+    if (!hour.suppressIntroVerse) lines.push(formatIntroductoryVersePlain(repo, flags));
 
     const hymn = resolveHymn(hour.hymnRef, repo);
     if (hymn) lines.push(renderHymn(hymn));
@@ -132,13 +138,13 @@ export class PlainTextAssembler implements Assembler<string> {
     lines.push(subheading("BENEDICTUS"));
     const benAntiphon = resolveAntiphon(hour.benedictuAntiphonRef, repo);
     if (benAntiphon) lines.push(renderAntiphon(benAntiphon, flags));
-    lines.push("[Benedictus text — Lk 1:68-79]");
+    lines.push(formatGospelCanticlePlain(repo, "benedictus"));
     if (benAntiphon) lines.push(renderAntiphon(benAntiphon, flags));
 
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo);
     if (intercessions) lines.push(renderIntercessions(intercessions, "morning"));
 
-    lines.push(lordsPrayer());
+    lines.push(formatLordsPrayerPlain(repo));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
     if (prayer) lines.push(renderConcludingPrayer(prayer.text));
@@ -146,11 +152,11 @@ export class PlainTextAssembler implements Assembler<string> {
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo);
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo);
-      if (addAntiphon) lines.push(`[Commemoration antiphon] ${renderAntiphon(addAntiphon, flags)}`);
+      if (addAntiphon) lines.push(renderAntiphon(addAntiphon, flags));
       if (addPrayer) lines.push(addPrayer.text);
     }
 
-    lines.push(dismissal());
+    lines.push(formatDismissalPlain(repo));
     return lines.join("\n\n");
   }
 
@@ -159,7 +165,7 @@ export class PlainTextAssembler implements Assembler<string> {
     const { flags } = hour;
     const lines: string[] = [heading(label)];
 
-    lines.push(introductoryVerse(flags));
+    lines.push(formatIntroductoryVersePlain(repo, flags));
 
     const hymn = resolveHymn(hour.hymnRef, repo);
     if (hymn) lines.push(renderHymn(hymn));
@@ -181,7 +187,7 @@ export class PlainTextAssembler implements Assembler<string> {
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
     if (prayer) lines.push(renderConcludingPrayer(prayer.text));
 
-    lines.push("℣. Let us praise the Lord.\n℟. Thanks be to God.");
+    lines.push(formatOorAcclamationPlain(repo));
     return lines.join("\n\n");
   }
 
@@ -190,7 +196,7 @@ export class PlainTextAssembler implements Assembler<string> {
     const { flags } = hour;
     const lines: string[] = [heading(label)];
 
-    lines.push(introductoryVerse(flags));
+    lines.push(formatIntroductoryVersePlain(repo, flags));
 
     const hymn = resolveHymn(hour.hymnRef, repo);
     if (hymn) lines.push(renderHymn(hymn));
@@ -214,13 +220,13 @@ export class PlainTextAssembler implements Assembler<string> {
     lines.push(subheading("MAGNIFICAT"));
     const magAntiphon = resolveAntiphon(hour.magnificatAntiphonRef, repo);
     if (magAntiphon) lines.push(renderAntiphon(magAntiphon, flags));
-    lines.push("[Magnificat text — Lk 1:46-55]");
+    lines.push(formatGospelCanticlePlain(repo, "magnificat"));
     if (magAntiphon) lines.push(renderAntiphon(magAntiphon, flags));
 
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo);
     if (intercessions) lines.push(renderIntercessions(intercessions, "evening"));
 
-    lines.push(lordsPrayer());
+    lines.push(formatLordsPrayerPlain(repo));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
     if (prayer) lines.push(renderConcludingPrayer(prayer.text));
@@ -228,11 +234,11 @@ export class PlainTextAssembler implements Assembler<string> {
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo);
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo);
-      if (addAntiphon) lines.push(`[Commemoration antiphon] ${renderAntiphon(addAntiphon, flags)}`);
+      if (addAntiphon) lines.push(renderAntiphon(addAntiphon, flags));
       if (addPrayer) lines.push(addPrayer.text);
     }
 
-    lines.push(dismissal());
+    lines.push(formatDismissalPlain(repo));
     return lines.join("\n\n");
   }
 
@@ -240,8 +246,8 @@ export class PlainTextAssembler implements Assembler<string> {
     const { flags } = hour;
     const lines: string[] = [heading("COMPLINE — NIGHT PRAYER")];
 
-    lines.push(introductoryVerse(flags));
-    lines.push("[Examination of conscience]");
+    lines.push(formatIntroductoryVersePlain(repo, flags));
+    lines.push(formatExaminationOfConsciencePlain(repo));
 
     const hymn = resolveHymn(hour.hymnRef, repo);
     if (hymn) lines.push(renderHymn(hymn));
@@ -257,18 +263,18 @@ export class PlainTextAssembler implements Assembler<string> {
     const reading = resolveShortReading(hour.shortReadingRef, repo);
     if (reading) lines.push(renderShortReading(reading));
 
-    lines.push("℣. Into your hands, Lord, I commend my spirit.\n℟. Into your hands, Lord, I commend my spirit.\n℣. You have redeemed us, Lord God of truth.\n℟. I commend my spirit.");
+    lines.push(formatComplineResponsoryPlain(repo));
 
     lines.push(subheading("NUNC DIMITTIS"));
     const ndAntiphon = resolveAntiphon(hour.nuncDimittisAntiphonRef, repo);
     if (ndAntiphon) lines.push(renderAntiphon(ndAntiphon, flags));
-    lines.push("[Nunc Dimittis text — Lk 2:29-32]");
+    lines.push(formatGospelCanticlePlain(repo, "nuncDimittis"));
     if (ndAntiphon) lines.push(renderAntiphon(ndAntiphon, flags));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
     if (prayer) lines.push(renderConcludingPrayer(prayer.text));
 
-    lines.push("℣. The Lord grant us a quiet night and a perfect end.\n℟. Amen.");
+    lines.push(formatComplineBlessingPlain(repo));
 
     const marianAntiphon = resolveAntiphon(hour.marianAntiphonRef, repo);
     if (marianAntiphon) {
@@ -293,15 +299,6 @@ function subheading(text: string): string {
   return `── ${text} ${"─".repeat(Math.max(0, 40 - text.length))}`;
 }
 
-function introductoryVerse(flags: LiturgicalFlags): string {
-  const alleluia = flags.alleluiaInIntroVerse ? ", alleluia." : ".";
-  return `℣. O God, come to our aid${alleluia}\n℟. O Lord, make haste to help us${alleluia}\nGlory be to the Father, and to the Son, and to the Holy Spirit,\nas it was in the beginning, is now, and ever shall be, world without end. Amen.${flags.alleluiaInIntroVerse ? " Alleluia." : ""}`;
-}
-
-function invitatoryVerse(): string {
-  return "℣. Lord, open our lips.\n℟. And we shall praise your name.";
-}
-
 function renderAntiphon(a: Antiphon, flags: LiturgicalFlags): string {
   const alleluia =
     flags.alleluiaInAntiphons && !a.suppressAlleluia ? " Alleluia." : "";
@@ -319,14 +316,6 @@ function renderPsalmAssignment(
 ): string {
   const antiphon = renderAntiphon(assignment.antiphon, flags);
   return `${antiphon}\n\n${psalmText}\n\n${antiphon}`;
-}
-
-function resolvePsalmText(id: string, repo: DataRepository): string {
-  const psalm = repo.getPsalm(id);
-  if (psalm) return psalm.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
-  const canticle = repo.getCanticle(id);
-  if (canticle) return canticle.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
-  return `[${id} — text not loaded]`;
 }
 
 function renderShortReading(r: { reference: string; text: string }): string {
@@ -355,14 +344,6 @@ function renderIntercessions(i: Intercessions, kind: "morning" | "evening"): str
   return lines.join("\n\n");
 }
 
-function lordsPrayer(): string {
-  return "── OUR FATHER ─────────────────────────────\n\nOur Father, who art in heaven, hallowed be thy name…";
-}
-
 function renderConcludingPrayer(text: string): string {
   return `Let us pray.\n\n${text}`;
-}
-
-function dismissal(): string {
-  return "Go in the peace of Christ.\nThanks be to God.";
 }

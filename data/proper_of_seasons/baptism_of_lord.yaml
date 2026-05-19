@@ -1,0 +1,53 @@
+key: baptism_of_lord
+office_of_readings:
+  biblical_reading:
+    reference: '[baptism_of_lord biblical ref]'
+    text: '[baptism_of_lord biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[baptism_of_lord patristic ref]'
+    biographical_note: '[Note]'
+    text: '[baptism_of_lord patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr1:
+    reference: '[baptism_of_lord biblical ref]'
+    text: '[baptism_of_lord biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  biblical_reading_yr2:
+    reference: '[baptism_of_lord biblical ref]'
+    text: '[baptism_of_lord biblical reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr1:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[baptism_of_lord patristic ref]'
+    biographical_note: '[Note]'
+    text: '[baptism_of_lord patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'
+  patristic_reading_yr2:
+    author: '[Patristic author]'
+    work: '[Work]'
+    reference: '[baptism_of_lord patristic ref]'
+    biographical_note: '[Note]'
+    text: '[baptism_of_lord patristic reading]'
+    responsory:
+      text: '[Responsory text]'
+      verse: '[Responsory verse]'
+      repeat_cue: '[Repeat]'

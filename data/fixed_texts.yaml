@@ -1,24 +1,18 @@
 # Fixed texts — invariable across the entire liturgical year.
-# These are the texts that do not vary by day, season, or celebration.
-# Populate with a licensed translation before use in production.
+# Replace stub strings with a licensed translation before production use.
 
-marian_antiphons:
-  # Advent through the Purification (Feb 2): Alma Redemptoris Mater
-  advent_through_feb2:
-    text: "[Alma Redemptoris Mater]"
-  # Feb 2 through Wednesday of Holy Week: Ave Regina Caelorum
-  lent:
-    text: "[Ave Regina Caelorum]"
-  # Eastertide: Regina Caeli
-  eastertide:
-    text: "[Regina Caeli, laetare]"
-    suppress_alleluia: true   # the antiphon itself contains Alleluia; don't append a second one
-  # Ordinary Time (outside above periods): Salve Regina
-  ordinary_time:
-    text: "[Salve Regina]"
+introductory_verse:
+  opening: "[O God, come to our aid]"
+  response: "[O Lord, make haste to help us]"
+  gloria: |
+    [Glory be to the Father, and to the Son, and to the Holy Spirit,
+    as it was in the beginning, is now, and ever shall be, world without end. Amen.]
 
-te_deum:
-  text: "[Te Deum laudamus — full text]"
+invitatory_verse:
+  opening: "[Lord, open our lips.]"
+  response: "[And our mouth shall proclaim your praise.]"
+
+alleluia: "[Alleluia.]"
 
 benedictus:
   reference: "Lk 1:68-79"
@@ -31,3 +25,42 @@ magnificat:
 nunc_dimittis:
   reference: "Lk 2:29-32"
   text: "[Nunc Dimittis — full text]"
+
+te_deum:
+  text: "[Te Deum laudamus — full text]"
+  optional_final_part: "[Lord, save your people…]"
+
+lords_prayer: "[Our Father — full text]"
+
+compline_responsory: |
+  [℣. Into your hands, Lord, I commend my spirit.
+  ℟. Into your hands, Lord, I commend my spirit.
+  ℣. You have redeemed us, Lord God of truth.
+  ℟. I commend my spirit.]
+
+compline_blessing: "[℣. The Lord grant us a quiet night and a perfect end. ℟. Amen.]"
+
+oor_acclamation: |
+  [℣. Let us praise the Lord.
+  ℟. Thanks be to God.]
+
+dismissal_with_minister:
+  verse: "[The Lord be with you.]"
+  response: "[And with your spirit. Go in the peace of Christ. Thanks be to God.]"
+
+dismissal_without_minister:
+  verse: "[The Lord bless us, protect us from all evil, and bring us to everlasting life.]"
+  response: "[Amen.]"
+
+examination_of_conscience: "[Examination of conscience — optional]"
+
+marian_antiphons:
+  advent_through_feb2:
+    text: "[Alma Redemptoris Mater]"
+  lent:
+    text: "[Ave Regina Caelorum]"
+  eastertide:
+    text: "[Regina Caeli, laetare]"
+    suppress_alleluia: true
+  ordinary_time:
+    text: "[Salve Regina]"

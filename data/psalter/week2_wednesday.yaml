@@ -1,0 +1,213 @@
+week: 2
+day: Wednesday
+invitatory_antiphon:
+  text: '[Week 2 Wednesday invitatory]'
+office_of_readings:
+  hymns:
+    night:
+      stanzas:
+        - '[Week 2 Wednesday OoR night hymn, stanza 1]'
+        - '[Week 2 Wednesday OoR night hymn, stanza 2]'
+      doxology: '[Week 2 Wednesday OoR night hymn, doxology]'
+    day:
+      stanzas:
+        - '[Week 2 Wednesday OoR day hymn, stanza 1]'
+        - '[Week 2 Wednesday OoR day hymn, stanza 2]'
+      doxology: '[Week 2 Wednesday OoR day hymn, doxology]'
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_99
+      antiphon:
+        text: '[OoR psalm 1]'
+    - psalm_or_canticle_id: psalm_23
+      antiphon:
+        text: '[OoR psalm 2]'
+    - psalm_or_canticle_id: psalm_66
+      antiphon:
+        text: '[OoR psalm 3]'
+  versicle:
+    verse: Lord, open our lips.
+    response: And our mouth shall proclaim your praise.
+lauds:
+  hymns:
+    series_a:
+      stanzas:
+        - '[Week 2 Wednesday Lauds hymn A, stanza 1]'
+        - '[Week 2 Wednesday Lauds hymn A, stanza 2]'
+      doxology: '[Week 2 Wednesday Lauds hymn A, doxology]'
+    series_b:
+      stanzas:
+        - '[Week 2 Wednesday Lauds hymn B, stanza 1]'
+        - '[Week 2 Wednesday Lauds hymn B, stanza 2]'
+      doxology: '[Week 2 Wednesday Lauds hymn B, doxology]'
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_38
+      antiphon:
+        text: '[Lauds morning psalm]'
+    - psalm_or_canticle_id: ot_1chr29
+      antiphon:
+        text: '[Lauds OT canticle]'
+    - psalm_or_canticle_id: psalm_148
+      antiphon:
+        text: '[Lauds praise psalm]'
+  short_reading:
+    reference: Rev 7:10, 12
+    text: '[Short reading: Rev 7:10, 12]'
+  short_responsory:
+    text: '[Short responsory]'
+    versicle: '[Short responsory versicle]'
+  benedictus_antiphon:
+    text: '[Week 2 Wednesday Benedictus antiphon]'
+  intercessions:
+    introduction: '[Lauds intercessions introduction]'
+    response: Lord, have mercy.
+    intentions:
+      - first_part: '[Intention 1]'
+        second_part: '[Response 1]'
+      - first_part: '[Intention 2]'
+        second_part: '[Response 2]'
+      - first_part: '[Intention 3]'
+        second_part: '[Response 3]'
+  concluding_prayer:
+    text: '[Week 2 Wednesday Lauds concluding prayer]'
+terce:
+  hymn:
+    stanzas:
+      - '[Week 2 Wednesday Terce hymn, stanza 1]'
+      - '[Week 2 Wednesday Terce hymn, stanza 2]'
+    doxology: '[Week 2 Wednesday Terce hymn, doxology]'
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_118_ix
+      antiphon:
+        text: '[Terce psalm 1]'
+    - psalm_or_canticle_id: psalm_118_x
+      antiphon:
+        text: '[Terce psalm 2]'
+    - psalm_or_canticle_id: psalm_118_xi
+      antiphon:
+        text: '[Terce psalm 3]'
+  short_reading:
+    reference: Terce reading
+    text: '[Short reading: Terce reading]'
+  versicle:
+    verse: '[Terce versicle]'
+    response: '[Terce versicle response]'
+  concluding_prayer:
+    text: '[Week 2 Wednesday Terce concluding prayer]'
+sext:
+  hymn:
+    stanzas:
+      - '[Week 2 Wednesday Sext hymn, stanza 1]'
+      - '[Week 2 Wednesday Sext hymn, stanza 2]'
+    doxology: '[Week 2 Wednesday Sext hymn, doxology]'
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_118_ix
+      antiphon:
+        text: '[Sext psalm 1]'
+    - psalm_or_canticle_id: psalm_118_x
+      antiphon:
+        text: '[Sext psalm 2]'
+    - psalm_or_canticle_id: psalm_118_xi
+      antiphon:
+        text: '[Sext psalm 3]'
+  short_reading:
+    reference: Sext reading
+    text: '[Short reading: Sext reading]'
+  versicle:
+    verse: '[Sext versicle]'
+    response: '[Sext versicle response]'
+  concluding_prayer:
+    text: '[Week 2 Wednesday Sext concluding prayer]'
+none:
+  hymn:
+    stanzas:
+      - '[Week 2 Wednesday None hymn, stanza 1]'
+      - '[Week 2 Wednesday None hymn, stanza 2]'
+    doxology: '[Week 2 Wednesday None hymn, doxology]'
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_118_ix
+      antiphon:
+        text: '[None psalm 1]'
+    - psalm_or_canticle_id: psalm_118_x
+      antiphon:
+        text: '[None psalm 2]'
+    - psalm_or_canticle_id: psalm_118_xi
+      antiphon:
+        text: '[None psalm 3]'
+  short_reading:
+    reference: None reading
+    text: '[Short reading: None reading]'
+  versicle:
+    verse: '[None versicle]'
+    response: '[None versicle response]'
+  concluding_prayer:
+    text: '[Week 2 Wednesday None concluding prayer]'
+vespers:
+  hymns:
+    series_a:
+      stanzas:
+        - '[Week 2 Wednesday Vespers hymn A, stanza 1]'
+        - '[Week 2 Wednesday Vespers hymn A, stanza 2]'
+      doxology: '[Week 2 Wednesday Vespers hymn A, doxology]'
+    series_b:
+      stanzas:
+        - '[Week 2 Wednesday Vespers hymn B, stanza 1]'
+        - '[Week 2 Wednesday Vespers hymn B, stanza 2]'
+      doxology: '[Week 2 Wednesday Vespers hymn B, doxology]'
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_55
+      antiphon:
+        text: '[Vespers psalm 1]'
+    - psalm_or_canticle_id: psalm_56
+      antiphon:
+        text: '[Vespers psalm 2]'
+    - psalm_or_canticle_id: nt_1jn4
+      antiphon:
+        text: '[Vespers NT canticle]'
+  short_reading:
+    reference: 1 Pet 1:3-5
+    text: '[Short reading: 1 Pet 1:3-5]'
+  short_responsory:
+    text: '[Short responsory]'
+    versicle: '[Short responsory versicle]'
+  magnificat_antiphon:
+    text: '[Week 2 Wednesday Magnificat antiphon]'
+  intercessions:
+    introduction: '[Vespers intercessions introduction]'
+    response: Lord, have mercy.
+    intentions:
+      - first_part: '[Intention 1]'
+        second_part: '[Response 1]'
+      - first_part: '[Intention 2]'
+        second_part: '[Response 2]'
+      - first_part: '[Intention 3]'
+        second_part: '[Response 3]'
+  concluding_prayer:
+    text: '[Week 2 Wednesday Vespers concluding prayer]'
+compline:
+  hymn:
+    stanzas:
+      - '[Week 2 Wednesday Compline hymn, stanza 1]'
+      - '[Week 2 Wednesday Compline hymn, stanza 2]'
+    doxology: '[Week 2 Wednesday Compline hymn, doxology]'
+  after_first_vespers:
+    - psalm_or_canticle_id: psalm_4
+      antiphon:
+        text: '[Compline after I Vespers 1]'
+    - psalm_or_canticle_id: psalm_133
+      antiphon:
+        text: '[Compline after I Vespers 2]'
+  after_second_vespers:
+    - psalm_or_canticle_id: psalm_90
+      antiphon:
+        text: '[Compline after II Vespers]'
+  default_psalm_assignments:
+    - psalm_or_canticle_id: psalm_90
+      antiphon:
+        text: '[Compline default]'
+  short_reading:
+    reference: Rev 22:4-5
+    text: '[Short reading: Rev 22:4-5]'
+  nunc_dimittis_antiphon:
+    text: '[Week 2 Wednesday Nunc Dimittis antiphon]'
+  concluding_prayer:
+    text: '[Week 2 Wednesday Compline concluding prayer]'

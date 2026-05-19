@@ -21,6 +21,10 @@ import {
   resolveAntiphon, resolveConcludingPrayer, resolveHymn, resolveIntercessions,
   resolvePsalmAssignment, resolveShortReading, resolveShortResponsory,
 } from "./types.js";
+import {
+  formatDismissalTex, formatGospelCanticleTex, formatIntroductoryVerseTex,
+  formatLordsPrayerTex, resolvePsalmText,
+} from "./liturgicalText.js";
 import { escapeTexPlain } from "./texEscape.js";
 
 export class LaudsTexAssembler implements Assembler<string> {
@@ -56,7 +60,7 @@ export class LaudsTexAssembler implements Assembler<string> {
 
     body.push(texHeading("Lauds — Morning Prayer"));
 
-    if (!hour.suppressIntroVerse) body.push(texIntroductoryVerse(flags));
+    if (!hour.suppressIntroVerse) body.push(formatIntroductoryVerseTex(repo, flags));
 
     const hymn = resolveHymn(hour.hymnRef, repo);
     if (hymn) body.push(this.texHymn(hymn));
@@ -80,13 +84,13 @@ export class LaudsTexAssembler implements Assembler<string> {
     body.push(texSubheading("Benedictus"));
     const benAntiphon = resolveAntiphon(hour.benedictuAntiphonRef, repo);
     if (benAntiphon) body.push(this.texAntiphonBlock(benAntiphon, flags, true));
-    body.push(escapeTexPlain("[Benedictus text — Lk 1:68-79]"));
+    body.push(formatGospelCanticleTex(repo, "benedictus"));
     if (benAntiphon) body.push(this.texAntiphonBlock(benAntiphon, flags, false));
 
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo);
     if (intercessions) body.push(texIntercessions(intercessions, "morning"));
 
-    body.push(texLordsPrayer());
+    body.push(texSubheading("Our Father") + "\\par\\smallskip\n" + formatLordsPrayerTex(repo));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
     if (prayer) body.push(texConcludingPrayer(prayer.text));
@@ -94,14 +98,11 @@ export class LaudsTexAssembler implements Assembler<string> {
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo);
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo);
-      if (addAntiphon) {
-        body.push(escapeTexPlain("[Commemoration antiphon]"));
-        body.push(this.texAntiphonBlock(addAntiphon, flags, true));
-      }
+      if (addAntiphon) body.push(this.texAntiphonBlock(addAntiphon, flags, true));
       if (addPrayer) body.push(escapeTexPlain(addPrayer.text));
     }
 
-    body.push(texDismissal());
+    body.push(formatDismissalTex(repo));
 
     return this.wrapDocument(body.join("\n\n"));
   }
@@ -217,33 +218,12 @@ ${body}
   }
 }
 
-function resolvePsalmText(id: string, repo: DataRepository): string {
-  const psalm = repo.getPsalm(id);
-  if (psalm) return psalm.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
-  const canticle = repo.getCanticle(id);
-  if (canticle) return canticle.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
-  return `[${id} — text not loaded]`;
-}
-
 function texHeading(text: string): string {
   return `\\section*{${escapeTexPlain(text)}}`;
 }
 
 function texSubheading(text: string): string {
   return `\\subsection*{${escapeTexPlain(text)}}`;
-}
-
-function texIntroductoryVerse(flags: LiturgicalFlags): string {
-  const alleluia = flags.alleluiaInIntroVerse ? ", alleluia." : ".";
-  const tail = flags.alleluiaInIntroVerse ? " Alleluia." : "";
-  return [
-    `\\textbf{℣.} ${escapeTexPlain(`O God, come to our aid${alleluia}`)}`,
-    `\\textbf{℟.} ${escapeTexPlain(`O Lord, make haste to help us${alleluia}`)}`,
-    escapeTexPlain(
-      `Glory be to the Father, and to the Son, and to the Holy Spirit,
-as it was in the beginning, is now, and ever shall be, world without end. Amen.${tail}`,
-    ),
-  ].join("\\par\\smallskip\n");
 }
 
 function texShortReading(r: { reference: string; text: string }): string {
@@ -263,16 +243,6 @@ function texIntercessions(i: Intercessions, kind: "morning" | "evening"): string
   return lines.join("\\par\\medskip\n");
 }
 
-function texLordsPrayer(): string {
-  return `${texSubheading("Our Father")}\\par\\smallskip\n${escapeTexPlain(
-    "Our Father, who art in heaven, hallowed be thy name…",
-  )}`;
-}
-
 function texConcludingPrayer(text: string): string {
   return `${escapeTexPlain("Let us pray.")}\\par\\smallskip\n${escapeTexPlain(text)}`;
-}
-
-function texDismissal(): string {
-  return `${escapeTexPlain("Go in the peace of Christ.")}\\par\\smallskip\n${escapeTexPlain("Thanks be to God.")}`;
 }
