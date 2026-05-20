@@ -5,3 +5,6 @@ dist
 # The index.json files in these directories are NOT ignored: they contain parsed GABC
 # (produced by parse-kln-pdfs.py) which is not cheaply reproducible.
 raw_data/kln/split/**/*.pdf
+
+# Rendered GABC output — produced by render-kln-gabc.py, fully reproducible.
+raw_data/kln/split/**/_render/
