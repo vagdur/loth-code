@@ -1,0 +1,62 @@
+% loth.sty — Liturgy of the Hours presentation (semantic markup → layout)
+\ProvidesPackage{loth}[2026/05/20 LoTH liturgical markup]
+
+\RequirePackage{gregoriotex}
+
+% Rubric strings (defaults; override via \LothRubrics* before \begin{document})
+\newcommand{\LothAntiphonPrefix}{Ant.}
+\newcommand{\LothVersicleSymbol}{V.}
+\newcommand{\LothResponseSymbol}{R.}
+\newcommand{\LothLetUsPray}{Let us pray.}
+\newcommand{\LothPsalmToneLabel}{Psalm tone}
+
+\newcommand{\LothRubricsAntiphonPrefix}[1]{\renewcommand{\LothAntiphonPrefix}{#1}}
+\newcommand{\LothRubricsVersicleSymbol}[1]{\renewcommand{\LothVersicleSymbol}{#1}}
+\newcommand{\LothRubricsResponseSymbol}[1]{\renewcommand{\LothResponseSymbol}{#1}}
+\newcommand{\LothRubricsLetUsPray}[1]{\renewcommand{\LothLetUsPray}{#1}}
+\newcommand{\LothRubricsPsalmToneLabel}[1]{\renewcommand{\LothPsalmToneLabel}{#1}}
+
+\newcommand{\LothVsmall}{\par\smallskip}
+\newcommand{\LothVmed}{\par\medskip}
+\newcommand{\LothHymnStanzaSep}{\par\par}
+
+% Headings
+\newcommand{\hourHeading}[1]{\section*{#1}}
+\newcommand{\sectionHeading}[1]{\subsection*{#1}}
+
+% Rubrics and dialogue
+\newcommand{\antiphon}[1]{\textbf{\LothAntiphonPrefix} #1}
+\newcommand{\versicle}[1]{\textbf{\LothVersicleSymbol} #1}
+\newcommand{\response}[1]{\textbf{\LothResponseSymbol} #1}
+
+\newcommand{\melodyRubric}[1]{{\small\textit{#1}}\LothVsmall}
+\newcommand{\psalmToneLabel}{\small\textit{\LothPsalmToneLabel}\par}
+
+\newcommand{\shortResponsory}[3]{%
+  \response{#1}\LothVsmall
+  \versicle{#2}\LothVsmall
+  \response{#3}}
+
+\newcommand{\shortReading}[2]{#1\LothVsmall #2}
+
+\newcommand{\gospelCanticle}[2]{#1\LothVsmall #2}
+
+\newcommand{\hymnStanza}[1]{#1}
+\newcommand{\hymn}[1]{#1}
+
+\newcommand{\psalmText}[1]{#1}
+
+\newcommand{\intercessionsIntro}[1]{#1\LothVmed}
+\newcommand{\intercessionsResponse}[1]{\response{#1}\LothVmed}
+\newcommand{\intention}[2]{\versicle{#1}\LothVsmall\response{#2}\LothVmed}
+
+\newcommand{\concludingPrayer}[2]{#1\LothVsmall #2}
+
+\newcommand{\lordsPrayerSection}[2]{\sectionHeading{#1}\LothVsmall #2}
+
+\newcommand{\dismissal}[2]{#1\LothVsmall #2}
+
+\newcommand{\lothScore}[1]{\gregorioscore{#1}}
+\newcommand{\psalmToneScore}[1]{\gregorioscore{#1}}
+
+\endinput

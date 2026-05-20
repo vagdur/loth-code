@@ -11,8 +11,6 @@ import {
   formatOurFatherHeadingPlain,
   formatTextNotLoaded,
 } from "./labels.js";
-import { escapeTexPlain } from "./texEscape.js";
-
 const FALLBACK = {
   intro: "℣. O God, come to our aid.\n℟. O Lord, make haste to help us.",
   invitatory: "℣. Lord, open our lips.\n℟. And our mouth shall proclaim your praise.",
@@ -93,51 +91,4 @@ export function resolvePsalmText(id: string, repo: DataRepository): string {
   const canticle = repo.getCanticle(id);
   if (canticle) return canticle.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
   return formatTextNotLoaded(repo, id);
-}
-
-// ---------------------------------------------------------------------------
-// LaTeX
-// ---------------------------------------------------------------------------
-
-export function formatIntroductoryVerseTex(
-  repo: DataRepository,
-  flags: LiturgicalFlags,
-): string {
-  const labels = repo.getAssemblerLabels().rubrics;
-  const plain = formatIntroductoryVersePlain(repo, flags);
-  return plain
-    .split("\n")
-    .map((line) => {
-      if (line.startsWith(`${labels.versicleSymbol} `)) {
-        return `\\textbf{${labels.versicleSymbol}} ${escapeTexPlain(line.slice(labels.versicleSymbol.length + 1))}`;
-      }
-      if (line.startsWith(`${labels.responseSymbol} `)) {
-        return `\\textbf{${labels.responseSymbol}} ${escapeTexPlain(line.slice(labels.responseSymbol.length + 1))}`;
-      }
-      return escapeTexPlain(line);
-    })
-    .join("\\par\\smallskip\n");
-}
-
-export function formatGospelCanticleTex(
-  repo: DataRepository,
-  kind: GospelCanticleKind,
-): string {
-  const canticle = repo.getGospelCanticle(kind);
-  if (!canticle) return escapeTexPlain(FALLBACK.gospel);
-  return `${escapeTexPlain(canticle.reference)}\\par\\smallskip\n${escapeTexPlain(canticle.text)}`;
-}
-
-export function formatLordsPrayerTex(repo: DataRepository): string {
-  const text = repo.getFixedTexts()?.lordsPrayer ?? FALLBACK.lordsPrayer;
-  return escapeTexPlain(text);
-}
-
-export function formatDismissalTex(repo: DataRepository): string {
-  const plain = formatDismissalPlain(repo);
-  const lines = plain.split("\n");
-  if (lines.length >= 2) {
-    return `${escapeTexPlain(lines[0] ?? "")}\\par\\smallskip\n${escapeTexPlain(lines[1] ?? "")}`;
-  }
-  return escapeTexPlain(plain);
 }

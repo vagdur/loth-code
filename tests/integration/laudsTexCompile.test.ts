@@ -12,7 +12,7 @@ import { buildSampleAbstractDay, loadSampleRepo } from "../helpers/buildSampleDa
 import { normalizeLf } from "../helpers/normalizeLf.js";
 import { parseLualatexLog, partitionHboxWarnings } from "../helpers/parseLualatexLog.js";
 import { fixturesDir } from "../helpers/paths.js";
-import { runLualatex, writeTexFile } from "../../src/tools/compileTex.js";
+import { copyLothSty, runLualatex, writeTexFile } from "../../src/tools/compileTex.js";
 
 const jobName = "lauds";
 const pdfFixtureName = "lauds-2026-05-10-general.pdf";
@@ -40,6 +40,7 @@ test(
     tempDir = mkdtempSync(path.join(os.tmpdir(), "loth-lualatex-"));
     const texPath = path.join(tempDir, `${jobName}.tex`);
     await writeTexFile(texPath, tex);
+    await copyLothSty(tempDir);
 
     await runLualatex(tempDir, jobName, { stdio: "ignore" });
 

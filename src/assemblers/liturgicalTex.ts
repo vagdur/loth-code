@@ -1,0 +1,184 @@
+/**
+ * Semantic LaTeX markup — role-based macros only; formatting lives in tex/loth.sty.
+ */
+
+import type { DataRepository } from "../data/repository.js";
+import type { LiturgicalFlags } from "../types/hours.js";
+import type {
+  Antiphon, Hymn, Intercessions, Melody, ShortResponsory,
+} from "../types/texts.js";
+import type { GospelCanticleKind } from "../types/texts.js";
+import {
+  alleluiaAntiphonSuffix,
+  getLabels,
+  includesLetUsPrayRubric,
+  type HourLabelKey,
+  type SectionLabelKey,
+} from "./labels.js";
+import {
+  formatDismissalPlain,
+  formatIntroductoryVersePlain,
+  formatLordsPrayerPlain,
+} from "./liturgicalText.js";
+import { escapeTexPlain } from "./texEscape.js";
+
+/** Emit rubric configuration (call once after \\begin{document}). */
+export function emitLothRubrics(repo: DataRepository): string {
+  const { rubrics } = getLabels(repo);
+  const psalmTone = rubrics.psalmTone ?? "Psalm tone";
+  return [
+    `\\LothRubricsAntiphonPrefix{${escapeTexPlain(rubrics.antiphonPrefix)}}`,
+    `\\LothRubricsVersicleSymbol{${escapeTexPlain(rubrics.versicleSymbol)}}`,
+    `\\LothRubricsResponseSymbol{${escapeTexPlain(rubrics.responseSymbol)}}`,
+    `\\LothRubricsLetUsPray{${escapeTexPlain(rubrics.letUsPray)}}`,
+    `\\LothRubricsPsalmToneLabel{${escapeTexPlain(psalmTone)}}`,
+  ].join("\n");
+}
+
+export function texHourHeading(repo: DataRepository, key: HourLabelKey): string {
+  return `\\hourHeading{${escapeTexPlain(getLabels(repo).hours[key])}}`;
+}
+
+export function texSectionHeading(repo: DataRepository, key: SectionLabelKey): string {
+  return `\\sectionHeading{${escapeTexPlain(getLabels(repo).sections[key])}}`;
+}
+
+export function texAntiphon(
+  repo: DataRepository,
+  a: Antiphon,
+  flags: LiturgicalFlags,
+): string {
+  const alleluia = alleluiaAntiphonSuffix(repo, flags, a.suppressAlleluia);
+  return `\\antiphon{${escapeTexPlain(a.text + alleluia)}}`;
+}
+
+export function texMelodyRubric(m?: Melody): string {
+  if (!m) return "";
+  const parts: string[] = [];
+  if (m.mode !== undefined) parts.push(`Mode ${m.mode}`);
+  if (m.note) parts.push(m.note);
+  if (parts.length === 0) return "";
+  return `\\melodyRubric{${escapeTexPlain(parts.join(" — "))}}`;
+}
+
+export function texPsalmToneBlock(scoreLine: string): string {
+  if (!scoreLine) return "";
+  return `\\psalmToneLabel\n${scoreLine}`;
+}
+
+export function texHymn(hymn: Hymn): string {
+  const stanzas = [...hymn.stanzas, hymn.doxology]
+    .map((s) => `\\hymnStanza{${escapeTexPlain(s)}}`)
+    .join(`\n\\LothHymnStanzaSep\n`);
+  return `\\hymn{${stanzas}}`;
+}
+
+export function texShortReading(r: { reference: string; text: string }): string {
+  return `\\shortReading{${escapeTexPlain(r.reference)}}{${escapeTexPlain(r.text)}}`;
+}
+
+export function texShortResponsory(_repo: DataRepository, r: ShortResponsory): string {
+  return `\\shortResponsory{${escapeTexPlain(r.text)}}{${escapeTexPlain(r.versicle)}}{${escapeTexPlain(r.text)}}`;
+}
+
+export function texIntroductoryVerse(
+  repo: DataRepository,
+  flags: LiturgicalFlags,
+): string {
+  const labels = getLabels(repo).rubrics;
+  const plain = formatIntroductoryVersePlain(repo, flags);
+  return plain
+    .split("\n")
+    .map((line) => {
+      if (line.startsWith(`${labels.versicleSymbol} `)) {
+        return `\\versicle{${escapeTexPlain(line.slice(labels.versicleSymbol.length + 1))}}`;
+      }
+      if (line.startsWith(`${labels.responseSymbol} `)) {
+        return `\\response{${escapeTexPlain(line.slice(labels.responseSymbol.length + 1))}}`;
+      }
+      return escapeTexPlain(line);
+    })
+    .join("\\LothVsmall\n");
+}
+
+export function texGospelCanticle(
+  repo: DataRepository,
+  kind: GospelCanticleKind,
+): string {
+  const canticle = repo.getGospelCanticle(kind);
+  if (!canticle) {
+    return `\\gospelCanticle{}{${escapeTexPlain("[Gospel canticle — text not loaded]")}}`;
+  }
+  return `\\gospelCanticle{${escapeTexPlain(canticle.reference)}}{${escapeTexPlain(canticle.text)}}`;
+}
+
+export function texLordsPrayerSection(repo: DataRepository): string {
+  const plain = formatLordsPrayerPlain(repo);
+  const [, ...bodyParts] = plain.split("\n\n");
+  const title = getLabels(repo).sections.ourFather;
+  const body = bodyParts.join("\n\n");
+  return `\\lordsPrayerSection{${escapeTexPlain(title)}}{${escapeTexPlain(body)}}`;
+}
+
+export function texConcludingPrayer(
+  repo: DataRepository,
+  text: string,
+  hour: HourLabelKey | "firstVespers",
+): string {
+  if (!includesLetUsPrayRubric(hour)) {
+    return `\\concludingPrayer{}{${escapeTexPlain(text)}}`;
+  }
+  const rubric = getLabels(repo).rubrics.letUsPray;
+  return `\\concludingPrayer{${escapeTexPlain(rubric)}}{${escapeTexPlain(text)}}`;
+}
+
+export function texDismissal(repo: DataRepository): string {
+  const plain = formatDismissalPlain(repo);
+  const lines = plain.split("\n");
+  if (lines.length >= 2) {
+    return `\\dismissal{${escapeTexPlain(lines[0] ?? "")}}{${escapeTexPlain(lines[1] ?? "")}}`;
+  }
+  return `\\dismissal{${escapeTexPlain(plain)}}{}`;
+}
+
+export function texIntercessions(repo: DataRepository, i: Intercessions): string {
+  const parts = [
+    texSectionHeading(repo, "intercessions"),
+    `\\intercessionsIntro{${escapeTexPlain(i.introduction)}}`,
+    `\\intercessionsResponse{${escapeTexPlain(i.response)}}`,
+    ...i.intentions.map(
+      (int) =>
+        `\\intention{${escapeTexPlain(int.firstPart)}}{${escapeTexPlain(int.secondPart)}}`,
+    ),
+  ];
+  return parts.join("\n");
+}
+
+export function texPsalmText(text: string): string {
+  return `\\psalmText{${escapeTexPlain(text)}}`;
+}
+
+export function texScoreLine(basename: string): string {
+  return `\\lothScore{${basename}}`;
+}
+
+export function texPsalmToneScoreLine(basename: string): string {
+  return `\\psalmToneScore{${basename}}`;
+}
+
+export function wrapLothDocument(
+  repo: DataRepository,
+  fileContentsBlocks: string,
+  body: string,
+): string {
+  const blocks = fileContentsBlocks ? `${fileContentsBlocks}\n\n` : "";
+  const rubrics = emitLothRubrics(repo);
+  return `${blocks}\\documentclass[11pt]{article}
+\\usepackage{loth}
+\\begin{document}
+${rubrics}
+
+${body}
+\\end{document}
+`;
+}

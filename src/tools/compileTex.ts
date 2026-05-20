@@ -5,10 +5,22 @@
 import { spawn } from "child_process";
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const LOTH_STY_SOURCE = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../tex/loth.sty",
+);
 
 export async function writeTexFile(outPath: string, content: string): Promise<void> {
   await fs.mkdir(path.dirname(outPath), { recursive: true });
   await fs.writeFile(outPath, content, "utf-8");
+}
+
+/** Copy `tex/loth.sty` next to a generated `.tex` so LuaLaTeX can `\\usepackage{loth}`. */
+export async function copyLothSty(jobDir: string): Promise<void> {
+  const dest = path.join(jobDir, "loth.sty");
+  await fs.copyFile(LOTH_STY_SOURCE, dest);
 }
 
 export type LualatexStdio = "inherit" | "pipe" | "ignore";
