@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "test:fixtures:update": "cross-env UPDATE_FIXTURES=1 vitest run tests/integration",
     "generate:data": "npm run build && node scripts/generate-data.mjs",
-    "validate:data": "npm run build && node scripts/validate-data.mjs"
+    "validate:data": "npm run build && node scripts/validate-data.mjs",
+    "fetch:kln-melodies": "node scripts/fetch-kln-melodies.mjs"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
