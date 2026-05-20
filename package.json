@@ -18,7 +18,9 @@
     "split:kln-melodies:force": "python scripts/split-kln-pdfs.py --force",
     "parse:kln-gabc": "python scripts/parse-kln-pdfs.py",
     "parse:kln-gabc:force": "python scripts/parse-kln-pdfs.py --force",
-    "parse:kln-gabc:dry-run": "python scripts/parse-kln-pdfs.py --dry-run"
+    "parse:kln-gabc:dry-run": "python scripts/parse-kln-pdfs.py --dry-run",
+    "transcribe:kln-vector": "python scripts/transcribe-kln-vector.py",
+    "transcribe:kln-vector:force": "python scripts/transcribe-kln-vector.py --force",
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
