@@ -108,7 +108,7 @@ export class LaudsTexAssembler implements Assembler<string> {
     body.push(texLordsPrayerSection(repo));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
-    if (prayer) body.push(texConcludingPrayer(repo, prayer.text));
+    if (prayer) body.push(texConcludingPrayer(repo, prayer.text, "lauds"));
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo);

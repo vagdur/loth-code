@@ -54,10 +54,19 @@ export function formatAntiphonPlain(
   return `${prefix} ${a.text}${alleluiaAntiphonSuffix(repo, flags, a.suppressAlleluia)}`;
 }
 
+/** GILH §53 — no Orémus after the Lord's Prayer at Lauds or Vespers. */
+export function includesLetUsPrayRubric(
+  hour: HourLabelKey | "firstVespers",
+): boolean {
+  return hour !== "lauds" && hour !== "vespers" && hour !== "firstVespers";
+}
+
 export function formatConcludingPrayerPlain(
   repo: DataRepository,
   text: string,
+  hour: HourLabelKey | "firstVespers",
 ): string {
+  if (!includesLetUsPrayRubric(hour)) return text;
   return `${getLabels(repo).rubrics.letUsPray}\n\n${text}`;
 }
 

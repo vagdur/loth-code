@@ -112,7 +112,7 @@ export class PlainTextAssembler implements Assembler<string> {
     }
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text));
+    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, "officeOfReadings"));
 
     lines.push(formatOorAcclamationPlain(repo));
     return lines.join("\n\n");
@@ -155,7 +155,7 @@ export class PlainTextAssembler implements Assembler<string> {
     lines.push(formatLordsPrayerPlain(repo));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text));
+    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, "lauds"));
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo);
@@ -193,7 +193,7 @@ export class PlainTextAssembler implements Assembler<string> {
     if (versicle) lines.push(renderVersicle(repo, versicle));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text));
+    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, hourKey));
 
     lines.push(formatOorAcclamationPlain(repo));
     return lines.join("\n\n");
@@ -237,7 +237,7 @@ export class PlainTextAssembler implements Assembler<string> {
     lines.push(formatLordsPrayerPlain(repo));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text));
+    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, hourKey));
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo);
@@ -280,7 +280,7 @@ export class PlainTextAssembler implements Assembler<string> {
     if (ndAntiphon) lines.push(formatAntiphonPlain(repo, ndAntiphon, flags));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text));
+    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, "compline"));
 
     lines.push(formatComplineBlessingPlain(repo));
 

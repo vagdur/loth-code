@@ -68,12 +68,24 @@ describe("FixedTexts and repository", () => {
     expect(formatTeDeumPlain(repo)).toContain("[Te Deum");
   });
 
-  test("PlainTextAssembler uses section labels from data", async () => {
+  test("PlainTextAssembler — Orémus per GILH §53 (Lauds/Vespers omit; other hours keep)", async () => {
     const repo = await loadSampleRepo();
     const day = buildSampleAbstractDay();
     const labels = repo.getAssemblerLabels();
-    const output = new PlainTextAssembler().assembleLauds(day.lauds, repo);
-    expect(output).toContain(labels.sections.benedictus);
-    expect(output).toContain(labels.rubrics.letUsPray);
+    const assembler = new PlainTextAssembler();
+
+    const lauds = assembler.assembleLauds(day.lauds, repo);
+    expect(lauds).toContain(labels.sections.benedictus);
+    expect(lauds).not.toContain(labels.rubrics.letUsPray);
+
+    const vespers = assembler.assembleVespers(day.vespers, repo);
+    expect(vespers).not.toContain(labels.rubrics.letUsPray);
+
+    const compline = assembler.assembleCompline(day.compline, repo);
+    expect(compline).toContain(labels.rubrics.letUsPray);
+
+    if (day.terce) {
+      expect(assembler.assembleDaytimePrayer(day.terce, repo)).toContain(labels.rubrics.letUsPray);
+    }
   });
 });
