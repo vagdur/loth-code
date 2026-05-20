@@ -1,2 +1,7 @@
 node_modules
 dist
+
+# Split melody PDFs — large binary output, reproducible by running split-kln-pdfs.py
+# The index.json files in these directories are NOT ignored: they contain parsed GABC
+# (produced by parse-kln-pdfs.py) which is not cheaply reproducible.
+raw_data/kln/split/**/*.pdf
