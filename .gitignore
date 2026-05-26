@@ -1,6 +1,17 @@
 node_modules
 dist
 
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+venv/
+
 # Split melody PDFs — large binary output, reproducible by running split-kln-pdfs.py
 # The index.json files in these directories are NOT ignored: they contain parsed GABC
 # (produced by parse-kln-pdfs.py) which is not cheaply reproducible.
