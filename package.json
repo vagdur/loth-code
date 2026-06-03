@@ -23,8 +23,6 @@
     "transcribe:kln-vector:force": "python scripts/transcribe-kln-vector.py --force",
     "apply:kln-word-grouping": "python scripts/apply-kln-word-grouping.py",
     "apply:kln-word-grouping:force": "python scripts/apply-kln-word-grouping.py --force",
-    "render:kln-gabc": "python scripts/render-kln-gabc.py",
-    "render:kln-gabc:force": "python scripts/render-kln-gabc.py --force",
     "mark:kln-duplicates": "python scripts/mark-kln-duplicates.py",
     "mark:kln-duplicates:dry-run": "python scripts/mark-kln-duplicates.py --dry-run"
   },

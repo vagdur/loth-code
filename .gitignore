@@ -17,5 +17,5 @@ venv/
 # (produced by parse-kln-pdfs.py) which is not cheaply reproducible.
 raw_data/kln/split/**/*.pdf
 
-# Rendered GABC output — produced by render-kln-gabc.py, fully reproducible.
+# Gregorio compile output from validate-kln-gabc.py (preview PDFs), reproducible.
 raw_data/kln/split/**/_render/
