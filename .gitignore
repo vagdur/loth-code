@@ -13,8 +13,8 @@ __pycache__/
 venv/
 
 # Split melody PDFs — large binary output, reproducible by running split-kln-pdfs.py
-# The index.json files in these directories are NOT ignored: they contain parsed GABC
-# (produced by parse-kln-pdfs.py) which is not cheaply reproducible.
+# The index.json files in these directories are NOT ignored: they contain GABC
+# transcriptions and validation state accumulated by the pipeline.
 raw_data/kln/split/**/*.pdf
 
 # Gregorio compile output from validate-kln-gabc.py (preview PDFs), reproducible.
