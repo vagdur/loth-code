@@ -24,7 +24,9 @@
     "apply:kln-word-grouping": "python scripts/apply-kln-word-grouping.py",
     "apply:kln-word-grouping:force": "python scripts/apply-kln-word-grouping.py --force",
     "mark:kln-duplicates": "python scripts/mark-kln-duplicates.py",
-    "mark:kln-duplicates:dry-run": "python scripts/mark-kln-duplicates.py --dry-run"
+    "mark:kln-duplicates:dry-run": "python scripts/mark-kln-duplicates.py --dry-run",
+    "mark:kln-split-failures": "python scripts/mark-kln-split-failures.py",
+    "mark:kln-split-failures:dry-run": "python scripts/mark-kln-split-failures.py --dry-run"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
