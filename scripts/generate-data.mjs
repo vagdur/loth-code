@@ -473,7 +473,7 @@ function stubCommonVariant(type) {
     { psalm_or_canticle_id: "nt_phil2", antiphon: stubAntiphon(`${type} ${hour} antiphon 3`) },
   ];
   const vespersSlot = (hour) => ({
-    hymn: { series_a: stubHymn(`${type} ${hour} hymn A`), series_b: stubHymn(`${type} ${hour} hymn B`) },
+    hymn: stubHymn(`${type} ${hour} hymn`),
     psalm_assignments: psalmody(hour),
     short_reading: stubReading(`${type} ${hour} reading`),
     short_responsory: { text: "[Short responsory]", versicle: "[Short responsory versicle]" },
@@ -493,7 +493,7 @@ function stubCommonVariant(type) {
     label,
     invitatory_antiphon: stubAntiphon(`${type} invitatory`),
     office_of_readings: {
-      hymn: { night: stubHymn(`${type} OoR night hymn`), day: stubHymn(`${type} OoR day hymn`) },
+      hymns: { night: stubHymn(`${type} OoR night hymn`), day: stubHymn(`${type} OoR day hymn`) },
       psalm_assignments: psalmody("OoR"),
       versicle: { verse: `[${type} OoR versicle]`, response: `[${type} OoR response]` },
       biblical_reading: { reference: `[${type} biblical ref]`, text: `[${type} biblical reading]`, responsory: resp },
@@ -508,7 +508,7 @@ function stubCommonVariant(type) {
     },
     first_vespers: vespersSlot("First Vespers"),
     lauds: {
-      hymn: { series_a: stubHymn(`${type} Lauds hymn A`), series_b: stubHymn(`${type} Lauds hymn B`) },
+      hymn: stubHymn(`${type} Lauds hymn`),
       psalm_assignments: psalmody("Lauds"),
       short_reading: stubReading(`${type} Lauds reading`),
       short_responsory: { text: "[Short responsory]", versicle: "[Short responsory versicle]" },

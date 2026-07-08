@@ -120,7 +120,7 @@ export function buildVespers(
         kind: "fallback_chain",
         sources: [
           ...(c.seasonalKey
-            ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${vespersField}.hymns` }]
+            ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${vespersField}.hymn` }]
             : []),
           fvPsalterSrc(`hymns.${fvHymnSeries}`),
         ],

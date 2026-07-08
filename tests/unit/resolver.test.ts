@@ -167,8 +167,9 @@ describe("hymnRef", () => {
     const ctx = baseCtx(saintSolemnity());
     const src = hymnRef(ctx, "lauds.hymns");
     const flat = flattenSources(src);
-    expect(flat[0]).toMatchObject({ kind: "saint", id: "st_joseph", field: "lauds.hymns" });
-    expect(flat[1]).toMatchObject({ kind: "common", type: "pastors" });
+    // Propers carry a single hymn per hour; only the psalter has the series set.
+    expect(flat[0]).toMatchObject({ kind: "saint", id: "st_joseph", field: "lauds.hymn" });
+    expect(flat[1]).toMatchObject({ kind: "common", type: "pastors", field: "lauds.hymn" });
     expect(flat[flat.length - 1]).toMatchObject({
       kind: "psalter",
       field: "lauds.hymns.seriesB",

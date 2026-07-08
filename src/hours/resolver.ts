@@ -67,17 +67,20 @@ export function hymnRef(
 ): SlotSource {
   const { celebration: c, psalterWeek: w, psalterDay: d, hymnSeries } = ctx;
   const psalterField = `${hourField}.${hymnSeries}`;
+  // Propers (seasonal, saint, common) carry a single hymn per hour;
+  // only the psalter has the week-parity HymnSet.
+  const properField = hourField.replace(/\.hymns$/, ".hymn");
 
   if (c.source === "saint" && c.saintId) {
     return chain(
-      saintSrc(c.saintId, `${hourField}`),
-      ...commonSources(c.applicableCommons, 0, `${hourField}.${hymnSeries}`),
+      saintSrc(c.saintId, properField),
+      ...commonSources(c.applicableCommons, 0, properField),
       psalterSrc(w, d, psalterField),
     );
   }
   if (c.seasonalKey) {
     return chain(
-      seasonalSrc(c.seasonalKey, hourField),
+      seasonalSrc(c.seasonalKey, properField),
       psalterSrc(w, d, psalterField),
     );
   }
