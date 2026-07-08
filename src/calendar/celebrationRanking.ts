@@ -47,6 +47,11 @@ export const SOLEMNITY_FIRST_VESPERS_KEYS: ReadonlySet<SeasonalDayKey> = new Set
   "immaculate_heart",
 ]);
 
+/** Seasonal feasts of the Lord (rank as feast; on a Sunday they take its place). */
+export const SEASONAL_FEAST_KEYS: ReadonlySet<SeasonalDayKey> = new Set([
+  "holy_family",
+]);
+
 // ---------------------------------------------------------------------------
 // GILH rank (lower number = higher liturgical rank)
 // ---------------------------------------------------------------------------
@@ -187,6 +192,21 @@ export function buildSeasonalSolemnity(
     kind: "seasonal_solemnity",
     dayClass: "solemnity",
     rank: RANK.solemnity,
+    seasonalKey,
+  };
+}
+
+/** Seasonal feast of the Lord (e.g. Holy Family) — replaces the Sunday when on one. */
+export function buildSeasonalFeast(
+  seasonalKey: SeasonalDayKey,
+  weekday: Weekday,
+): ObservanceCandidate {
+  const dayClass: DayClass =
+    weekday === "Sunday" ? "feast_of_lord_on_sunday" : "feast";
+  return {
+    kind: "seasonal_solemnity",
+    dayClass,
+    rank: RANK[dayClass],
     seasonalKey,
   };
 }
@@ -386,6 +406,9 @@ export function resolveCelebrationFromParts(
   if (seasonalKey !== null && SEASONAL_SOLEMNITY_KEYS.has(seasonalKey)) {
     candidates.push(buildSeasonalSolemnity(seasonalKey));
   }
+  if (seasonalKey !== null && SEASONAL_FEAST_KEYS.has(seasonalKey)) {
+    candidates.push(buildSeasonalFeast(seasonalKey, weekday));
+  }
 
   const bestSaint = pickBestSaint(saintsToday, ctx);
   if (bestSaint) candidates.push(bestSaint);
@@ -423,7 +446,7 @@ export function resolveCelebrationFromParts(
 
   if (winner.kind === "seasonal_solemnity" && winner.seasonalKey) {
     return {
-      type: "solemnity",
+      type: winner.dayClass,
       source: "seasonal",
       seasonalKey: winner.seasonalKey,
       applicableCommons: [],

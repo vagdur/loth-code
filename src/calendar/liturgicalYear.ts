@@ -262,6 +262,14 @@ export function getSeasonalDayKey(
       const m = date.getUTCMonth() + 1;
       const d = date.getUTCDate();
       if (m === 12 && d === 25) return "christmas_dec25";
+      if (m === 12 && d >= 26 && d <= 31) {
+        // Holy Family: the Sunday within the octave, or Dec 30 when
+        // Christmas itself falls on Sunday (no free Sunday in the octave).
+        const christmasDow = utcDate(date.getUTCFullYear(), 12, 25).getUTCDay();
+        const isHolyFamily =
+          christmasDow === 0 ? d === 30 : date.getUTCDay() === 0;
+        if (isHolyFamily) return "holy_family";
+      }
       if (m === 12) return `christmas_dec${d}`;
       if (m === 1 && d === 1) return "christmas_jan01";
       if (m === 1 && d >= 2 && d <= 5) return `christmas_jan0${d}`;
