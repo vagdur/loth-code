@@ -1,0 +1,9 @@
+id: james_apostle
+name: St. James the Greater, Apostle
+rank: feast
+calendar_position:
+  type: fixed
+  month: 7
+  day: 25
+applicable_commons:
+  - apostles

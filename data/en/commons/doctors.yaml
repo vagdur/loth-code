@@ -1,0 +1,267 @@
+type: doctors
+variants:
+  - label: '[doctors variant 1]'
+    invitatory_antiphon:
+      text: '[doctors invitatory]'
+    office_of_readings:
+      hymn:
+        night:
+          stanzas:
+            - '[doctors OoR night hymn, stanza 1]'
+            - '[doctors OoR night hymn, stanza 2]'
+          doxology: '[doctors OoR night hymn, doxology]'
+        day:
+          stanzas:
+            - '[doctors OoR day hymn, stanza 1]'
+            - '[doctors OoR day hymn, stanza 2]'
+          doxology: '[doctors OoR day hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[doctors OoR antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[doctors OoR antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[doctors OoR antiphon 3]'
+      versicle:
+        verse: '[doctors OoR versicle]'
+        response: '[doctors OoR response]'
+      biblical_reading:
+        reference: '[doctors biblical ref]'
+        text: '[doctors biblical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      patristic_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[doctors patristic ref]'
+        biographical_note: '[Note]'
+        text: '[doctors patristic reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      hagiographical_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[doctors hagiographical ref]'
+        biographical_note: '[Note]'
+        text: '[doctors hagiographical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+    first_vespers:
+      hymn:
+        series_a:
+          stanzas:
+            - '[doctors First Vespers hymn A, stanza 1]'
+            - '[doctors First Vespers hymn A, stanza 2]'
+          doxology: '[doctors First Vespers hymn A, doxology]'
+        series_b:
+          stanzas:
+            - '[doctors First Vespers hymn B, stanza 1]'
+            - '[doctors First Vespers hymn B, stanza 2]'
+          doxology: '[doctors First Vespers hymn B, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[doctors First Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[doctors First Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[doctors First Vespers antiphon 3]'
+      short_reading:
+        reference: doctors First Vespers reading
+        text: '[Short reading: doctors First Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[doctors First Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[First Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[doctors concluding prayer]'
+    lauds:
+      hymn:
+        series_a:
+          stanzas:
+            - '[doctors Lauds hymn A, stanza 1]'
+            - '[doctors Lauds hymn A, stanza 2]'
+          doxology: '[doctors Lauds hymn A, doxology]'
+        series_b:
+          stanzas:
+            - '[doctors Lauds hymn B, stanza 1]'
+            - '[doctors Lauds hymn B, stanza 2]'
+          doxology: '[doctors Lauds hymn B, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[doctors Lauds antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[doctors Lauds antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[doctors Lauds antiphon 3]'
+      short_reading:
+        reference: doctors Lauds reading
+        text: '[Short reading: doctors Lauds reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      benedictus_antiphon:
+        text: '[doctors Benedictus antiphon]'
+      intercessions:
+        introduction: '[Lauds intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[doctors concluding prayer]'
+    terce:
+      hymn:
+        stanzas:
+          - '[doctors Terce hymn, stanza 1]'
+          - '[doctors Terce hymn, stanza 2]'
+        doxology: '[doctors Terce hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[doctors Terce antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[doctors Terce antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[doctors Terce antiphon 3]'
+      antiphons:
+        - text: '[doctors Terce gradual antiphon 1]'
+        - text: '[doctors Terce gradual antiphon 2]'
+        - text: '[doctors Terce gradual antiphon 3]'
+      short_reading:
+        reference: doctors Terce reading
+        text: '[Short reading: doctors Terce reading]'
+      versicle:
+        verse: '[doctors Terce versicle]'
+        response: '[doctors Terce response]'
+      concluding_prayer:
+        text: '[doctors concluding prayer]'
+    sext:
+      hymn:
+        stanzas:
+          - '[doctors Sext hymn, stanza 1]'
+          - '[doctors Sext hymn, stanza 2]'
+        doxology: '[doctors Sext hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[doctors Sext antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[doctors Sext antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[doctors Sext antiphon 3]'
+      antiphons:
+        - text: '[doctors Sext gradual antiphon 1]'
+        - text: '[doctors Sext gradual antiphon 2]'
+        - text: '[doctors Sext gradual antiphon 3]'
+      short_reading:
+        reference: doctors Sext reading
+        text: '[Short reading: doctors Sext reading]'
+      versicle:
+        verse: '[doctors Sext versicle]'
+        response: '[doctors Sext response]'
+      concluding_prayer:
+        text: '[doctors concluding prayer]'
+    none:
+      hymn:
+        stanzas:
+          - '[doctors None hymn, stanza 1]'
+          - '[doctors None hymn, stanza 2]'
+        doxology: '[doctors None hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[doctors None antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[doctors None antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[doctors None antiphon 3]'
+      antiphons:
+        - text: '[doctors None gradual antiphon 1]'
+        - text: '[doctors None gradual antiphon 2]'
+        - text: '[doctors None gradual antiphon 3]'
+      short_reading:
+        reference: doctors None reading
+        text: '[Short reading: doctors None reading]'
+      versicle:
+        verse: '[doctors None versicle]'
+        response: '[doctors None response]'
+      concluding_prayer:
+        text: '[doctors concluding prayer]'
+    vespers:
+      hymn:
+        series_a:
+          stanzas:
+            - '[doctors Vespers hymn A, stanza 1]'
+            - '[doctors Vespers hymn A, stanza 2]'
+          doxology: '[doctors Vespers hymn A, doxology]'
+        series_b:
+          stanzas:
+            - '[doctors Vespers hymn B, stanza 1]'
+            - '[doctors Vespers hymn B, stanza 2]'
+          doxology: '[doctors Vespers hymn B, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[doctors Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[doctors Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[doctors Vespers antiphon 3]'
+      short_reading:
+        reference: doctors Vespers reading
+        text: '[Short reading: doctors Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[doctors Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[doctors concluding prayer]'

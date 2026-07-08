@@ -1,0 +1,9 @@
+id: peters_chair
+name: Chair of St. Peter
+rank: feast
+calendar_position:
+  type: fixed
+  month: 2
+  day: 22
+applicable_commons:
+  - apostles

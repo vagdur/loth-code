@@ -201,9 +201,9 @@ compline:
       antiphon:
         text: '[Compline after II Vespers]'
   default_psalm_assignments:
-    - psalm_or_canticle_id: psalm_90
+    - psalm_or_canticle_id: psalm_85
       antiphon:
-        text: '[Compline default]'
+        text: '[Compline psalm 1]'
   short_reading:
     reference: Rev 22:4-5
     text: '[Short reading: Rev 22:4-5]'

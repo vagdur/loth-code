@@ -1,0 +1,9 @@
+id: nativity_of_mary
+name: Nativity of the Blessed Virgin Mary
+rank: feast
+calendar_position:
+  type: fixed
+  month: 9
+  day: 8
+applicable_commons:
+  - bvm

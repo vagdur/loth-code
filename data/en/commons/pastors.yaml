@@ -1,0 +1,267 @@
+type: pastors
+variants:
+  - label: '[pastors variant 1]'
+    invitatory_antiphon:
+      text: '[pastors invitatory]'
+    office_of_readings:
+      hymn:
+        night:
+          stanzas:
+            - '[pastors OoR night hymn, stanza 1]'
+            - '[pastors OoR night hymn, stanza 2]'
+          doxology: '[pastors OoR night hymn, doxology]'
+        day:
+          stanzas:
+            - '[pastors OoR day hymn, stanza 1]'
+            - '[pastors OoR day hymn, stanza 2]'
+          doxology: '[pastors OoR day hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[pastors OoR antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[pastors OoR antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[pastors OoR antiphon 3]'
+      versicle:
+        verse: '[pastors OoR versicle]'
+        response: '[pastors OoR response]'
+      biblical_reading:
+        reference: '[pastors biblical ref]'
+        text: '[pastors biblical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      patristic_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[pastors patristic ref]'
+        biographical_note: '[Note]'
+        text: '[pastors patristic reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      hagiographical_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[pastors hagiographical ref]'
+        biographical_note: '[Note]'
+        text: '[pastors hagiographical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+    first_vespers:
+      hymn:
+        series_a:
+          stanzas:
+            - '[pastors First Vespers hymn A, stanza 1]'
+            - '[pastors First Vespers hymn A, stanza 2]'
+          doxology: '[pastors First Vespers hymn A, doxology]'
+        series_b:
+          stanzas:
+            - '[pastors First Vespers hymn B, stanza 1]'
+            - '[pastors First Vespers hymn B, stanza 2]'
+          doxology: '[pastors First Vespers hymn B, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[pastors First Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[pastors First Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[pastors First Vespers antiphon 3]'
+      short_reading:
+        reference: pastors First Vespers reading
+        text: '[Short reading: pastors First Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[pastors First Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[First Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[pastors concluding prayer]'
+    lauds:
+      hymn:
+        series_a:
+          stanzas:
+            - '[pastors Lauds hymn A, stanza 1]'
+            - '[pastors Lauds hymn A, stanza 2]'
+          doxology: '[pastors Lauds hymn A, doxology]'
+        series_b:
+          stanzas:
+            - '[pastors Lauds hymn B, stanza 1]'
+            - '[pastors Lauds hymn B, stanza 2]'
+          doxology: '[pastors Lauds hymn B, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[pastors Lauds antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[pastors Lauds antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[pastors Lauds antiphon 3]'
+      short_reading:
+        reference: pastors Lauds reading
+        text: '[Short reading: pastors Lauds reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      benedictus_antiphon:
+        text: '[pastors Benedictus antiphon]'
+      intercessions:
+        introduction: '[Lauds intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[pastors concluding prayer]'
+    terce:
+      hymn:
+        stanzas:
+          - '[pastors Terce hymn, stanza 1]'
+          - '[pastors Terce hymn, stanza 2]'
+        doxology: '[pastors Terce hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[pastors Terce antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[pastors Terce antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[pastors Terce antiphon 3]'
+      antiphons:
+        - text: '[pastors Terce gradual antiphon 1]'
+        - text: '[pastors Terce gradual antiphon 2]'
+        - text: '[pastors Terce gradual antiphon 3]'
+      short_reading:
+        reference: pastors Terce reading
+        text: '[Short reading: pastors Terce reading]'
+      versicle:
+        verse: '[pastors Terce versicle]'
+        response: '[pastors Terce response]'
+      concluding_prayer:
+        text: '[pastors concluding prayer]'
+    sext:
+      hymn:
+        stanzas:
+          - '[pastors Sext hymn, stanza 1]'
+          - '[pastors Sext hymn, stanza 2]'
+        doxology: '[pastors Sext hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[pastors Sext antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[pastors Sext antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[pastors Sext antiphon 3]'
+      antiphons:
+        - text: '[pastors Sext gradual antiphon 1]'
+        - text: '[pastors Sext gradual antiphon 2]'
+        - text: '[pastors Sext gradual antiphon 3]'
+      short_reading:
+        reference: pastors Sext reading
+        text: '[Short reading: pastors Sext reading]'
+      versicle:
+        verse: '[pastors Sext versicle]'
+        response: '[pastors Sext response]'
+      concluding_prayer:
+        text: '[pastors concluding prayer]'
+    none:
+      hymn:
+        stanzas:
+          - '[pastors None hymn, stanza 1]'
+          - '[pastors None hymn, stanza 2]'
+        doxology: '[pastors None hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[pastors None antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[pastors None antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[pastors None antiphon 3]'
+      antiphons:
+        - text: '[pastors None gradual antiphon 1]'
+        - text: '[pastors None gradual antiphon 2]'
+        - text: '[pastors None gradual antiphon 3]'
+      short_reading:
+        reference: pastors None reading
+        text: '[Short reading: pastors None reading]'
+      versicle:
+        verse: '[pastors None versicle]'
+        response: '[pastors None response]'
+      concluding_prayer:
+        text: '[pastors concluding prayer]'
+    vespers:
+      hymn:
+        series_a:
+          stanzas:
+            - '[pastors Vespers hymn A, stanza 1]'
+            - '[pastors Vespers hymn A, stanza 2]'
+          doxology: '[pastors Vespers hymn A, doxology]'
+        series_b:
+          stanzas:
+            - '[pastors Vespers hymn B, stanza 1]'
+            - '[pastors Vespers hymn B, stanza 2]'
+          doxology: '[pastors Vespers hymn B, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[pastors Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[pastors Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[pastors Vespers antiphon 3]'
+      short_reading:
+        reference: pastors Vespers reading
+        text: '[Short reading: pastors Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[pastors Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[pastors concluding prayer]'

@@ -1,0 +1,9 @@
+id: assumption_of_mary
+name: Assumption of the Blessed Virgin Mary
+rank: solemnity
+calendar_position:
+  type: fixed
+  month: 8
+  day: 15
+applicable_commons:
+  - bvm

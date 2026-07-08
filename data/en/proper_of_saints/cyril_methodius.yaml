@@ -1,0 +1,9 @@
+id: cyril_methodius
+name: St. Cyril and Methodius
+rank: feast
+calendar_position:
+  type: fixed
+  month: 2
+  day: 14
+applicable_commons:
+  - doctors

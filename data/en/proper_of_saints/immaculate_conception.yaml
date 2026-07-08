@@ -1,0 +1,9 @@
+id: immaculate_conception
+name: Immaculate Conception of the Blessed Virgin Mary
+rank: solemnity
+calendar_position:
+  type: fixed
+  month: 12
+  day: 8
+applicable_commons:
+  - bvm

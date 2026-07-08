@@ -1,0 +1,10 @@
+id: catherine_of_siena
+name: St. Catherine of Siena
+rank: feast
+calendar_position:
+  type: fixed
+  month: 4
+  day: 29
+applicable_commons:
+  - virgins
+  - doctors
