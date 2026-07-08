@@ -3,7 +3,9 @@
  */
 
 import type { LiturgicalDay } from "../types/calendar.js";
-import type { AbstractDaytimePrayer, PsalmSlot, SlotSource } from "../types/hours.js";
+import type {
+  AbstractDaytimePrayer, PsalmSlot, SlotSource, SlotSourceDirect,
+} from "../types/hours.js";
 
 import { psalmAssignmentRef, shortReadingRef } from "./resolver.js";
 import { makeCtx, makeFlags, psalmSlot } from "./shared.js";
@@ -29,18 +31,27 @@ export function buildDaytimePrayer(
         psalmSlot(psalmAssignmentRef(ctx, `${hourKind}.psalmAssignments[2]`, false)),
       ]
     : [
-        psalmSlot({
-          kind: "fallback_chain",
-          sources: [
-            ...(c.seasonalKey
-              ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${hourKind}.antiphons[0]` }]
-              : []),
-            { kind: "complementary" as const, groupId: compGroupId, index: 0 },
-          ],
-        }),
+        psalmSlot({ kind: "complementary", groupId: compGroupId, index: 0 }),
         psalmSlot({ kind: "complementary", groupId: compGroupId, index: 1 }),
         psalmSlot({ kind: "complementary", groupId: compGroupId, index: 2 }),
       ];
+
+  // Proper daytime antiphons (1 or 3) override the psalmody's own antiphons;
+  // the assembler decides shared-vs-per-psalm from the resolved array length.
+  const properAntiphonSources: SlotSourceDirect[] = [
+    ...(c.source === "saint" && c.saintId
+      ? [{ kind: "saint" as const, id: c.saintId, field: `${hourKind}.antiphons` }]
+      : []),
+    ...(c.seasonalKey
+      ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${hourKind}.antiphons` }]
+      : []),
+  ];
+  const properAntiphonsRef: SlotSource | undefined =
+    properAntiphonSources.length === 0
+      ? undefined
+      : properAntiphonSources.length === 1
+      ? properAntiphonSources[0]
+      : { kind: "fallback_chain", sources: properAntiphonSources };
 
   const shortReading = shortReadingRef(ctx, `${hourKind}.shortReading`);
   const versicle: SlotSource = c.seasonalKey
@@ -82,6 +93,7 @@ export function buildDaytimePrayer(
     flags,
     hymnRef: { kind: "psalter", week: w, day: d, field: `${hourKind}.hymn` },
     psalmSlots,
+    ...(properAntiphonsRef ? { properAntiphonsRef } : {}),
     shortReadingRef: shortReading,
     versicleRef: versicle,
     concludingPrayerRef: concludingPrayer,

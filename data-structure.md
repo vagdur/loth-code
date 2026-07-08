@@ -537,7 +537,11 @@ VespersSlot {
 DaytimeProperSlot {
   hymn?:              Hymn
   psalm_assignments?: PsalmAssignment[3]   // present only on certain solemnities
-  antiphons?:         Antiphon[]           // proper antiphons for gradual psalms
+  // Proper daytime antiphons, length 1 OR 3 (GILH 122): a single antiphon is
+  // sung around all three psalms; three give one antiphon per psalm. No rule
+  // picks which, so the data carries one or three and assembly renders to match.
+  // Absent → each psalm keeps its own antiphon from the psalmody.
+  antiphons?:         Antiphon[]           // length 1 or 3
   short_reading?:     ShortReading
   versicle?:          Versicle
   concluding_prayer?: ConcludingPrayer

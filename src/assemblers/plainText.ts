@@ -33,10 +33,10 @@ import {
   sectionHeadingPlain,
 } from "./labels.js";
 import {
-  resolveAntiphon, resolveBiblicalReading, resolveConcludingPrayer,
-  resolveHagiographicalReading, resolveHymn, resolveIntercessions,
-  resolvePatristicReading, resolvePsalmAssignment, resolveShortReading,
-  resolveShortResponsory, resolveVersicle,
+  resolveAntiphon, resolveAntiphonList, resolveBiblicalReading,
+  resolveConcludingPrayer, resolveHagiographicalReading, resolveHymn,
+  resolveIntercessions, resolvePatristicReading, resolvePsalmAssignment,
+  resolveShortReading, resolveShortResponsory, resolveVersicle,
 } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -179,12 +179,8 @@ export class PlainTextAssembler implements Assembler<string> {
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay);
     if (hymn) lines.push(renderHymn(hymn));
 
-    for (const slot of hour.psalmSlots) {
-      const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay);
-      if (assignment) {
-        const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        lines.push(renderPsalmAssignment(repo, assignment, psalmText, flags));
-      }
+    for (const line of renderDaytimePsalmodyPlain(repo, hour, flags)) {
+      lines.push(line);
     }
 
     const reading = resolveShortReading(hour.shortReadingRef, repo);
@@ -306,6 +302,42 @@ export class PlainTextAssembler implements Assembler<string> {
 // ---------------------------------------------------------------------------
 // Rendering helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Daytime psalmody, honouring the 1-or-3 antiphon rule (GILH 122):
+ *  - a single proper antiphon is sung around all three psalms;
+ *  - three proper antiphons give one per psalm;
+ *  - with no proper override, each psalm keeps its assignment's antiphon.
+ */
+export function renderDaytimePsalmodyPlain(
+  repo: DataRepository,
+  hour: AbstractDaytimePrayer,
+  flags: LiturgicalFlags,
+): string[] {
+  const assignments = hour.psalmSlots
+    .map((slot) => resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay))
+    .filter((a): a is PsalmAssignment => Boolean(a));
+
+  const proper = hour.properAntiphonsRef
+    ? resolveAntiphonList(hour.properAntiphonsRef, repo, hour.liturgicalDay)
+    : undefined;
+
+  const psalmText = (a: PsalmAssignment) => resolvePsalmText(a.psalmOrCanticleId, repo);
+
+  // One antiphon wrapping all three psalms.
+  if (proper && proper.length === 1) {
+    const antiphon = formatAntiphonPlain(repo, proper[0] as PsalmAssignment["antiphon"], flags);
+    return [antiphon, ...assignments.map(psalmText), antiphon];
+  }
+
+  // Otherwise per-psalm: proper antiphons when as many as the psalms, else the
+  // psalm assignment's own antiphon.
+  const usePerPsalmProper = Boolean(proper && proper.length === assignments.length);
+  return assignments.map((a, i) => {
+    const antiphon = usePerPsalmProper ? proper![i]! : a.antiphon;
+    return renderPsalmAssignment(repo, { ...a, antiphon }, psalmText(a), flags);
+  });
+}
 
 function renderHymn(hymn: Hymn): string {
   return hymn.stanzas.join("\n\n") + "\n\n" + hymn.doxology;

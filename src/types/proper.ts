@@ -74,8 +74,13 @@ export interface DaytimeProperSlot {
   hymn?: Hymn;
   /** Present only on certain solemnities of the Lord. */
   psalmAssignments?: [PsalmAssignment, PsalmAssignment, PsalmAssignment];
-  /** Proper antiphons to use with the gradual (complementary) psalms. */
-  antiphons?: [Antiphon, Antiphon, Antiphon];
+  /**
+   * Proper antiphons for the daytime psalmody, overriding the psalmody's own.
+   * Length 1 = a single antiphon sung around all three psalms; length 3 =
+   * one antiphon per psalm (GILH 122). There is no rule for which a given day
+   * uses, so the data carries one or three and the assembler renders to match.
+   */
+  antiphons?: Antiphon[];
   shortReading?: ShortReading;
   versicle?: Versicle;
   concludingPrayer?: ConcludingPrayer;

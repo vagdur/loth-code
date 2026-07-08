@@ -193,6 +193,34 @@ async function validateMelodies(localeDir, locale, errors, warnings) {
   }
 }
 
+/** Daytime proper antiphons must be a single antiphon or one per psalm (GILH 122). */
+async function validateDaytimeAntiphons(localeDir, locale, errors) {
+  const yaml = (await import("js-yaml")).default;
+  const dirs = ["proper_of_seasons", "proper_of_saints", "commons"];
+  for (const dir of dirs) {
+    for (const file of await collectYamlFiles(path.join(localeDir, dir))) {
+      const rel = `${locale}/${dir}/${path.basename(file)}`;
+      let doc;
+      try {
+        doc = yaml.load(await fs.readFile(file, "utf-8"));
+      } catch {
+        continue; // parse errors surfaced elsewhere
+      }
+      // Commons wrap the hours in variants[]; normalise to a list of hour-holders.
+      const holders = Array.isArray(doc?.variants) ? doc.variants : [doc];
+      for (const holder of holders) {
+        for (const hour of ["terce", "sext", "none"]) {
+          const ant = holder?.[hour]?.antiphons;
+          if (ant === undefined) continue;
+          if (!Array.isArray(ant) || (ant.length !== 1 && ant.length !== 3)) {
+            errors.push(`${rel}: ${hour}.antiphons must have length 1 or 3 (got ${Array.isArray(ant) ? ant.length : typeof ant})`);
+          }
+        }
+      }
+    }
+  }
+}
+
 async function main() {
   const errors = [];
   const { DataRepository } = await loadDistModule("data/repository.js");
@@ -327,9 +355,9 @@ async function main() {
   const warnings = [];
   for (const localeEntry of await fs.readdir(dataRoot, { withFileTypes: true })) {
     if (!localeEntry.isDirectory()) continue;
-    await validateMelodies(
-      path.join(dataRoot, localeEntry.name), localeEntry.name, errors, warnings,
-    );
+    const localeDir = path.join(dataRoot, localeEntry.name);
+    await validateMelodies(localeDir, localeEntry.name, errors, warnings);
+    await validateDaytimeAntiphons(localeDir, localeEntry.name, errors);
   }
   if (warnings.length > 0) {
     console.warn("validate:data warnings:\n" + warnings.map((w) => `  - ${w}`).join("\n"));

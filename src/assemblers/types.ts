@@ -87,6 +87,12 @@ export function resolveVersicle(src: SlotSource, repo: DataRepository, day?: Lit
 export function resolveAntiphon(src: SlotSource, repo: DataRepository, day?: LiturgicalDay): Antiphon | undefined {
   return resolveSource(src, repo, day) as Antiphon | undefined;
 }
+/** Resolve a daytime proper-antiphon override to an Antiphon[] (length 1 or 3). */
+export function resolveAntiphonList(src: SlotSource, repo: DataRepository, day?: LiturgicalDay): Antiphon[] | undefined {
+  const value = resolveSource(src, repo, day);
+  if (Array.isArray(value)) return value as Antiphon[];
+  return value ? [value as Antiphon] : undefined;
+}
 export function resolveIntercessions(src: SlotSource, repo: DataRepository, day?: LiturgicalDay): Intercessions | undefined {
   return resolveSource(src, repo, day) as Intercessions | undefined;
 }
