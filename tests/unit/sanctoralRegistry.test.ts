@@ -22,7 +22,8 @@ describe("SanctoralCalendarRegistry", () => {
 
   test("stockholm merge includes local additions and Birgitta adjustments", () => {
     const entries = registry.getMergedEntries("stockholm");
-    expect(entries).toHaveLength(7);
+    // Local overlay on top of the general calendar: 3 Stockholm additions.
+    expect(entries.length).toBe(registry.getMergedEntries("general").length + 3);
     expect(entries.map((e) => e.id)).toContain("st_henrik");
     expect(entries.map((e) => e.id)).toContain("st_erik");
     expect(entries.map((e) => e.id)).toContain("st_birgitta_patron");
