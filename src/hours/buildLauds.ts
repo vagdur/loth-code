@@ -103,10 +103,10 @@ export function buildLauds(
     return { kind: "psalter", week: psalterWeek, day: psalterDay, field: "lauds.shortResponsory" };
   })();
 
-  const benedictuAntiphon = antiphonRef(
+  const benedictusAntiphon = antiphonRef(
     ctx,
-    "lauds.benedictuAntiphon",
-    "lauds.benedictuAntiphon",
+    "lauds.benedictusAntiphon",
+    "lauds.benedictusAntiphon",
   );
 
   const intercessions = intercessionsRef(ctx, "lauds.intercessions");
@@ -116,7 +116,7 @@ export function buildLauds(
   const memoriaAddendum =
     c.allowMemoriaAddendum && c.saintId
       ? {
-          antiphonRef: { kind: "saint" as const, id: c.saintId, field: "lauds.benedictuAntiphon" },
+          antiphonRef: { kind: "saint" as const, id: c.saintId, field: "lauds.benedictusAntiphon" },
           concludingPrayerRef: { kind: "saint" as const, id: c.saintId, field: "lauds.concludingPrayer" },
         }
       : undefined;
@@ -130,7 +130,7 @@ export function buildLauds(
     psalmSlots,
     shortReadingRef: shortReading,
     shortResponsoryRef: shortResponsory,
-    benedictuAntiphonRef: benedictuAntiphon,
+    benedictusAntiphonRef: benedictusAntiphon,
     intercessionsRef: intercessions,
     concludingPrayerRef: concludingPrayer,
     ...(memoriaAddendum ? { memoriaAddendum } : {}),

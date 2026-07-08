@@ -48,7 +48,7 @@ export interface LaudsProperSlot {
   psalmAssignments?: [PsalmAssignment, PsalmAssignment, PsalmAssignment];
   shortReading?: ShortReading;
   shortResponsory?: ShortResponsory;
-  benedictuAntiphon?: Antiphon;
+  benedictusAntiphon?: Antiphon;
   intercessions?: Intercessions;
   concludingPrayer?: ConcludingPrayer;
 }

@@ -107,7 +107,7 @@ export interface AbstractLauds {
   shortReadingRef: SlotSource;
   /** Null when the responsory is legitimately omitted. */
   shortResponsoryRef: SlotSource | null;
-  benedictuAntiphonRef: SlotSource;
+  benedictusAntiphonRef: SlotSource;
   intercessionsRef: SlotSource;
   concludingPrayerRef: SlotSource;
   /** Optional addendum after the concluding prayer in privileged seasons (§9.2). */

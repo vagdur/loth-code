@@ -140,7 +140,7 @@ export function shortReadingRef(
 
 export function antiphonRef(
   ctx: SlotContext,
-  field: string,    // e.g. "lauds.benedictuAntiphon"
+  field: string,    // e.g. "lauds.benedictusAntiphon"
   psalterField: string, // may differ from `field` for the psalter path
 ): SlotSource {
   const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;

@@ -3,6 +3,8 @@
  * All fields are the actual liturgical content; no liturgical logic lives here.
  */
 
+import type { MelodyRef } from "./melody.js";
+
 export interface Verse {
   number: number;
   text: string;
@@ -26,6 +28,19 @@ export interface Melody {
   note?: string;
 }
 
+/**
+ * Multi-part melody for the short responsory (R / R-second-half / V / Gloria).
+ * Each field is a GABC body. Any part may be absent when not notated.
+ */
+export interface ShortResponsoryMelody {
+  mode?: number;
+  note?: string;
+  responsory?: string;
+  responsorySecond?: string;
+  versicle?: string;
+  gloria?: string;
+}
+
 export interface Psalm {
   id: string;           // e.g. "psalm_94", "psalm_118_i"
   number: number;       // 1–150
@@ -43,6 +58,7 @@ export interface Canticle {
   title: string;
   verses: Verse[];
   melody?: Melody;
+  melodyRefs?: MelodyRef[];
 }
 
 export interface Antiphon {
@@ -53,6 +69,7 @@ export interface Antiphon {
   melody?: Melody;
   /** GABC notation for the psalm tone used with this antiphon's psalm/canticle. */
   psalmTone?: string;
+  melodyRefs?: MelodyRef[];
 }
 
 export interface PsalmAssignment {
@@ -64,6 +81,7 @@ export interface Hymn {
   stanzas: string[];
   doxology: string;
   melody?: Melody;
+  melodyRefs?: MelodyRef[];
 }
 
 /** Two hymns used on alternate psalter weeks (Weeks I/III vs II/IV). */
@@ -87,7 +105,8 @@ export interface ShortReading {
 export interface ShortResponsory {
   text: string;
   versicle: string;
-  melody?: Melody;
+  melody?: ShortResponsoryMelody;
+  melodyRefs?: MelodyRef[];
 }
 
 /** Versicle between psalmody and readings (OoR) or after reading (Daytime). */
@@ -95,6 +114,7 @@ export interface Versicle {
   verse: string;
   response: string;
   melody?: Melody;
+  melodyRefs?: MelodyRef[];
 }
 
 export interface LongResponsory {
@@ -102,6 +122,7 @@ export interface LongResponsory {
   verse: string;
   repeatCue: string;  // the word/phrase at which the repeat begins
   melody?: Melody;
+  melodyRefs?: MelodyRef[];
 }
 
 export interface BiblicalReading {
