@@ -89,7 +89,8 @@ FixedTexts {
 
   lords_prayer:              string
 
-  compline_responsory:       string   // "Into your hands..."
+  compline_responsory:       ShortResponsory   // "Into your hands..."; melody_refs
+                                               // carry the Advent/Lent and Eastertide variants
   compline_blessing:         string   // "The Lord grant us a quiet night..."
 
   oor_acclamation:           string   // "Let us praise the Lord: Thanks be to God"
@@ -488,7 +489,7 @@ SeasonalProperDay {
   invitatory_antiphon?: Antiphon
 
   office_of_readings?: {
-    hymn?:             HymnSet | OorHymnSet
+    hymn?:             Hymn   // propers carry ONE hymn per hour
     psalm_assignments?: PsalmAssignment[3]   // only for Triduum, octaves, solemnities
     versicle?:         Versicle
     // Biblical reading: one-year cycle AND/OR two-year cycle Year I / Year II
@@ -504,7 +505,7 @@ SeasonalProperDay {
   first_vespers?: VespersSlot   // only on Sundays and solemnities of the season
 
   lauds?: {
-    hymn?:              HymnSet
+    hymn?:              Hymn   // propers carry ONE hymn per hour
     psalm_assignments?: PsalmAssignment[3]
     short_reading?:     ShortReading
     short_responsory?:  ShortResponsory
@@ -524,7 +525,7 @@ SeasonalProperDay {
 }
 
 VespersSlot {
-  hymn?:              HymnSet
+  hymn?:              Hymn   // propers carry ONE hymn per hour
   psalm_assignments?: PsalmAssignment[3]
   short_reading?:     ShortReading
   short_responsory?:  ShortResponsory
@@ -565,7 +566,7 @@ SaintEntry {
   invitatory_antiphon?: Antiphon
 
   office_of_readings?: {
-    hymn?:                   HymnSet | OorHymnSet
+    hymn?:                   Hymn
     psalm_assignments?:      PsalmAssignment[3]   // solemnities / feasts only
     versicle?:               Versicle
     biblical_reading?:       BiblicalReading      // solemnities / feasts
@@ -576,7 +577,7 @@ SaintEntry {
   first_vespers?: VespersSlot
 
   lauds?: {
-    hymn?:               HymnSet
+    hymn?:               Hymn
     // psalm_assignments almost never present for saints
     short_reading?:      ShortReading
     short_responsory?:   ShortResponsory
@@ -664,7 +665,7 @@ CommonVariant {
   invitatory_antiphon: Antiphon
 
   office_of_readings: {
-    hymn:             OorHymnSet
+    hymns:            OorHymnSet   // night/day is time-of-recitation, kept for commons
     psalm_assignments: PsalmAssignment[3]
     versicle:         Versicle
     biblical_reading: BiblicalReading
@@ -673,7 +674,7 @@ CommonVariant {
 
   first_vespers: VespersSlot    // for use when the Common is applied to a solemnity
   lauds: {
-    hymn:                HymnSet
+    hymn:                Hymn
     psalm_assignments:   PsalmAssignment[3]
     short_reading:       ShortReading
     short_responsory:    ShortResponsory

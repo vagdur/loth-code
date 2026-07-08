@@ -16,12 +16,13 @@ import type {
   ShortResponsory, Versicle,
 } from "../types/texts.js";
 import type { Assembler } from "./types.js";
+import { hydrateMelodies } from "../data/melodyResolver.js";
 import {
-  formatComplineBlessingPlain, formatComplineResponsoryPlain,
+  formatComplineBlessingPlain, formatComplineResponsoryFallbackPlain,
   formatDismissalPlain, formatExaminationOfConsciencePlain,
   formatGospelCanticlePlain, formatIntroductoryVersePlain,
   formatInvitatoryVersePlain, formatLordsPrayerPlain, formatOorAcclamationPlain,
-  formatTeDeumPlain, resolvePsalmText,
+  formatTeDeumPlain, getComplineResponsory, resolvePsalmText,
 } from "./liturgicalText.js";
 import {
   formatAntiphonPlain,
@@ -271,7 +272,15 @@ export class PlainTextAssembler implements Assembler<string> {
     const reading = resolveShortReading(hour.shortReadingRef, repo);
     if (reading) lines.push(renderShortReading(reading));
 
-    lines.push(formatComplineResponsoryPlain(repo));
+    const complineResp = getComplineResponsory(repo);
+    lines.push(
+      complineResp
+        ? renderShortResponsory(
+            repo,
+            hydrateMelodies(complineResp, repo, hour.liturgicalDay),
+          )
+        : formatComplineResponsoryFallbackPlain(),
+    );
 
     lines.push(sectionHeadingPlain(repo, "nuncDimittis"));
     const ndAntiphon = resolveAntiphon(hour.nuncDimittisAntiphonRef, repo, hour.liturgicalDay);

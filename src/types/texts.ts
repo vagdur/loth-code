@@ -236,7 +236,9 @@ export interface FixedTexts {
   nuncDimittis: GospelCanticleFixed;
   teDeum: TeDeumFixed;
   lordsPrayer: string;
-  complineResponsory: string;
+  /** "Into your hands..." — structured so it can carry melody refs and
+   *  the conditioned Advent/Lent and Eastertide variants. */
+  complineResponsory: ShortResponsory;
   complineBlessing: string;
   oorAcclamation: string;
   dismissalWithMinister: DismissalFixed;
