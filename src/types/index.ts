@@ -1,3 +1,4 @@
+export * from "./melody.js";
 export * from "./texts.js";
 export * from "./psalter.js";
 export * from "./proper.js";

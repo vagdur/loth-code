@@ -57,6 +57,7 @@ Canticle {
   title:     string
   verses:    Verse[]
   melody?:   Melody   // optional; mostly used for Gospel canticles with proper tones
+  melody_refs?: MelodyRef[]
 }
 ```
 
@@ -112,6 +113,71 @@ FixedTexts {
 
 These types appear throughout the larger structures below.
 
+### 2.1 Melody store and melody references
+
+Sung texts normally do not embed GABC. Instead they carry `melody_refs` into a
+per-locale **melody store** (`data/{locale}/melodies/*.yaml`), which is
+*generated* by `npm run compile:melodies` from the raw extraction pipeline
+(`raw_data/kln/split/**/index.json`, approved entries only) and committed so
+that re-extraction produces reviewable diffs. Rubrics never specify melodies,
+so attaching several condition-selected melodies to one rubric-specified text
+is an enrichment, not an override.
+
+```
+SundayCycle = "A" | "B" | "C"    // Sunday gospel lectionary cycle
+
+MelodyCondition {
+  // All present fields must match (AND); within a field any value matches (OR).
+  // Absent condition = matches every day.
+  seasons?:       Season[]
+  day_classes?:   DayClass[]
+  sunday_cycles?: SundayCycle[]
+  date_range?:    { from: string, to: string }  // inclusive "MM-DD", may wrap year end
+}
+
+MelodyRef {
+  // Ordered list on a slot; the FIRST entry whose condition matches the
+  // LiturgicalDay wins (unconditioned entries always match — defaults last).
+  // Later matching entries are free alternatives ("eller:" in KLN sources).
+  ref:        string           // StoredMelody.id or one of its aliases
+  condition?: MelodyCondition
+  note?:      string           // "eller", "solemn tone", ...
+}
+
+MelodyKind = "hymn" | "antiphon" | "gospel_antiphon" | "short_responsory"
+           | "long_responsory" | "versicle" | "psalm_tone" | "canticle" | "other"
+
+StoredMelody {
+  id:           string         // "kln/<split-path>/<filename-slug>", e.g. "kln/0125-V/02-antifon-1"
+  kind:         MelodyKind
+  mode?:        int
+  gabc?:        string         // full GABC body (hymns etc.)
+  parts?: {                    // split bodies, by kind:
+    antiphon?: string,  psalm_tone?: string,                 // antiphon / gospel_antiphon
+    antiphon_paschal?: string,                               // Eastertide body, when notated
+    first_verse?: string,                                    // pointed first verse (gospel_antiphon)
+    responsory?: string, responsory_second?: string,         // short responsory
+    versicle?: string,   gloria?: string
+  }
+  text?:        string         // de-hyphenated Swedish text recovered from GABC lyrics
+  incipit?:     string         // from raw metadata; cross-check for `text`
+  content_hash: string         // hash of normalized GABC; rename/duplicate detection
+  aliases?:     string[]       // ids of exact-content duplicates folded into this entry
+  source: { index, pdf, source_category, page, section_label, variant_label?, filename }
+}
+```
+
+Resolution: `melody_refs` is authoritative when present; an inline `melody` is
+the terminal unconditioned fallback (and the hydrated output shape). A text
+with neither field simply has no recorded melody yet — legal, and surfaced by
+the coverage report rather than the schema.
+
+Text override: when a **conditioned** variant wins, its stored `text` (the
+de-hyphenated GABC lyrics) replaces the slot's display text during hydration —
+e.g. the Eastertide psalter antiphons replace the ferial text, not just the
+melody. Unconditioned defaults never override the slot text, so hand
+corrections to data files always win for the ordinary case.
+
 ```
 Antiphon {
   text: string
@@ -122,6 +188,7 @@ Antiphon {
   // GABC notation for the psalm tone used with this antiphon's psalm/canticle.
   // Kept as raw GABC for now; can be promoted to a structured type later.
   psalm_tone?: string
+  melody_refs?: MelodyRef[]   // references into the melody store (§2.1)
 }
 
 PsalmAssignment {
@@ -146,12 +213,15 @@ Hymn {
   stanzas:   string[]
   doxology:  string
   melody?:   Melody     // single melody for all stanzas (and doxology, unless noted)
+  melody_refs?: MelodyRef[]
 }
 
 Melody {
   // Optional musical setting attached to sung texts (hymns, antiphons,
   // responsories, versicles, Gospel canticles, etc.). Present only for
   // those texts whose melodies are recorded; absent otherwise.
+  // This is the RESOLVED/hydrated shape; authored data normally carries
+  // melody_refs instead (§2.1) and hydration fills this field.
   mode?: int            // Gregorian mode 1–8, when applicable
   gabc?: string         // GABC notation source (Gregorio plain-text format)
   note?: string         // edition, "simple tone", "solemn tone", etc.
@@ -167,7 +237,18 @@ ShortResponsory {
   // May be omitted (§3.2 item 7).
   text:     string
   versicle: string
-  melody?:  Melody
+  melody?:  ShortResponsoryMelody
+  melody_refs?: MelodyRef[]
+}
+
+ShortResponsoryMelody {
+  // The short responsory is notated in up to four GABC sections.
+  mode?: int
+  note?: string
+  responsory?:        string   // R., first half
+  responsory_second?: string   // repeated second half
+  versicle?:          string   // V.
+  gloria?:            string   // Gloria Patri line
 }
 
 Versicle {
@@ -176,6 +257,7 @@ Versicle {
   verse:    string
   response: string
   melody?:  Melody
+  melody_refs?: MelodyRef[]
 }
 
 BiblicalReading {
@@ -209,6 +291,7 @@ LongResponsory {
   verse:       string
   repeat_cue:  string   // text cue from which the repetition begins
   melody?:     Melody
+  melody_refs?: MelodyRef[]
 }
 
 Intercessions {
@@ -268,6 +351,18 @@ PsalterDay {
   terce: DaytimeHourEntry
   sext:  DaytimeHourEntry
   none:  DaytimeHourEntry
+
+  // First Vespers of the Sunday (said Saturday evening; stored on the
+  // SUNDAY entry it belongs to). Present only on Sunday psalter days.
+  first_vespers?: {
+    hymns:             HymnSet
+    psalm_assignments: PsalmAssignment[3]   // [psalm 1, psalm 2, NT canticle (Phil 2)]
+    short_reading:     ShortReading
+    short_responsory:  ShortResponsory
+    magnificat_antiphon: Antiphon
+    intercessions:     Intercessions
+    concluding_prayer: ConcludingPrayer
+  }
 
   vespers: {
     hymns:             HymnSet
@@ -627,6 +722,7 @@ LiturgicalDay {
   psalter_day:   "Sunday" | "Monday" | "Tuesday" | "Wednesday"
                 | "Thursday" | "Friday" | "Saturday"
   reading_year:  "I" | "II"     // for two-year OoR cycle
+  sunday_cycle:  "A" | "B" | "C" // Sunday gospel lectionary cycle (melody variants)
   ot_week_number: int           // 1–34, for OoR reading selection in OT
 
   // What is celebrated on this day:
