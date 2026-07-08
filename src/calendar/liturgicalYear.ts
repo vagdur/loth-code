@@ -15,6 +15,7 @@ import {
   observanceDate,
 } from "./seasonalObservance.js";
 import type { ReadingYear, Season } from "../types/calendar.js";
+import type { SundayCycle } from "../types/melody.js";
 import type { PsalterWeek, Weekday } from "../types/psalter.js";
 import type { SeasonalDayKey } from "../types/proper.js";
 
@@ -209,6 +210,25 @@ export function getReadingYear(date: Date): ReadingYear {
 }
 
 // ---------------------------------------------------------------------------
+// Sunday lectionary cycle
+// ---------------------------------------------------------------------------
+
+/**
+ * Year A/B/C keyed to the civil year the liturgical year ENDS in:
+ * divisible by 3 → C, remainder 1 → A, remainder 2 → B.
+ * (E.g. Advent 2024–Christ the King 2025 is Year C; Advent 2025 begins Year A.)
+ */
+export function getSundayCycle(date: Date): SundayCycle {
+  const b = getBounds(date);
+  const liturgicalEndYear = b.adventStart.getUTCFullYear() + 1;
+  switch (liturgicalEndYear % 3) {
+    case 1:  return "A";
+    case 2:  return "B";
+    default: return "C";
+  }
+}
+
+// ---------------------------------------------------------------------------
 // SeasonalDayKey
 // ---------------------------------------------------------------------------
 
@@ -283,7 +303,8 @@ export function getSeasonalDayKey(
     case "eastertide": {
       const diff = daysBetween(date, b.easterSunday);
       if (diff === 0) return "easter_sunday";
-      if (diff <= 7) {
+      // Octave weekdays (Mon–Sat). Day 7 is already the 2nd Sunday of Easter.
+      if (diff < 7) {
         const names = [
           "easter_sun", "easter_mon", "easter_tue", "easter_wed",
           "easter_thu", "easter_fri", "easter_sat",
@@ -294,7 +315,8 @@ export function getSeasonalDayKey(
         return "ascension";
       }
       if (daysBetween(date, pentecost(year)) === 0) return "pentecost";
-      const week = Math.floor((diff - 1) / 7) + 1;
+      // Easter Sunday opens week 1, so day 7 begins easter_w2 (2nd Sunday).
+      const week = Math.floor(diff / 7) + 1;
       return `easter_w${week}_${wd}`;
     }
 
