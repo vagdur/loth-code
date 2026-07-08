@@ -4,7 +4,7 @@ variants:
     invitatory_antiphon:
       text: '[holy_men_women invitatory]'
     office_of_readings:
-      hymn:
+      hymns:
         night:
           stanzas:
             - '[holy_men_women OoR night hymn, stanza 1]'
@@ -57,16 +57,10 @@ variants:
           repeat_cue: '[Repeat]'
     first_vespers:
       hymn:
-        series_a:
-          stanzas:
-            - '[holy_men_women First Vespers hymn A, stanza 1]'
-            - '[holy_men_women First Vespers hymn A, stanza 2]'
-          doxology: '[holy_men_women First Vespers hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[holy_men_women First Vespers hymn B, stanza 1]'
-            - '[holy_men_women First Vespers hymn B, stanza 2]'
-          doxology: '[holy_men_women First Vespers hymn B, doxology]'
+        stanzas:
+          - '[holy_men_women First Vespers hymn, stanza 1]'
+          - '[holy_men_women First Vespers hymn, stanza 2]'
+        doxology: '[holy_men_women First Vespers hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:
@@ -99,16 +93,10 @@ variants:
         text: '[holy_men_women concluding prayer]'
     lauds:
       hymn:
-        series_a:
-          stanzas:
-            - '[holy_men_women Lauds hymn A, stanza 1]'
-            - '[holy_men_women Lauds hymn A, stanza 2]'
-          doxology: '[holy_men_women Lauds hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[holy_men_women Lauds hymn B, stanza 1]'
-            - '[holy_men_women Lauds hymn B, stanza 2]'
-          doxology: '[holy_men_women Lauds hymn B, doxology]'
+        stanzas:
+          - '[holy_men_women Lauds hymn, stanza 1]'
+          - '[holy_men_women Lauds hymn, stanza 2]'
+        doxology: '[holy_men_women Lauds hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:
@@ -225,16 +213,10 @@ variants:
         text: '[holy_men_women concluding prayer]'
     vespers:
       hymn:
-        series_a:
-          stanzas:
-            - '[holy_men_women Vespers hymn A, stanza 1]'
-            - '[holy_men_women Vespers hymn A, stanza 2]'
-          doxology: '[holy_men_women Vespers hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[holy_men_women Vespers hymn B, stanza 1]'
-            - '[holy_men_women Vespers hymn B, stanza 2]'
-          doxology: '[holy_men_women Vespers hymn B, doxology]'
+        stanzas:
+          - '[holy_men_women Vespers hymn, stanza 1]'
+          - '[holy_men_women Vespers hymn, stanza 2]'
+        doxology: '[holy_men_women Vespers hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:

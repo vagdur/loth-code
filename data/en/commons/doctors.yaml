@@ -4,7 +4,7 @@ variants:
     invitatory_antiphon:
       text: '[doctors invitatory]'
     office_of_readings:
-      hymn:
+      hymns:
         night:
           stanzas:
             - '[doctors OoR night hymn, stanza 1]'
@@ -57,16 +57,10 @@ variants:
           repeat_cue: '[Repeat]'
     first_vespers:
       hymn:
-        series_a:
-          stanzas:
-            - '[doctors First Vespers hymn A, stanza 1]'
-            - '[doctors First Vespers hymn A, stanza 2]'
-          doxology: '[doctors First Vespers hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[doctors First Vespers hymn B, stanza 1]'
-            - '[doctors First Vespers hymn B, stanza 2]'
-          doxology: '[doctors First Vespers hymn B, doxology]'
+        stanzas:
+          - '[doctors First Vespers hymn, stanza 1]'
+          - '[doctors First Vespers hymn, stanza 2]'
+        doxology: '[doctors First Vespers hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:
@@ -99,16 +93,10 @@ variants:
         text: '[doctors concluding prayer]'
     lauds:
       hymn:
-        series_a:
-          stanzas:
-            - '[doctors Lauds hymn A, stanza 1]'
-            - '[doctors Lauds hymn A, stanza 2]'
-          doxology: '[doctors Lauds hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[doctors Lauds hymn B, stanza 1]'
-            - '[doctors Lauds hymn B, stanza 2]'
-          doxology: '[doctors Lauds hymn B, doxology]'
+        stanzas:
+          - '[doctors Lauds hymn, stanza 1]'
+          - '[doctors Lauds hymn, stanza 2]'
+        doxology: '[doctors Lauds hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:
@@ -225,16 +213,10 @@ variants:
         text: '[doctors concluding prayer]'
     vespers:
       hymn:
-        series_a:
-          stanzas:
-            - '[doctors Vespers hymn A, stanza 1]'
-            - '[doctors Vespers hymn A, stanza 2]'
-          doxology: '[doctors Vespers hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[doctors Vespers hymn B, stanza 1]'
-            - '[doctors Vespers hymn B, stanza 2]'
-          doxology: '[doctors Vespers hymn B, doxology]'
+        stanzas:
+          - '[doctors Vespers hymn, stanza 1]'
+          - '[doctors Vespers hymn, stanza 2]'
+        doxology: '[doctors Vespers hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:

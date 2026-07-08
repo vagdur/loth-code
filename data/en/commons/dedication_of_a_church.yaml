@@ -4,7 +4,7 @@ variants:
     invitatory_antiphon:
       text: '[dedication_of_a_church invitatory]'
     office_of_readings:
-      hymn:
+      hymns:
         night:
           stanzas:
             - '[dedication_of_a_church OoR night hymn, stanza 1]'
@@ -57,16 +57,10 @@ variants:
           repeat_cue: '[Repeat]'
     first_vespers:
       hymn:
-        series_a:
-          stanzas:
-            - '[dedication_of_a_church First Vespers hymn A, stanza 1]'
-            - '[dedication_of_a_church First Vespers hymn A, stanza 2]'
-          doxology: '[dedication_of_a_church First Vespers hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[dedication_of_a_church First Vespers hymn B, stanza 1]'
-            - '[dedication_of_a_church First Vespers hymn B, stanza 2]'
-          doxology: '[dedication_of_a_church First Vespers hymn B, doxology]'
+        stanzas:
+          - '[dedication_of_a_church First Vespers hymn, stanza 1]'
+          - '[dedication_of_a_church First Vespers hymn, stanza 2]'
+        doxology: '[dedication_of_a_church First Vespers hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:
@@ -99,16 +93,10 @@ variants:
         text: '[dedication_of_a_church concluding prayer]'
     lauds:
       hymn:
-        series_a:
-          stanzas:
-            - '[dedication_of_a_church Lauds hymn A, stanza 1]'
-            - '[dedication_of_a_church Lauds hymn A, stanza 2]'
-          doxology: '[dedication_of_a_church Lauds hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[dedication_of_a_church Lauds hymn B, stanza 1]'
-            - '[dedication_of_a_church Lauds hymn B, stanza 2]'
-          doxology: '[dedication_of_a_church Lauds hymn B, doxology]'
+        stanzas:
+          - '[dedication_of_a_church Lauds hymn, stanza 1]'
+          - '[dedication_of_a_church Lauds hymn, stanza 2]'
+        doxology: '[dedication_of_a_church Lauds hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:
@@ -225,16 +213,10 @@ variants:
         text: '[dedication_of_a_church concluding prayer]'
     vespers:
       hymn:
-        series_a:
-          stanzas:
-            - '[dedication_of_a_church Vespers hymn A, stanza 1]'
-            - '[dedication_of_a_church Vespers hymn A, stanza 2]'
-          doxology: '[dedication_of_a_church Vespers hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[dedication_of_a_church Vespers hymn B, stanza 1]'
-            - '[dedication_of_a_church Vespers hymn B, stanza 2]'
-          doxology: '[dedication_of_a_church Vespers hymn B, doxology]'
+        stanzas:
+          - '[dedication_of_a_church Vespers hymn, stanza 1]'
+          - '[dedication_of_a_church Vespers hymn, stanza 2]'
+        doxology: '[dedication_of_a_church Vespers hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:

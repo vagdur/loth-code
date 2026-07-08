@@ -4,7 +4,7 @@ variants:
     invitatory_antiphon:
       text: '[bvm invitatory]'
     office_of_readings:
-      hymn:
+      hymns:
         night:
           stanzas:
             - '[bvm OoR night hymn, stanza 1]'
@@ -57,16 +57,10 @@ variants:
           repeat_cue: '[Repeat]'
     first_vespers:
       hymn:
-        series_a:
-          stanzas:
-            - '[bvm First Vespers hymn A, stanza 1]'
-            - '[bvm First Vespers hymn A, stanza 2]'
-          doxology: '[bvm First Vespers hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[bvm First Vespers hymn B, stanza 1]'
-            - '[bvm First Vespers hymn B, stanza 2]'
-          doxology: '[bvm First Vespers hymn B, doxology]'
+        stanzas:
+          - '[bvm First Vespers hymn, stanza 1]'
+          - '[bvm First Vespers hymn, stanza 2]'
+        doxology: '[bvm First Vespers hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:
@@ -99,16 +93,10 @@ variants:
         text: '[bvm concluding prayer]'
     lauds:
       hymn:
-        series_a:
-          stanzas:
-            - '[bvm Lauds hymn A, stanza 1]'
-            - '[bvm Lauds hymn A, stanza 2]'
-          doxology: '[bvm Lauds hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[bvm Lauds hymn B, stanza 1]'
-            - '[bvm Lauds hymn B, stanza 2]'
-          doxology: '[bvm Lauds hymn B, doxology]'
+        stanzas:
+          - '[bvm Lauds hymn, stanza 1]'
+          - '[bvm Lauds hymn, stanza 2]'
+        doxology: '[bvm Lauds hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:
@@ -225,16 +213,10 @@ variants:
         text: '[bvm concluding prayer]'
     vespers:
       hymn:
-        series_a:
-          stanzas:
-            - '[bvm Vespers hymn A, stanza 1]'
-            - '[bvm Vespers hymn A, stanza 2]'
-          doxology: '[bvm Vespers hymn A, doxology]'
-        series_b:
-          stanzas:
-            - '[bvm Vespers hymn B, stanza 1]'
-            - '[bvm Vespers hymn B, stanza 2]'
-          doxology: '[bvm Vespers hymn B, doxology]'
+        stanzas:
+          - '[bvm Vespers hymn, stanza 1]'
+          - '[bvm Vespers hymn, stanza 2]'
+        doxology: '[bvm Vespers hymn, doxology]'
       psalm_assignments:
         - psalm_or_canticle_id: psalm_112
           antiphon:
