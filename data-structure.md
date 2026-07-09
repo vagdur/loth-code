@@ -428,6 +428,18 @@ When a solemnity falls on a day that is not a Sunday, the complementary psalmody
 
 The Proper of Seasons provides override texts for every day within the liturgical seasons. Each entry is **sparse**: only fields where the season overrides the psalter default need to be present. The assembly algorithm treats absent fields as "use psalter default."
 
+**Season-scoped daytime defaults.** Some daytime-prayer propers belong to a
+whole season rather than a single day: Advent and Lent give one antiphon (and
+hymn) per hour for the entire season; Eastertide gives one antiphon per
+weekday, shared across the three hours. These live in `proper_of_seasons`
+under coarse keys `daytime_<season>` (weekday-invariant) and
+`daytime_<season>_<weekday>` (weekday-specific), e.g. `daytime_advent`,
+`daytime_eastertide_monday`. They are ordinary sparse `SeasonalProperDay`
+entries carrying only `terce`/`sext`/`none`, and are **never** returned by the
+calendar for a real date — Daytime Prayer consults them as a fallback tier
+*after* the day's own key and *before* the psalter (see §9). The keys are
+produced by `seasonDaytimeKeys(season, weekday)` in `src/hours/resolver.ts`.
+
 ### 5.1 `SeasonalDayKey`
 
 A liturgical position identifier independent of calendar year:

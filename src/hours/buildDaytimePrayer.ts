@@ -7,7 +7,7 @@ import type {
   AbstractDaytimePrayer, PsalmSlot, SlotSource, SlotSourceDirect,
 } from "../types/hours.js";
 
-import { psalmAssignmentRef, shortReadingRef } from "./resolver.js";
+import { psalmAssignmentRef, seasonDaytimeKeys, shortReadingRef } from "./resolver.js";
 import { makeCtx, makeFlags, psalmSlot } from "./shared.js";
 
 export function buildDaytimePrayer(
@@ -23,6 +23,10 @@ export function buildDaytimePrayer(
   // Complementary psalmody groups are referenced by a well-known group ID
   // computed from the day of the week.
   const compGroupId = `complementary_${d.toLowerCase()}_${hourKind}`;
+
+  // Season-scoped daytime defaults (weekday-specific then weekday-invariant),
+  // consulted after the day's own proper and before the psalter.
+  const coarseKeys = seasonDaytimeKeys(day.season, d);
 
   const psalmSlots: [PsalmSlot, PsalmSlot, PsalmSlot] = isCurrentPsalmody
     ? [
@@ -45,6 +49,7 @@ export function buildDaytimePrayer(
     ...(c.seasonalKey
       ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${hourKind}.antiphons` }]
       : []),
+    ...coarseKeys.map((key) => ({ kind: "seasonal" as const, key, field: `${hourKind}.antiphons` })),
   ];
   const properAntiphonsRef: SlotSource | undefined =
     properAntiphonSources.length === 0
@@ -87,11 +92,22 @@ export function buildDaytimePrayer(
     return { kind: "psalter", week: w, day: d, field: daytimeField };
   })();
 
+  // Daytime hymn: day-proper (seasonal) → season default → psalter. Advent's
+  // one hymn and Lent's per-hour hymns live in the season-default entries.
+  const hymnField = `${hourKind}.hymn`;
+  const hymnSources: SlotSourceDirect[] = [
+    ...(c.seasonalKey ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: hymnField }] : []),
+    ...coarseKeys.map((key) => ({ kind: "seasonal" as const, key, field: hymnField })),
+    { kind: "psalter" as const, week: w, day: d, field: hymnField },
+  ];
+  const hymnRef: SlotSource =
+    hymnSources.length === 1 ? hymnSources[0]! : { kind: "fallback_chain", sources: hymnSources };
+
   return {
     kind: hourKind,
     liturgicalDay: day,
     flags,
-    hymnRef: { kind: "psalter", week: w, day: d, field: `${hourKind}.hymn` },
+    hymnRef,
     psalmSlots,
     ...(properAntiphonsRef ? { properAntiphonsRef } : {}),
     shortReadingRef: shortReading,

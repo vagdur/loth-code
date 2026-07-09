@@ -322,3 +322,19 @@ export function marianAntiphonRef(season: Season): SlotSource {
     : "marianAntiphons.ordinaryTime"; // simplified; Feb 2 crossover handled separately
   return fixedSrc(field);
 }
+
+// ---------------------------------------------------------------------------
+// Season-scoped daytime-prayer defaults
+// ---------------------------------------------------------------------------
+
+/**
+ * Coarse fallback keys for daytime-prayer propers that a whole season shares,
+ * most specific first: the weekday-specific season default (Eastertide varies
+ * by weekday), then the weekday-invariant season default (Advent and Lent are
+ * the same every day). These are distinct from real per-day keys and are
+ * consulted after the day's own proper and before the psalter.
+ */
+export function seasonDaytimeKeys(season: Season, weekday: Weekday): string[] {
+  const wd = weekday.toLowerCase();
+  return [`daytime_${season}_${wd}`, `daytime_${season}`];
+}
