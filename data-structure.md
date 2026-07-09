@@ -197,6 +197,12 @@ PsalmAssignment {
   antiphon:             Antiphon
 }
 
+// Sentinel `psalm_unassigned` — empty psalm with no verses. Used when proper
+// psalm/canticle identity is not yet sourced (e.g. sanctis Vespers psalmody
+// before *Timmarnas liturgi* text propers are populated). Antiphons and
+// melodies still resolve; assemblers omit the psalm body. Replace per slot
+// with the real id when full propers arrive.
+
 HymnSet {
   // For ordinary-time Hours (excluding OoR): two hymns alternate by psalter-week parity.
   // Week I / III → series_a; Week II / IV → series_b.

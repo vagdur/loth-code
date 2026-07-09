@@ -90,7 +90,11 @@ export function formatExaminationOfConsciencePlain(repo: DataRepository): string
   return repo.getFixedTexts()?.examinationOfConscience ?? FALLBACK.examination;
 }
 
+/** Placeholder psalm id when proper psalm/canticle identity is not yet sourced. */
+export const PSALM_UNASSIGNED = "psalm_unassigned";
+
 export function resolvePsalmText(id: string, repo: DataRepository): string {
+  if (id === PSALM_UNASSIGNED) return "";
   const psalm = repo.getPsalm(id);
   if (psalm) return psalm.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
   const canticle = repo.getCanticle(id);

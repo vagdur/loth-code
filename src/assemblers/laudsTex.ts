@@ -186,6 +186,7 @@ export class LaudsTexAssembler implements Assembler<string> {
     repo: DataRepository,
   ): string {
     const open = this.texAntiphonBlock(repo, assignment.antiphon, flags, true);
+    if (!psalmText.trim()) return open;
     const canticleMelody: string[] = [];
     const canticle = repo.getCanticle(assignment.psalmOrCanticleId);
     if (canticle?.melody?.gabc?.trim()) {

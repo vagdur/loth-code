@@ -350,6 +350,7 @@ function renderPsalmAssignment(
   flags: LiturgicalFlags,
 ): string {
   const antiphon = formatAntiphonPlain(repo, assignment.antiphon, flags);
+  if (!psalmText.trim()) return antiphon;
   return `${antiphon}\n\n${psalmText}\n\n${antiphon}`;
 }
 

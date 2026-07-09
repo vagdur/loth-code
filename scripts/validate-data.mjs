@@ -272,6 +272,15 @@ async function main() {
       .map((f) => f.replace(/\.yaml$/, "")),
   );
 
+  for (const locale of ["en", "sv"]) {
+    const fp = path.join(dataRoot, locale, "psalms", "psalm_unassigned.yaml");
+    try {
+      await fs.access(fp);
+    } catch {
+      errors.push(`missing sentinel psalm: ${locale}/psalms/psalm_unassigned.yaml`);
+    }
+  }
+
   for (let week = 1; week <= 4; week++) {
     for (const day of WEEKDAYS) {
       const key = `week${week}_${day.toLowerCase()}`;
