@@ -5,7 +5,7 @@
 import type { DataRepository } from "../data/repository.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type {
-  Antiphon, Hymn, Intercessions, Melody, ShortResponsory,
+  Antiphon, Hymn, Intercessions, ShortResponsory,
 } from "../types/texts.js";
 import type { GospelCanticleKind } from "../types/texts.js";
 import {
@@ -52,7 +52,7 @@ export function texAntiphon(
   return `\\antiphon{${escapeTexPlain(a.text + alleluia)}}`;
 }
 
-export function texMelodyRubric(m?: Melody): string {
+export function texMelodyRubric(m?: { mode?: number; note?: string }): string {
   if (!m) return "";
   const parts: string[] = [];
   if (m.mode !== undefined) parts.push(`Mode ${m.mode}`);

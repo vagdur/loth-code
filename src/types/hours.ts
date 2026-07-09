@@ -107,7 +107,7 @@ export interface AbstractLauds {
   shortReadingRef: SlotSource;
   /** Null when the responsory is legitimately omitted. */
   shortResponsoryRef: SlotSource | null;
-  benedictuAntiphonRef: SlotSource;
+  benedictusAntiphonRef: SlotSource;
   intercessionsRef: SlotSource;
   concludingPrayerRef: SlotSource;
   /** Optional addendum after the concluding prayer in privileged seasons (§9.2). */
@@ -124,6 +124,13 @@ export interface AbstractDaytimePrayer {
   hymnRef: SlotSource;
   /** Current or complementary psalmody, resolved by the builder. */
   psalmSlots: [PsalmSlot, PsalmSlot, PsalmSlot];
+  /**
+   * Optional proper antiphon override (resolves to an Antiphon[] of length
+   * 1 or 3). When present it replaces the psalmody's own antiphons: one
+   * antiphon wraps all three psalms, three give one antiphon per psalm.
+   * Absent → each psalm keeps its assignment's antiphon.
+   */
+  properAntiphonsRef?: SlotSource;
   shortReadingRef: SlotSource;
   versicleRef: SlotSource;
   concludingPrayerRef: SlotSource;

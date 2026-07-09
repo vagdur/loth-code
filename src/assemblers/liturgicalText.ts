@@ -63,8 +63,13 @@ export function formatLordsPrayerPlain(repo: DataRepository): string {
   return `${formatOurFatherHeadingPlain(repo)}\n\n${text}`;
 }
 
-export function formatComplineResponsoryPlain(repo: DataRepository): string {
-  return repo.getFixedTexts()?.complineResponsory?.trim() ?? FALLBACK.complineResp;
+/** The structured compline responsory, or undefined when fixed texts are absent. */
+export function getComplineResponsory(repo: DataRepository) {
+  return repo.getFixedTexts()?.complineResponsory;
+}
+
+export function formatComplineResponsoryFallbackPlain(): string {
+  return FALLBACK.complineResp;
 }
 
 export function formatComplineBlessingPlain(repo: DataRepository): string {

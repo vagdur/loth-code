@@ -8,7 +8,7 @@
 
 import type {
   Antiphon, BiblicalReading, ConcludingPrayer, HagiographicalReading,
-  Hymn, HymnSet, Intercessions, OorHymnSet, PatristicReading,
+  Hymn, Intercessions, OorHymnSet, PatristicReading,
   PsalmAssignment, ShortReading, ShortResponsory, Versicle,
 } from "./texts.js";
 
@@ -32,7 +32,8 @@ export type SeasonalDayKey = string;
 // ---------------------------------------------------------------------------
 
 export interface VespersProperSlot {
-  hymn?: HymnSet;
+  /** Propers carry ONE hymn per hour (week-parity series is a psalter concept). */
+  hymn?: Hymn;
   /** Proper psalm assignments (present on solemnities / feasts). */
   psalmAssignments?: [PsalmAssignment, PsalmAssignment, PsalmAssignment];
   shortReading?: ShortReading;
@@ -43,18 +44,19 @@ export interface VespersProperSlot {
 }
 
 export interface LaudsProperSlot {
-  hymn?: HymnSet;
+  /** Propers carry ONE hymn per hour (week-parity series is a psalter concept). */
+  hymn?: Hymn;
   /** Proper psalm assignments (rare for saints; present on solemnities). */
   psalmAssignments?: [PsalmAssignment, PsalmAssignment, PsalmAssignment];
   shortReading?: ShortReading;
   shortResponsory?: ShortResponsory;
-  benedictuAntiphon?: Antiphon;
+  benedictusAntiphon?: Antiphon;
   intercessions?: Intercessions;
   concludingPrayer?: ConcludingPrayer;
 }
 
 export interface OorProperSlot {
-  hymn?: HymnSet | OorHymnSet;
+  hymn?: Hymn;
   /** Proper psalm assignments (Triduum, octaves, solemnities, feasts). */
   psalmAssignments?: [PsalmAssignment, PsalmAssignment, PsalmAssignment];
   versicle?: Versicle;
@@ -72,8 +74,13 @@ export interface DaytimeProperSlot {
   hymn?: Hymn;
   /** Present only on certain solemnities of the Lord. */
   psalmAssignments?: [PsalmAssignment, PsalmAssignment, PsalmAssignment];
-  /** Proper antiphons to use with the gradual (complementary) psalms. */
-  antiphons?: [Antiphon, Antiphon, Antiphon];
+  /**
+   * Proper antiphons for the daytime psalmody, overriding the psalmody's own.
+   * Length 1 = a single antiphon sung around all three psalms; length 3 =
+   * one antiphon per psalm (GILH 122). There is no rule for which a given day
+   * uses, so the data carries one or three and the assembler renders to match.
+   */
+  antiphons?: Antiphon[];
   shortReading?: ShortReading;
   versicle?: Versicle;
   concludingPrayer?: ConcludingPrayer;
@@ -150,7 +157,9 @@ export interface SaintEntry {
 export interface CommonVariant {
   label: string;   // e.g. "For one martyr", "For several martyrs"
   invitatoryAntiphon: Antiphon;
-  officeOfReadings: Required<OorProperSlot> & {
+  officeOfReadings: Omit<Required<OorProperSlot>, "hymn"> & {
+    /** OoR keeps the night/day alternation — time of recitation, not week parity. */
+    hymns: OorHymnSet;
     hagiographicalReading: HagiographicalReading;
   };
   firstVespers: Required<VespersProperSlot>;

@@ -1,0 +1,9 @@
+id: mary_magdalene
+name: St. Mary Magdalene
+rank: feast
+calendar_position:
+  type: fixed
+  month: 7
+  day: 22
+applicable_commons:
+  - holy_men_women

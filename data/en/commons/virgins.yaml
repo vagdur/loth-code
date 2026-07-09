@@ -1,0 +1,249 @@
+type: virgins
+variants:
+  - label: '[virgins variant 1]'
+    invitatory_antiphon:
+      text: '[virgins invitatory]'
+    office_of_readings:
+      hymns:
+        night:
+          stanzas:
+            - '[virgins OoR night hymn, stanza 1]'
+            - '[virgins OoR night hymn, stanza 2]'
+          doxology: '[virgins OoR night hymn, doxology]'
+        day:
+          stanzas:
+            - '[virgins OoR day hymn, stanza 1]'
+            - '[virgins OoR day hymn, stanza 2]'
+          doxology: '[virgins OoR day hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[virgins OoR antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[virgins OoR antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[virgins OoR antiphon 3]'
+      versicle:
+        verse: '[virgins OoR versicle]'
+        response: '[virgins OoR response]'
+      biblical_reading:
+        reference: '[virgins biblical ref]'
+        text: '[virgins biblical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      patristic_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[virgins patristic ref]'
+        biographical_note: '[Note]'
+        text: '[virgins patristic reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      hagiographical_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[virgins hagiographical ref]'
+        biographical_note: '[Note]'
+        text: '[virgins hagiographical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+    first_vespers:
+      hymn:
+        stanzas:
+          - '[virgins First Vespers hymn, stanza 1]'
+          - '[virgins First Vespers hymn, stanza 2]'
+        doxology: '[virgins First Vespers hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[virgins First Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[virgins First Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[virgins First Vespers antiphon 3]'
+      short_reading:
+        reference: virgins First Vespers reading
+        text: '[Short reading: virgins First Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[virgins First Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[First Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[virgins concluding prayer]'
+    lauds:
+      hymn:
+        stanzas:
+          - '[virgins Lauds hymn, stanza 1]'
+          - '[virgins Lauds hymn, stanza 2]'
+        doxology: '[virgins Lauds hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[virgins Lauds antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[virgins Lauds antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[virgins Lauds antiphon 3]'
+      short_reading:
+        reference: virgins Lauds reading
+        text: '[Short reading: virgins Lauds reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      benedictus_antiphon:
+        text: '[virgins Benedictus antiphon]'
+      intercessions:
+        introduction: '[Lauds intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[virgins concluding prayer]'
+    terce:
+      hymn:
+        stanzas:
+          - '[virgins Terce hymn, stanza 1]'
+          - '[virgins Terce hymn, stanza 2]'
+        doxology: '[virgins Terce hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[virgins Terce antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[virgins Terce antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[virgins Terce antiphon 3]'
+      antiphons:
+        - text: '[virgins Terce gradual antiphon 1]'
+        - text: '[virgins Terce gradual antiphon 2]'
+        - text: '[virgins Terce gradual antiphon 3]'
+      short_reading:
+        reference: virgins Terce reading
+        text: '[Short reading: virgins Terce reading]'
+      versicle:
+        verse: '[virgins Terce versicle]'
+        response: '[virgins Terce response]'
+      concluding_prayer:
+        text: '[virgins concluding prayer]'
+    sext:
+      hymn:
+        stanzas:
+          - '[virgins Sext hymn, stanza 1]'
+          - '[virgins Sext hymn, stanza 2]'
+        doxology: '[virgins Sext hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[virgins Sext antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[virgins Sext antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[virgins Sext antiphon 3]'
+      antiphons:
+        - text: '[virgins Sext gradual antiphon 1]'
+        - text: '[virgins Sext gradual antiphon 2]'
+        - text: '[virgins Sext gradual antiphon 3]'
+      short_reading:
+        reference: virgins Sext reading
+        text: '[Short reading: virgins Sext reading]'
+      versicle:
+        verse: '[virgins Sext versicle]'
+        response: '[virgins Sext response]'
+      concluding_prayer:
+        text: '[virgins concluding prayer]'
+    none:
+      hymn:
+        stanzas:
+          - '[virgins None hymn, stanza 1]'
+          - '[virgins None hymn, stanza 2]'
+        doxology: '[virgins None hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[virgins None antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[virgins None antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[virgins None antiphon 3]'
+      antiphons:
+        - text: '[virgins None gradual antiphon 1]'
+        - text: '[virgins None gradual antiphon 2]'
+        - text: '[virgins None gradual antiphon 3]'
+      short_reading:
+        reference: virgins None reading
+        text: '[Short reading: virgins None reading]'
+      versicle:
+        verse: '[virgins None versicle]'
+        response: '[virgins None response]'
+      concluding_prayer:
+        text: '[virgins concluding prayer]'
+    vespers:
+      hymn:
+        stanzas:
+          - '[virgins Vespers hymn, stanza 1]'
+          - '[virgins Vespers hymn, stanza 2]'
+        doxology: '[virgins Vespers hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[virgins Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[virgins Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[virgins Vespers antiphon 3]'
+      short_reading:
+        reference: virgins Vespers reading
+        text: '[Short reading: virgins Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[virgins Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[virgins concluding prayer]'

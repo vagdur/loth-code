@@ -15,6 +15,7 @@ import {
   observanceDate,
 } from "./seasonalObservance.js";
 import type { ReadingYear, Season } from "../types/calendar.js";
+import type { SundayCycle } from "../types/melody.js";
 import type { PsalterWeek, Weekday } from "../types/psalter.js";
 import type { SeasonalDayKey } from "../types/proper.js";
 
@@ -209,6 +210,25 @@ export function getReadingYear(date: Date): ReadingYear {
 }
 
 // ---------------------------------------------------------------------------
+// Sunday lectionary cycle
+// ---------------------------------------------------------------------------
+
+/**
+ * Year A/B/C keyed to the civil year the liturgical year ENDS in:
+ * divisible by 3 → C, remainder 1 → A, remainder 2 → B.
+ * (E.g. Advent 2024–Christ the King 2025 is Year C; Advent 2025 begins Year A.)
+ */
+export function getSundayCycle(date: Date): SundayCycle {
+  const b = getBounds(date);
+  const liturgicalEndYear = b.adventStart.getUTCFullYear() + 1;
+  switch (liturgicalEndYear % 3) {
+    case 1:  return "A";
+    case 2:  return "B";
+    default: return "C";
+  }
+}
+
+// ---------------------------------------------------------------------------
 // SeasonalDayKey
 // ---------------------------------------------------------------------------
 
@@ -242,6 +262,14 @@ export function getSeasonalDayKey(
       const m = date.getUTCMonth() + 1;
       const d = date.getUTCDate();
       if (m === 12 && d === 25) return "christmas_dec25";
+      if (m === 12 && d >= 26 && d <= 31) {
+        // Holy Family: the Sunday within the octave, or Dec 30 when
+        // Christmas itself falls on Sunday (no free Sunday in the octave).
+        const christmasDow = utcDate(date.getUTCFullYear(), 12, 25).getUTCDay();
+        const isHolyFamily =
+          christmasDow === 0 ? d === 30 : date.getUTCDay() === 0;
+        if (isHolyFamily) return "holy_family";
+      }
       if (m === 12) return `christmas_dec${d}`;
       if (m === 1 && d === 1) return "christmas_jan01";
       if (m === 1 && d >= 2 && d <= 5) return `christmas_jan0${d}`;
@@ -283,7 +311,8 @@ export function getSeasonalDayKey(
     case "eastertide": {
       const diff = daysBetween(date, b.easterSunday);
       if (diff === 0) return "easter_sunday";
-      if (diff <= 7) {
+      // Octave weekdays (Mon–Sat). Day 7 is already the 2nd Sunday of Easter.
+      if (diff < 7) {
         const names = [
           "easter_sun", "easter_mon", "easter_tue", "easter_wed",
           "easter_thu", "easter_fri", "easter_sat",
@@ -294,7 +323,8 @@ export function getSeasonalDayKey(
         return "ascension";
       }
       if (daysBetween(date, pentecost(year)) === 0) return "pentecost";
-      const week = Math.floor((diff - 1) / 7) + 1;
+      // Easter Sunday opens week 1, so day 7 begins easter_w2 (2nd Sunday).
+      const week = Math.floor(diff / 7) + 1;
       return `easter_w${week}_${wd}`;
     }
 

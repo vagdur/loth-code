@@ -15,6 +15,23 @@ const dataDir = path.join(dataRoot, defaultLocale);
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAYTIME_HOURS = ["terce", "sext", "none"];
 
+const FIX = process.argv.includes("--fix");
+
+const SEASONS = new Set([
+  "advent", "christmas", "ordinary_time", "lent",
+  "holy_week", "easter_triduum", "eastertide",
+]);
+const DAY_CLASSES = new Set([
+  "triduum", "sunday", "solemnity", "feast_of_lord_on_sunday", "feast",
+  "obligatory_memoria", "optional_memoria", "privileged_ferial", "ordinary_ferial",
+]);
+const SUNDAY_CYCLES = new Set(["A", "B", "C"]);
+const CONDITION_KEYS = new Set(["seasons", "day_classes", "sunday_cycles", "date_range"]);
+const PART_KEYS = new Set([
+  "antiphon", "antiphon_paschal", "psalm_tone", "first_verse",
+  "responsory", "responsory_second", "versicle", "gloria",
+]);
+
 async function loadDistModule(relPath) {
   const href = new URL(`../dist/${relPath}`, import.meta.url).href;
   return import(href);
@@ -32,6 +49,175 @@ function collectTextIds(obj, psalms, canticles) {
       else canticles.add(id);
     }
     for (const v of Object.values(obj)) collectTextIds(v, psalms, canticles);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Melody store + melody_refs validation (per locale with a melodies/ dir)
+// ---------------------------------------------------------------------------
+
+async function collectYamlFiles(dir) {
+  const out = [];
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const e of entries) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) out.push(...(await collectYamlFiles(p)));
+    else if (e.name.endsWith(".yaml") || e.name.endsWith(".yml")) out.push(p);
+  }
+  return out;
+}
+
+function validateCondition(cond, where, errors) {
+  if (cond === null || cond === undefined) return;
+  for (const key of Object.keys(cond)) {
+    if (!CONDITION_KEYS.has(key)) errors.push(`${where}: unknown condition key "${key}"`);
+  }
+  for (const s of cond.seasons ?? []) {
+    if (!SEASONS.has(s)) errors.push(`${where}: unknown season "${s}"`);
+  }
+  for (const d of cond.day_classes ?? []) {
+    if (!DAY_CLASSES.has(d)) errors.push(`${where}: unknown day class "${d}"`);
+  }
+  for (const c of cond.sunday_cycles ?? []) {
+    if (!SUNDAY_CYCLES.has(c)) errors.push(`${where}: unknown sunday cycle "${c}"`);
+  }
+  if (cond.date_range) {
+    for (const bound of ["from", "to"]) {
+      const v = cond.date_range[bound];
+      if (!/^\d{2}-\d{2}$/.test(v ?? "")) {
+        errors.push(`${where}: date_range.${bound} is not "MM-DD": ${v}`);
+      }
+    }
+  }
+}
+
+/** Walk parsed YAML for melody_refs lists; call visit(refs, where). */
+function walkMelodyRefs(node, where, visit) {
+  if (Array.isArray(node)) {
+    node.forEach((v, i) => walkMelodyRefs(v, `${where}[${i}]`, visit));
+    return;
+  }
+  if (node && typeof node === "object") {
+    if (Array.isArray(node.melody_refs)) visit(node.melody_refs, where);
+    for (const [k, v] of Object.entries(node)) {
+      if (k === "melody_refs") continue;
+      walkMelodyRefs(v, `${where}.${k}`, visit);
+    }
+  }
+}
+
+async function validateMelodies(localeDir, locale, errors, warnings) {
+  const yaml = (await import("js-yaml")).default;
+  const melodiesDir = path.join(localeDir, "melodies");
+
+  // --- Store integrity ---
+  const byId = new Map();
+  const aliasToId = new Map();
+  const idByHash = new Map();
+  for (const file of await collectYamlFiles(melodiesDir)) {
+    const entries = yaml.load(await fs.readFile(file, "utf-8")) ?? [];
+    for (const m of entries) {
+      const where = `${locale}/melodies/${path.basename(file)}#${m.id}`;
+      if (byId.has(m.id)) errors.push(`${where}: duplicate melody id`);
+      byId.set(m.id, m);
+      if (!m.content_hash) errors.push(`${where}: missing content_hash`);
+      else idByHash.set(m.content_hash, m.id);
+      for (const alias of m.aliases ?? []) aliasToId.set(alias, m.id);
+      for (const k of Object.keys(m.parts ?? {})) {
+        if (!PART_KEYS.has(k)) errors.push(`${where}: unknown part key "${k}"`);
+      }
+      if (!m.gabc && !m.parts) errors.push(`${where}: neither gabc nor parts present`);
+    }
+  }
+  if (byId.size === 0) return; // no store for this locale
+
+  // --- Refs in the data tree ---
+  const fixups = new Map(); // file -> [{from, to}]
+  for (const file of await collectYamlFiles(localeDir)) {
+    if (file.startsWith(melodiesDir)) continue;
+    const rel = `${locale}/${path.relative(localeDir, file).split(path.sep).join("/")}`;
+    let doc;
+    try {
+      doc = yaml.load(await fs.readFile(file, "utf-8"));
+    } catch (e) {
+      errors.push(`${rel}: YAML parse error: ${e.message}`);
+      continue;
+    }
+    walkMelodyRefs(doc, rel, (refs, where) => {
+      let sawUnconditioned = false;
+      let sawConditioned = false;
+      refs.forEach((r, i) => {
+        const spot = `${where}.melody_refs[${i}]`;
+        if (typeof r?.ref !== "string" || !r.ref) {
+          errors.push(`${spot}: missing ref id`);
+          return;
+        }
+        validateCondition(r.condition, spot, errors);
+        if (r.condition) sawConditioned = true;
+        else {
+          if (sawUnconditioned && !r.note) {
+            warnings.push(`${spot}: unreachable — follows an unconditioned ref and is not marked as an alternative`);
+          }
+          sawUnconditioned = true;
+        }
+        if (byId.has(r.ref)) return;
+        if (aliasToId.has(r.ref)) {
+          const canonical = aliasToId.get(r.ref);
+          warnings.push(`${spot}: ref "${r.ref}" is a duplicate alias of "${canonical}"${FIX ? " (fixing)" : ""}`);
+          if (FIX) {
+            if (!fixups.has(file)) fixups.set(file, []);
+            fixups.get(file).push({ from: r.ref, to: canonical });
+          }
+          return;
+        }
+        errors.push(`${spot}: dangling melody ref "${r.ref}"`);
+      });
+      if (sawConditioned && !sawUnconditioned) {
+        warnings.push(`${where}: only conditioned melody refs — no default for the rest of the year`);
+      }
+    });
+  }
+
+  for (const [file, subs] of fixups) {
+    let text = await fs.readFile(file, "utf-8");
+    for (const { from, to } of subs) {
+      text = text.split(`ref: ${from}`).join(`ref: ${to}`);
+    }
+    await fs.writeFile(file, text, "utf-8");
+    console.log(`  fixed ${subs.length} ref(s) in ${path.relative(repoRoot, file)}`);
+  }
+}
+
+/** Daytime proper antiphons must be a single antiphon or one per psalm (GILH 122). */
+async function validateDaytimeAntiphons(localeDir, locale, errors) {
+  const yaml = (await import("js-yaml")).default;
+  const dirs = ["proper_of_seasons", "proper_of_saints", "commons"];
+  for (const dir of dirs) {
+    for (const file of await collectYamlFiles(path.join(localeDir, dir))) {
+      const rel = `${locale}/${dir}/${path.basename(file)}`;
+      let doc;
+      try {
+        doc = yaml.load(await fs.readFile(file, "utf-8"));
+      } catch {
+        continue; // parse errors surfaced elsewhere
+      }
+      // Commons wrap the hours in variants[]; normalise to a list of hour-holders.
+      const holders = Array.isArray(doc?.variants) ? doc.variants : [doc];
+      for (const holder of holders) {
+        for (const hour of ["terce", "sext", "none"]) {
+          const ant = holder?.[hour]?.antiphons;
+          if (ant === undefined) continue;
+          if (!Array.isArray(ant) || (ant.length !== 1 && ant.length !== 3)) {
+            errors.push(`${rel}: ${hour}.antiphons must have length 1 or 3 (got ${Array.isArray(ant) ? ant.length : typeof ant})`);
+          }
+        }
+      }
+    }
   }
 }
 
@@ -163,6 +349,18 @@ async function main() {
     } catch {
       errors.push(`missing proper_of_seasons: ${key}.yaml`);
     }
+  }
+
+  // Melody stores + melody_refs, for every locale that has one.
+  const warnings = [];
+  for (const localeEntry of await fs.readdir(dataRoot, { withFileTypes: true })) {
+    if (!localeEntry.isDirectory()) continue;
+    const localeDir = path.join(dataRoot, localeEntry.name);
+    await validateMelodies(localeDir, localeEntry.name, errors, warnings);
+    await validateDaytimeAntiphons(localeDir, localeEntry.name, errors);
+  }
+  if (warnings.length > 0) {
+    console.warn("validate:data warnings:\n" + warnings.map((w) => `  - ${w}`).join("\n"));
   }
 
   if (errors.length > 0) {

@@ -43,7 +43,7 @@ export interface PsalterDay {
     psalmAssignments: [PsalmAssignment, PsalmAssignment, PsalmAssignment];
     shortReading: ShortReading;
     shortResponsory: ShortResponsory;
-    benedictuAntiphon: Antiphon;
+    benedictusAntiphon: Antiphon;
     intercessions: Intercessions;
     concludingPrayer: ConcludingPrayer;
   };
@@ -51,6 +51,21 @@ export interface PsalterDay {
   terce: DaytimeHourEntry;
   sext:  DaytimeHourEntry;
   none:  DaytimeHourEntry;
+
+  /**
+   * First Vespers of the Sunday (said Saturday evening; stored on the
+   * SUNDAY entry it belongs to). Present only on Sunday psalter days.
+   */
+  firstVespers?: {
+    hymns: HymnSet;
+    /** [psalm 1, psalm 2, NT canticle (Phil 2)] */
+    psalmAssignments: [PsalmAssignment, PsalmAssignment, PsalmAssignment];
+    shortReading: ShortReading;
+    shortResponsory: ShortResponsory;
+    magnificatAntiphon: Antiphon;
+    intercessions: Intercessions;
+    concludingPrayer: ConcludingPrayer;
+  };
 
   vespers: {
     hymns: HymnSet;

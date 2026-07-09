@@ -14,6 +14,7 @@ function dayWithSeason(season: LiturgicalDay["season"]): LiturgicalDay {
     psalterWeek: 2,
     psalterDay: "Sunday",
     readingYear: "I",
+    sundayCycle: "A",
     ordinaryTimeWeek: 0,
     celebration: {
       type: "sunday",

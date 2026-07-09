@@ -1,0 +1,249 @@
+type: holy_men_women
+variants:
+  - label: '[holy_men_women variant 1]'
+    invitatory_antiphon:
+      text: '[holy_men_women invitatory]'
+    office_of_readings:
+      hymns:
+        night:
+          stanzas:
+            - '[holy_men_women OoR night hymn, stanza 1]'
+            - '[holy_men_women OoR night hymn, stanza 2]'
+          doxology: '[holy_men_women OoR night hymn, doxology]'
+        day:
+          stanzas:
+            - '[holy_men_women OoR day hymn, stanza 1]'
+            - '[holy_men_women OoR day hymn, stanza 2]'
+          doxology: '[holy_men_women OoR day hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[holy_men_women OoR antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[holy_men_women OoR antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[holy_men_women OoR antiphon 3]'
+      versicle:
+        verse: '[holy_men_women OoR versicle]'
+        response: '[holy_men_women OoR response]'
+      biblical_reading:
+        reference: '[holy_men_women biblical ref]'
+        text: '[holy_men_women biblical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      patristic_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[holy_men_women patristic ref]'
+        biographical_note: '[Note]'
+        text: '[holy_men_women patristic reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      hagiographical_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[holy_men_women hagiographical ref]'
+        biographical_note: '[Note]'
+        text: '[holy_men_women hagiographical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+    first_vespers:
+      hymn:
+        stanzas:
+          - '[holy_men_women First Vespers hymn, stanza 1]'
+          - '[holy_men_women First Vespers hymn, stanza 2]'
+        doxology: '[holy_men_women First Vespers hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[holy_men_women First Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[holy_men_women First Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[holy_men_women First Vespers antiphon 3]'
+      short_reading:
+        reference: holy_men_women First Vespers reading
+        text: '[Short reading: holy_men_women First Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[holy_men_women First Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[First Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[holy_men_women concluding prayer]'
+    lauds:
+      hymn:
+        stanzas:
+          - '[holy_men_women Lauds hymn, stanza 1]'
+          - '[holy_men_women Lauds hymn, stanza 2]'
+        doxology: '[holy_men_women Lauds hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[holy_men_women Lauds antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[holy_men_women Lauds antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[holy_men_women Lauds antiphon 3]'
+      short_reading:
+        reference: holy_men_women Lauds reading
+        text: '[Short reading: holy_men_women Lauds reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      benedictus_antiphon:
+        text: '[holy_men_women Benedictus antiphon]'
+      intercessions:
+        introduction: '[Lauds intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[holy_men_women concluding prayer]'
+    terce:
+      hymn:
+        stanzas:
+          - '[holy_men_women Terce hymn, stanza 1]'
+          - '[holy_men_women Terce hymn, stanza 2]'
+        doxology: '[holy_men_women Terce hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[holy_men_women Terce antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[holy_men_women Terce antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[holy_men_women Terce antiphon 3]'
+      antiphons:
+        - text: '[holy_men_women Terce gradual antiphon 1]'
+        - text: '[holy_men_women Terce gradual antiphon 2]'
+        - text: '[holy_men_women Terce gradual antiphon 3]'
+      short_reading:
+        reference: holy_men_women Terce reading
+        text: '[Short reading: holy_men_women Terce reading]'
+      versicle:
+        verse: '[holy_men_women Terce versicle]'
+        response: '[holy_men_women Terce response]'
+      concluding_prayer:
+        text: '[holy_men_women concluding prayer]'
+    sext:
+      hymn:
+        stanzas:
+          - '[holy_men_women Sext hymn, stanza 1]'
+          - '[holy_men_women Sext hymn, stanza 2]'
+        doxology: '[holy_men_women Sext hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[holy_men_women Sext antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[holy_men_women Sext antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[holy_men_women Sext antiphon 3]'
+      antiphons:
+        - text: '[holy_men_women Sext gradual antiphon 1]'
+        - text: '[holy_men_women Sext gradual antiphon 2]'
+        - text: '[holy_men_women Sext gradual antiphon 3]'
+      short_reading:
+        reference: holy_men_women Sext reading
+        text: '[Short reading: holy_men_women Sext reading]'
+      versicle:
+        verse: '[holy_men_women Sext versicle]'
+        response: '[holy_men_women Sext response]'
+      concluding_prayer:
+        text: '[holy_men_women concluding prayer]'
+    none:
+      hymn:
+        stanzas:
+          - '[holy_men_women None hymn, stanza 1]'
+          - '[holy_men_women None hymn, stanza 2]'
+        doxology: '[holy_men_women None hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[holy_men_women None antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[holy_men_women None antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[holy_men_women None antiphon 3]'
+      antiphons:
+        - text: '[holy_men_women None gradual antiphon 1]'
+        - text: '[holy_men_women None gradual antiphon 2]'
+        - text: '[holy_men_women None gradual antiphon 3]'
+      short_reading:
+        reference: holy_men_women None reading
+        text: '[Short reading: holy_men_women None reading]'
+      versicle:
+        verse: '[holy_men_women None versicle]'
+        response: '[holy_men_women None response]'
+      concluding_prayer:
+        text: '[holy_men_women concluding prayer]'
+    vespers:
+      hymn:
+        stanzas:
+          - '[holy_men_women Vespers hymn, stanza 1]'
+          - '[holy_men_women Vespers hymn, stanza 2]'
+        doxology: '[holy_men_women Vespers hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[holy_men_women Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[holy_men_women Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[holy_men_women Vespers antiphon 3]'
+      short_reading:
+        reference: holy_men_women Vespers reading
+        text: '[Short reading: holy_men_women Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[holy_men_women Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[holy_men_women concluding prayer]'

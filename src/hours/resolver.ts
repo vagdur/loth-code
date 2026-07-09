@@ -67,17 +67,20 @@ export function hymnRef(
 ): SlotSource {
   const { celebration: c, psalterWeek: w, psalterDay: d, hymnSeries } = ctx;
   const psalterField = `${hourField}.${hymnSeries}`;
+  // Propers (seasonal, saint, common) carry a single hymn per hour;
+  // only the psalter has the week-parity HymnSet.
+  const properField = hourField.replace(/\.hymns$/, ".hymn");
 
   if (c.source === "saint" && c.saintId) {
     return chain(
-      saintSrc(c.saintId, `${hourField}`),
-      ...commonSources(c.applicableCommons, 0, `${hourField}.${hymnSeries}`),
+      saintSrc(c.saintId, properField),
+      ...commonSources(c.applicableCommons, 0, properField),
       psalterSrc(w, d, psalterField),
     );
   }
   if (c.seasonalKey) {
     return chain(
-      seasonalSrc(c.seasonalKey, hourField),
+      seasonalSrc(c.seasonalKey, properField),
       psalterSrc(w, d, psalterField),
     );
   }
@@ -140,7 +143,7 @@ export function shortReadingRef(
 
 export function antiphonRef(
   ctx: SlotContext,
-  field: string,    // e.g. "lauds.benedictuAntiphon"
+  field: string,    // e.g. "lauds.benedictusAntiphon"
   psalterField: string, // may differ from `field` for the psalter path
 ): SlotSource {
   const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
@@ -318,4 +321,20 @@ export function marianAntiphonRef(season: Season): SlotSource {
     : season === "advent" || season === "christmas" ? "marianAntiphons.adventThroughFeb2"
     : "marianAntiphons.ordinaryTime"; // simplified; Feb 2 crossover handled separately
   return fixedSrc(field);
+}
+
+// ---------------------------------------------------------------------------
+// Season-scoped daytime-prayer defaults
+// ---------------------------------------------------------------------------
+
+/**
+ * Coarse fallback keys for daytime-prayer propers that a whole season shares,
+ * most specific first: the weekday-specific season default (Eastertide varies
+ * by weekday), then the weekday-invariant season default (Advent and Lent are
+ * the same every day). These are distinct from real per-day keys and are
+ * consulted after the day's own proper and before the psalter.
+ */
+export function seasonDaytimeKeys(season: Season, weekday: Weekday): string[] {
+  const wd = weekday.toLowerCase();
+  return [`daytime_${season}_${wd}`, `daytime_${season}`];
 }

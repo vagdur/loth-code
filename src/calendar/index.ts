@@ -13,7 +13,7 @@ import {
 } from "./celebrationRanking.js";
 import {
   getOrdinaryTimeWeek, getPsalterWeek, getReadingYear,
-  getSeason, getSeasonalDayKey, getWeekday,
+  getSeason, getSeasonalDayKey, getSundayCycle, getWeekday,
 } from "./liturgicalYear.js";
 import { getSaintsOnDate } from "./saints.js";
 import type {
@@ -33,6 +33,7 @@ export function resolveDay(
   const psalterWeek = getPsalterWeek(date, _calendarId);
   const psalterDay = getWeekday(date);
   const readingYear = getReadingYear(date);
+  const sundayCycle = getSundayCycle(date);
   const ordinaryTimeWeek = getOrdinaryTimeWeek(date, _calendarId);
   const seasonalKey = getSeasonalDayKey(date, _calendarId);
 
@@ -50,6 +51,7 @@ export function resolveDay(
     psalterWeek,
     psalterDay,
     readingYear,
+    sundayCycle,
     ordinaryTimeWeek,
     celebration,
     evening,

@@ -1,0 +1,249 @@
+type: apostles
+variants:
+  - label: '[apostles variant 1]'
+    invitatory_antiphon:
+      text: '[apostles invitatory]'
+    office_of_readings:
+      hymns:
+        night:
+          stanzas:
+            - '[apostles OoR night hymn, stanza 1]'
+            - '[apostles OoR night hymn, stanza 2]'
+          doxology: '[apostles OoR night hymn, doxology]'
+        day:
+          stanzas:
+            - '[apostles OoR day hymn, stanza 1]'
+            - '[apostles OoR day hymn, stanza 2]'
+          doxology: '[apostles OoR day hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[apostles OoR antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[apostles OoR antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[apostles OoR antiphon 3]'
+      versicle:
+        verse: '[apostles OoR versicle]'
+        response: '[apostles OoR response]'
+      biblical_reading:
+        reference: '[apostles biblical ref]'
+        text: '[apostles biblical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      patristic_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[apostles patristic ref]'
+        biographical_note: '[Note]'
+        text: '[apostles patristic reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      hagiographical_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[apostles hagiographical ref]'
+        biographical_note: '[Note]'
+        text: '[apostles hagiographical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+    first_vespers:
+      hymn:
+        stanzas:
+          - '[apostles First Vespers hymn, stanza 1]'
+          - '[apostles First Vespers hymn, stanza 2]'
+        doxology: '[apostles First Vespers hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[apostles First Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[apostles First Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[apostles First Vespers antiphon 3]'
+      short_reading:
+        reference: apostles First Vespers reading
+        text: '[Short reading: apostles First Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[apostles First Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[First Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[apostles concluding prayer]'
+    lauds:
+      hymn:
+        stanzas:
+          - '[apostles Lauds hymn, stanza 1]'
+          - '[apostles Lauds hymn, stanza 2]'
+        doxology: '[apostles Lauds hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[apostles Lauds antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[apostles Lauds antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[apostles Lauds antiphon 3]'
+      short_reading:
+        reference: apostles Lauds reading
+        text: '[Short reading: apostles Lauds reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      benedictus_antiphon:
+        text: '[apostles Benedictus antiphon]'
+      intercessions:
+        introduction: '[Lauds intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[apostles concluding prayer]'
+    terce:
+      hymn:
+        stanzas:
+          - '[apostles Terce hymn, stanza 1]'
+          - '[apostles Terce hymn, stanza 2]'
+        doxology: '[apostles Terce hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[apostles Terce antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[apostles Terce antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[apostles Terce antiphon 3]'
+      antiphons:
+        - text: '[apostles Terce gradual antiphon 1]'
+        - text: '[apostles Terce gradual antiphon 2]'
+        - text: '[apostles Terce gradual antiphon 3]'
+      short_reading:
+        reference: apostles Terce reading
+        text: '[Short reading: apostles Terce reading]'
+      versicle:
+        verse: '[apostles Terce versicle]'
+        response: '[apostles Terce response]'
+      concluding_prayer:
+        text: '[apostles concluding prayer]'
+    sext:
+      hymn:
+        stanzas:
+          - '[apostles Sext hymn, stanza 1]'
+          - '[apostles Sext hymn, stanza 2]'
+        doxology: '[apostles Sext hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[apostles Sext antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[apostles Sext antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[apostles Sext antiphon 3]'
+      antiphons:
+        - text: '[apostles Sext gradual antiphon 1]'
+        - text: '[apostles Sext gradual antiphon 2]'
+        - text: '[apostles Sext gradual antiphon 3]'
+      short_reading:
+        reference: apostles Sext reading
+        text: '[Short reading: apostles Sext reading]'
+      versicle:
+        verse: '[apostles Sext versicle]'
+        response: '[apostles Sext response]'
+      concluding_prayer:
+        text: '[apostles concluding prayer]'
+    none:
+      hymn:
+        stanzas:
+          - '[apostles None hymn, stanza 1]'
+          - '[apostles None hymn, stanza 2]'
+        doxology: '[apostles None hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[apostles None antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[apostles None antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[apostles None antiphon 3]'
+      antiphons:
+        - text: '[apostles None gradual antiphon 1]'
+        - text: '[apostles None gradual antiphon 2]'
+        - text: '[apostles None gradual antiphon 3]'
+      short_reading:
+        reference: apostles None reading
+        text: '[Short reading: apostles None reading]'
+      versicle:
+        verse: '[apostles None versicle]'
+        response: '[apostles None response]'
+      concluding_prayer:
+        text: '[apostles concluding prayer]'
+    vespers:
+      hymn:
+        stanzas:
+          - '[apostles Vespers hymn, stanza 1]'
+          - '[apostles Vespers hymn, stanza 2]'
+        doxology: '[apostles Vespers hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[apostles Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[apostles Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[apostles Vespers antiphon 3]'
+      short_reading:
+        reference: apostles Vespers reading
+        text: '[Short reading: apostles Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[apostles Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[apostles concluding prayer]'

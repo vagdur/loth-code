@@ -32,11 +32,9 @@ te_deum:
 
 lords_prayer: "[Our Father — full text]"
 
-compline_responsory: |
-  [℣. Into your hands, Lord, I commend my spirit.
-  ℟. Into your hands, Lord, I commend my spirit.
-  ℣. You have redeemed us, Lord God of truth.
-  ℟. I commend my spirit.]
+compline_responsory:
+  text: "[Into your hands, Lord, I commend my spirit]"
+  versicle: "[You have redeemed us, Lord God of truth]"
 
 compline_blessing: "[℣. The Lord grant us a quiet night and a perfect end. ℟. Amen.]"
 

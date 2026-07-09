@@ -1,0 +1,9 @@
+id: francis_of_assisi
+name: St. Francis of Assisi
+rank: obligatory_memoria
+calendar_position:
+  type: fixed
+  month: 10
+  day: 4
+applicable_commons:
+  - holy_men_women

@@ -1,0 +1,249 @@
+type: dedication_of_a_church
+variants:
+  - label: '[dedication_of_a_church variant 1]'
+    invitatory_antiphon:
+      text: '[dedication_of_a_church invitatory]'
+    office_of_readings:
+      hymns:
+        night:
+          stanzas:
+            - '[dedication_of_a_church OoR night hymn, stanza 1]'
+            - '[dedication_of_a_church OoR night hymn, stanza 2]'
+          doxology: '[dedication_of_a_church OoR night hymn, doxology]'
+        day:
+          stanzas:
+            - '[dedication_of_a_church OoR day hymn, stanza 1]'
+            - '[dedication_of_a_church OoR day hymn, stanza 2]'
+          doxology: '[dedication_of_a_church OoR day hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[dedication_of_a_church OoR antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[dedication_of_a_church OoR antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[dedication_of_a_church OoR antiphon 3]'
+      versicle:
+        verse: '[dedication_of_a_church OoR versicle]'
+        response: '[dedication_of_a_church OoR response]'
+      biblical_reading:
+        reference: '[dedication_of_a_church biblical ref]'
+        text: '[dedication_of_a_church biblical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      patristic_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[dedication_of_a_church patristic ref]'
+        biographical_note: '[Note]'
+        text: '[dedication_of_a_church patristic reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+      hagiographical_reading:
+        author: '[Author]'
+        work: '[Work]'
+        reference: '[dedication_of_a_church hagiographical ref]'
+        biographical_note: '[Note]'
+        text: '[dedication_of_a_church hagiographical reading]'
+        responsory:
+          text: '[Responsory text]'
+          verse: '[Responsory verse]'
+          repeat_cue: '[Repeat]'
+    first_vespers:
+      hymn:
+        stanzas:
+          - '[dedication_of_a_church First Vespers hymn, stanza 1]'
+          - '[dedication_of_a_church First Vespers hymn, stanza 2]'
+        doxology: '[dedication_of_a_church First Vespers hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[dedication_of_a_church First Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[dedication_of_a_church First Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[dedication_of_a_church First Vespers antiphon 3]'
+      short_reading:
+        reference: dedication_of_a_church First Vespers reading
+        text: '[Short reading: dedication_of_a_church First Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[dedication_of_a_church First Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[First Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[dedication_of_a_church concluding prayer]'
+    lauds:
+      hymn:
+        stanzas:
+          - '[dedication_of_a_church Lauds hymn, stanza 1]'
+          - '[dedication_of_a_church Lauds hymn, stanza 2]'
+        doxology: '[dedication_of_a_church Lauds hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[dedication_of_a_church Lauds antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[dedication_of_a_church Lauds antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[dedication_of_a_church Lauds antiphon 3]'
+      short_reading:
+        reference: dedication_of_a_church Lauds reading
+        text: '[Short reading: dedication_of_a_church Lauds reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      benedictus_antiphon:
+        text: '[dedication_of_a_church Benedictus antiphon]'
+      intercessions:
+        introduction: '[Lauds intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[dedication_of_a_church concluding prayer]'
+    terce:
+      hymn:
+        stanzas:
+          - '[dedication_of_a_church Terce hymn, stanza 1]'
+          - '[dedication_of_a_church Terce hymn, stanza 2]'
+        doxology: '[dedication_of_a_church Terce hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[dedication_of_a_church Terce antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[dedication_of_a_church Terce antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[dedication_of_a_church Terce antiphon 3]'
+      antiphons:
+        - text: '[dedication_of_a_church Terce gradual antiphon 1]'
+        - text: '[dedication_of_a_church Terce gradual antiphon 2]'
+        - text: '[dedication_of_a_church Terce gradual antiphon 3]'
+      short_reading:
+        reference: dedication_of_a_church Terce reading
+        text: '[Short reading: dedication_of_a_church Terce reading]'
+      versicle:
+        verse: '[dedication_of_a_church Terce versicle]'
+        response: '[dedication_of_a_church Terce response]'
+      concluding_prayer:
+        text: '[dedication_of_a_church concluding prayer]'
+    sext:
+      hymn:
+        stanzas:
+          - '[dedication_of_a_church Sext hymn, stanza 1]'
+          - '[dedication_of_a_church Sext hymn, stanza 2]'
+        doxology: '[dedication_of_a_church Sext hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[dedication_of_a_church Sext antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[dedication_of_a_church Sext antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[dedication_of_a_church Sext antiphon 3]'
+      antiphons:
+        - text: '[dedication_of_a_church Sext gradual antiphon 1]'
+        - text: '[dedication_of_a_church Sext gradual antiphon 2]'
+        - text: '[dedication_of_a_church Sext gradual antiphon 3]'
+      short_reading:
+        reference: dedication_of_a_church Sext reading
+        text: '[Short reading: dedication_of_a_church Sext reading]'
+      versicle:
+        verse: '[dedication_of_a_church Sext versicle]'
+        response: '[dedication_of_a_church Sext response]'
+      concluding_prayer:
+        text: '[dedication_of_a_church concluding prayer]'
+    none:
+      hymn:
+        stanzas:
+          - '[dedication_of_a_church None hymn, stanza 1]'
+          - '[dedication_of_a_church None hymn, stanza 2]'
+        doxology: '[dedication_of_a_church None hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[dedication_of_a_church None antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[dedication_of_a_church None antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[dedication_of_a_church None antiphon 3]'
+      antiphons:
+        - text: '[dedication_of_a_church None gradual antiphon 1]'
+        - text: '[dedication_of_a_church None gradual antiphon 2]'
+        - text: '[dedication_of_a_church None gradual antiphon 3]'
+      short_reading:
+        reference: dedication_of_a_church None reading
+        text: '[Short reading: dedication_of_a_church None reading]'
+      versicle:
+        verse: '[dedication_of_a_church None versicle]'
+        response: '[dedication_of_a_church None response]'
+      concluding_prayer:
+        text: '[dedication_of_a_church concluding prayer]'
+    vespers:
+      hymn:
+        stanzas:
+          - '[dedication_of_a_church Vespers hymn, stanza 1]'
+          - '[dedication_of_a_church Vespers hymn, stanza 2]'
+        doxology: '[dedication_of_a_church Vespers hymn, doxology]'
+      psalm_assignments:
+        - psalm_or_canticle_id: psalm_112
+          antiphon:
+            text: '[dedication_of_a_church Vespers antiphon 1]'
+        - psalm_or_canticle_id: psalm_116
+          antiphon:
+            text: '[dedication_of_a_church Vespers antiphon 2]'
+        - psalm_or_canticle_id: nt_phil2
+          antiphon:
+            text: '[dedication_of_a_church Vespers antiphon 3]'
+      short_reading:
+        reference: dedication_of_a_church Vespers reading
+        text: '[Short reading: dedication_of_a_church Vespers reading]'
+      short_responsory:
+        text: '[Short responsory]'
+        versicle: '[Short responsory versicle]'
+      magnificat_antiphon:
+        text: '[dedication_of_a_church Vespers Magnificat antiphon]'
+      intercessions:
+        introduction: '[Vespers intercessions introduction]'
+        response: Lord, have mercy.
+        intentions:
+          - first_part: '[Intention 1]'
+            second_part: '[Response 1]'
+          - first_part: '[Intention 2]'
+            second_part: '[Response 2]'
+          - first_part: '[Intention 3]'
+            second_part: '[Response 3]'
+      concluding_prayer:
+        text: '[dedication_of_a_church concluding prayer]'

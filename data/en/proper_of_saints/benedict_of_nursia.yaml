@@ -1,0 +1,10 @@
+id: benedict_of_nursia
+name: St. Benedict of Nursia
+rank: feast
+calendar_position:
+  type: fixed
+  month: 7
+  day: 11
+applicable_commons:
+  - doctors
+  - holy_men_women

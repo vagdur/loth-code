@@ -9,7 +9,6 @@ entries:
     applicable_commons:
       - bvm
     transfer_rule: annunciation_gnly60
-
   - id: immaculate_conception
     name: Immaculate Conception of the Blessed Virgin Mary
     rank: solemnity
@@ -19,7 +18,6 @@ entries:
       day: 8
     applicable_commons:
       - bvm
-
   - id: francis_of_assisi
     name: St. Francis of Assisi
     rank: obligatory_memoria
@@ -29,7 +27,6 @@ entries:
       day: 4
     applicable_commons:
       - holy_men_women
-
   - id: st_birgitta
     name: St. Birgitta of Sweden
     rank: feast
@@ -39,3 +36,211 @@ entries:
       day: 23
     applicable_commons:
       - holy_men_women
+  - id: conversion_of_paul
+    name: Conversion of St. Paul
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 1
+      day: 25
+    applicable_commons:
+      - apostles
+  - id: presentation_of_the_lord
+    name: Presentation of the Lord
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 2
+      day: 2
+    applicable_commons:
+      - bvm
+  - id: cyril_methodius
+    name: St. Cyril and Methodius
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 2
+      day: 14
+    applicable_commons:
+      - doctors
+  - id: peters_chair
+    name: Chair of St. Peter
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 2
+      day: 22
+    applicable_commons:
+      - apostles
+  - id: joseph_spouse_of_mary
+    name: St. Joseph, Spouse of Mary
+    rank: solemnity
+    calendar_position:
+      type: fixed
+      month: 3
+      day: 19
+    applicable_commons:
+      - holy_men_women
+  - id: mark_evangelist
+    name: St. Mark, Evangelist
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 4
+      day: 25
+    applicable_commons:
+      - apostles
+  - id: catherine_of_siena
+    name: St. Catherine of Siena
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 4
+      day: 29
+    applicable_commons:
+      - virgins
+      - doctors
+  - id: philip_james_apostles
+    name: St. Philip and St. James, Apostles
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 5
+      day: 3
+    applicable_commons:
+      - apostles
+  - id: matthias_apostle
+    name: St. Matthias, Apostle
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 5
+      day: 14
+    applicable_commons:
+      - apostles
+  - id: visitation_of_mary
+    name: Visitation of the Blessed Virgin Mary
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 5
+      day: 31
+    applicable_commons:
+      - bvm
+  - id: peter_paul_apostles
+    name: St. Peter and St. Paul, Apostles
+    rank: solemnity
+    calendar_position:
+      type: fixed
+      month: 6
+      day: 29
+    applicable_commons:
+      - apostles
+  - id: benedict_of_nursia
+    name: St. Benedict of Nursia
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 7
+      day: 11
+    applicable_commons:
+      - doctors
+      - holy_men_women
+  - id: mary_magdalene
+    name: St. Mary Magdalene
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 7
+      day: 22
+    applicable_commons:
+      - holy_men_women
+  - id: james_apostle
+    name: St. James the Greater, Apostle
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 7
+      day: 25
+    applicable_commons:
+      - apostles
+  - id: transfiguration_of_the_lord
+    name: Transfiguration of the Lord
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 8
+      day: 6
+    applicable_commons: []
+  - id: teresa_benedicta_of_the_cross
+    name: St. Teresa Benedicta of the Cross
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 8
+      day: 9
+    applicable_commons:
+      - virgins
+      - doctors
+  - id: lawrence_deacon
+    name: St. Lawrence, Deacon and Martyr
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 8
+      day: 10
+    applicable_commons:
+      - martyrs
+  - id: assumption_of_mary
+    name: Assumption of the Blessed Virgin Mary
+    rank: solemnity
+    calendar_position:
+      type: fixed
+      month: 8
+      day: 15
+    applicable_commons:
+      - bvm
+  - id: nativity_of_mary
+    name: Nativity of the Blessed Virgin Mary
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 9
+      day: 8
+    applicable_commons:
+      - bvm
+  - id: matthew_apostle
+    name: St. Matthew, Apostle and Evangelist
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 9
+      day: 21
+    applicable_commons:
+      - apostles
+  - id: michael_gabriel_raphael
+    name: St. Michael, Gabriel and Raphael, Archangels
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 9
+      day: 29
+    applicable_commons: []
+  - id: luke_evangelist
+    name: St. Luke, Evangelist
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 10
+      day: 18
+    applicable_commons:
+      - apostles
+  - id: andrew_apostle
+    name: St. Andrew, Apostle
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 11
+      day: 30
+    applicable_commons:
+      - apostles

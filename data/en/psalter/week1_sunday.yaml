@@ -141,6 +141,48 @@ none:
     response: '[None versicle response]'
   concluding_prayer:
     text: '[Week 1 Sunday None concluding prayer]'
+first_vespers:
+  hymns:
+    series_a:
+      stanzas:
+        - '[Week 1 Sunday I Vespers hymn A, stanza 1]'
+        - '[Week 1 Sunday I Vespers hymn A, stanza 2]'
+      doxology: '[Week 1 Sunday I Vespers hymn A, doxology]'
+    series_b:
+      stanzas:
+        - '[Week 1 Sunday I Vespers hymn B, stanza 1]'
+        - '[Week 1 Sunday I Vespers hymn B, stanza 2]'
+      doxology: '[Week 1 Sunday I Vespers hymn B, doxology]'
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_140
+      antiphon:
+        text: '[I Vespers psalm 1]'
+    - psalm_or_canticle_id: psalm_141
+      antiphon:
+        text: '[I Vespers psalm 2]'
+    - psalm_or_canticle_id: nt_phil2
+      antiphon:
+        text: '[I Vespers NT canticle]'
+  short_reading:
+    reference: Rom 11:33-36
+    text: '[Short reading: Rom 11:33-36]'
+  short_responsory:
+    text: '[Short responsory]'
+    versicle: '[Short responsory versicle]'
+  magnificat_antiphon:
+    text: '[Week 1 Sunday I Vespers Magnificat antiphon]'
+  intercessions:
+    introduction: '[First Vespers intercessions introduction]'
+    response: Lord, have mercy.
+    intentions:
+      - first_part: '[Intention 1]'
+        second_part: '[Response 1]'
+      - first_part: '[Intention 2]'
+        second_part: '[Response 2]'
+      - first_part: '[Intention 3]'
+        second_part: '[Response 3]'
+  concluding_prayer:
+    text: '[Week 1 Sunday I Vespers concluding prayer]'
 vespers:
   hymns:
     series_a:
@@ -203,7 +245,7 @@ compline:
   default_psalm_assignments:
     - psalm_or_canticle_id: psalm_90
       antiphon:
-        text: '[Compline default]'
+        text: '[Compline psalm 1]'
   short_reading:
     reference: Rev 22:4-5
     text: '[Short reading: Rev 22:4-5]'

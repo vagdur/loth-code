@@ -18,6 +18,7 @@ import type {
 import type { PsalterDay, PsalterWeek, ComplementaryPsalmGroup, Weekday } from "../types/psalter.js";
 import type { Common, CommonType, SeasonalProperDay, SaintEntry } from "../types/proper.js";
 import type { SlotSourceDirect } from "../types/hours.js";
+import type { StoredMelody } from "../types/melody.js";
 
 // ---------------------------------------------------------------------------
 // YAML loading helpers
@@ -66,6 +67,8 @@ export class DataRepository {
   private saints:       Map<string, SaintEntry>         = new Map();
   private commons:      Map<CommonType, Common>         = new Map();
   private fixedTexts:   FixedTexts | null               = null;
+  private melodies:     Map<string, StoredMelody>       = new Map();
+  private melodyAliases: Map<string, string>            = new Map();
   readonly locale: string;
 
   private constructor(locale: string) {
@@ -80,7 +83,7 @@ export class DataRepository {
     const localeDir = path.join(dataRoot, locale);
     const repo = new DataRepository(locale);
 
-    const [psalms, canticles, psalterDays, compGroups, seasonalDays, saintEntries, commonEntries, fixed] =
+    const [psalms, canticles, psalterDays, compGroups, seasonalDays, saintEntries, commonEntries, fixed, melodyBundles] =
       await Promise.all([
         loadYamlDir<Psalm>(path.join(localeDir, "psalms")),
         loadYamlDir<Canticle>(path.join(localeDir, "canticles")),
@@ -90,6 +93,7 @@ export class DataRepository {
         loadYamlDir<SaintEntry>(path.join(localeDir, "proper_of_saints")),
         loadYamlDir<Common>(path.join(localeDir, "commons")),
         loadYaml<FixedTexts>(path.join(localeDir, "fixed_texts.yaml")).catch(() => null),
+        loadYamlDir<StoredMelody[]>(path.join(localeDir, "melodies")),
       ]);
 
     for (const p of psalms)       repo.psalms.set(p.id, p);
@@ -100,6 +104,12 @@ export class DataRepository {
     for (const s of saintEntries) repo.saints.set(s.id, s);
     for (const c of commonEntries) repo.commons.set(c.type, c);
     repo.fixedTexts = fixed;
+    for (const bundle of melodyBundles) {
+      for (const m of bundle ?? []) {
+        repo.melodies.set(m.id, m);
+        for (const alias of m.aliases ?? []) repo.melodyAliases.set(alias, m.id);
+      }
+    }
 
     return repo;
   }
@@ -155,6 +165,20 @@ export class DataRepository {
 
   getFixedTexts(): FixedTexts | undefined {
     return this.fixedTexts ?? undefined;
+  }
+
+  /** Look up a stored melody by id, following duplicate aliases. */
+  getMelody(id: string): StoredMelody | undefined {
+    return this.melodies.get(id) ?? this.melodies.get(this.melodyAliases.get(id) ?? "");
+  }
+
+  getAllMelodies(): StoredMelody[] {
+    return [...this.melodies.values()];
+  }
+
+  /** True when `id` resolves only via a duplicate alias (should be canonicalized). */
+  isMelodyAlias(id: string): boolean {
+    return !this.melodies.has(id) && this.melodyAliases.has(id);
   }
 
   getAssemblerLabels(): AssemblerLabels {

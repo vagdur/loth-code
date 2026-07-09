@@ -1,0 +1,9 @@
+id: joseph_spouse_of_mary
+name: St. Joseph, Spouse of Mary
+rank: solemnity
+calendar_position:
+  type: fixed
+  month: 3
+  day: 19
+applicable_commons:
+  - holy_men_women

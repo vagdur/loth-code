@@ -1,0 +1,9 @@
+id: philip_james_apostles
+name: St. Philip and St. James, Apostles
+rank: feast
+calendar_position:
+  type: fixed
+  month: 5
+  day: 3
+applicable_commons:
+  - apostles

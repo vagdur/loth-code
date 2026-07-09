@@ -1,0 +1,8 @@
+id: transfiguration_of_the_lord
+name: Transfiguration of the Lord
+rank: feast
+calendar_position:
+  type: fixed
+  month: 8
+  day: 6
+applicable_commons: []

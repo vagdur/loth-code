@@ -1,6 +1,10 @@
 /**
  * Generates psalter, psalm/canticle stubs, complementary psalmody,
- * and seasonal proper OoR stubs. Run: node scripts/generate-data.mjs
+ * and seasonal proper OoR stubs.
+ *
+ * Run: node scripts/generate-data.mjs [--locale <loc>]     (default: en)
+ * For a non-en locale, fixed_texts.yaml and calendars/ are seeded as copies
+ * of the en versions when absent (to be translated in place).
  */
 
 import fs from "fs/promises";
@@ -10,7 +14,14 @@ import yaml from "js-yaml";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
-const dataDir = path.join(repoRoot, "data", "en");
+
+function argValue(flag, fallback) {
+  const i = process.argv.indexOf(flag);
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
+}
+
+const locale = argValue("--locale", "en");
+const dataDir = path.join(repoRoot, "data", locale);
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const PS118 = [
@@ -44,6 +55,25 @@ const OOR_PSALMS = [
   ["psalm_99", "psalm_23", "psalm_66"],
   ["psalm_100", "psalm_24", "psalm_67"],
   ["psalm_92", "psalm_8", "psalm_63"],
+];
+
+/** Ferial Compline psalms per weekday (LXX numbering; Wednesday has two). */
+const COMPLINE_FERIAL_PSALMS = {
+  Sunday: ["psalm_90"],
+  Monday: ["psalm_85"],
+  Tuesday: ["psalm_142"],
+  Wednesday: ["psalm_30", "psalm_129"],
+  Thursday: ["psalm_15"],
+  Friday: ["psalm_87"],
+  Saturday: ["psalm_90"],
+};
+
+/** Sunday First Vespers psalmody per week (LXX numbering; canticle always Phil 2). */
+const FIRST_VESPERS_PSALMS = [
+  ["psalm_140", "psalm_141", "nt_phil2"],
+  ["psalm_118_xiv", "psalm_15", "nt_phil2"],
+  ["psalm_112", "psalm_115", "nt_phil2"],
+  ["psalm_121", "psalm_129", "nt_phil2"],
 ];
 
 const VESPERS_PSALMS = [
@@ -158,6 +188,23 @@ function buildPsalterDay(week, dayName) {
     terce: daytimeHour("Terce"),
     sext: daytimeHour("Sext"),
     none: daytimeHour("None"),
+    ...(dayName === "Sunday"
+      ? {
+          first_vespers: {
+            hymns: { series_a: stubHymn(`${label} I Vespers hymn A`), series_b: stubHymn(`${label} I Vespers hymn B`) },
+            psalm_assignments: [
+              psalmSlot(FIRST_VESPERS_PSALMS[w][0], "I Vespers psalm 1"),
+              psalmSlot(FIRST_VESPERS_PSALMS[w][1], "I Vespers psalm 2"),
+              psalmSlot(FIRST_VESPERS_PSALMS[w][2], "I Vespers NT canticle"),
+            ],
+            short_reading: stubReading("Rom 11:33-36"),
+            short_responsory: { text: "[Short responsory]", versicle: "[Short responsory versicle]" },
+            magnificat_antiphon: stubAntiphon(`${label} I Vespers Magnificat antiphon`),
+            intercessions: stubIntercessions("First Vespers"),
+            concluding_prayer: { text: `[${label} I Vespers concluding prayer]` },
+          },
+        }
+      : {}),
     vespers: {
       hymns: { series_a: stubHymn(`${label} Vespers hymn A`), series_b: stubHymn(`${label} Vespers hymn B`) },
       psalm_assignments: [
@@ -178,7 +225,9 @@ function buildPsalterDay(week, dayName) {
         psalmSlot("psalm_133", "Compline after I Vespers 2"),
       ],
       after_second_vespers: [psalmSlot("psalm_90", "Compline after II Vespers")],
-      default_psalm_assignments: [psalmSlot("psalm_90", "Compline default")],
+      default_psalm_assignments: COMPLINE_FERIAL_PSALMS[dayName].map((id, i) =>
+        psalmSlot(id, `Compline psalm ${i + 1}`),
+      ),
       short_reading: stubReading("Rev 22:4-5"),
       nunc_dimittis_antiphon: stubAntiphon(`${label} Nunc Dimittis antiphon`),
       concluding_prayer: { text: `[${label} Compline concluding prayer]` },
@@ -380,7 +429,137 @@ Regenerate files: \`npm run generate:data\`
   await fs.writeFile(path.join(dataDir, "psalter", "README.md"), readme, "utf-8");
 }
 
+/** One proper_of_saints stub per sanctoral calendar entry (sparse: core fields only). */
+async function generateSaintStubs() {
+  const entriesPath = path.join(dataDir, "calendars", "general", "entries.yaml");
+  let doc;
+  try {
+    doc = yaml.load(await fs.readFile(entriesPath, "utf-8"));
+  } catch {
+    return 0;
+  }
+  const dir = path.join(dataDir, "proper_of_saints");
+  let created = 0;
+  for (const e of doc?.entries ?? []) {
+    const fp = path.join(dir, `${e.id}.yaml`);
+    try {
+      await fs.access(fp);
+    } catch {
+      await writeYaml(fp, {
+        id: e.id,
+        name: e.name,
+        rank: e.rank,
+        calendar_position: e.calendar_position,
+        applicable_commons: e.applicable_commons ?? [],
+      });
+      created += 1;
+    }
+  }
+  return created;
+}
+
+const COMMON_TYPES = [
+  "dedication_of_a_church", "bvm", "apostles", "martyrs",
+  "pastors", "doctors", "virgins", "holy_men_women",
+];
+
+/** Complete stub CommonVariant — Commons are the fallback terminus (no absent fields). */
+function stubCommonVariant(type) {
+  const label = `[${type} variant 1]`;
+  const resp = { text: "[Responsory text]", verse: "[Responsory verse]", repeat_cue: "[Repeat]" };
+  const psalmody = (hour) => [
+    { psalm_or_canticle_id: "psalm_112", antiphon: stubAntiphon(`${type} ${hour} antiphon 1`) },
+    { psalm_or_canticle_id: "psalm_116", antiphon: stubAntiphon(`${type} ${hour} antiphon 2`) },
+    { psalm_or_canticle_id: "nt_phil2", antiphon: stubAntiphon(`${type} ${hour} antiphon 3`) },
+  ];
+  const vespersSlot = (hour) => ({
+    hymn: stubHymn(`${type} ${hour} hymn`),
+    psalm_assignments: psalmody(hour),
+    short_reading: stubReading(`${type} ${hour} reading`),
+    short_responsory: { text: "[Short responsory]", versicle: "[Short responsory versicle]" },
+    magnificat_antiphon: stubAntiphon(`${type} ${hour} Magnificat antiphon`),
+    intercessions: stubIntercessions(hour),
+    concluding_prayer: { text: `[${type} concluding prayer]` },
+  });
+  const daytimeSlot = (hour) => ({
+    hymn: stubHymn(`${type} ${hour} hymn`),
+    psalm_assignments: psalmody(hour),
+    antiphons: [1, 2, 3].map((i) => stubAntiphon(`${type} ${hour} gradual antiphon ${i}`)),
+    short_reading: stubReading(`${type} ${hour} reading`),
+    versicle: { verse: `[${type} ${hour} versicle]`, response: `[${type} ${hour} response]` },
+    concluding_prayer: { text: `[${type} concluding prayer]` },
+  });
+  return {
+    label,
+    invitatory_antiphon: stubAntiphon(`${type} invitatory`),
+    office_of_readings: {
+      hymns: { night: stubHymn(`${type} OoR night hymn`), day: stubHymn(`${type} OoR day hymn`) },
+      psalm_assignments: psalmody("OoR"),
+      versicle: { verse: `[${type} OoR versicle]`, response: `[${type} OoR response]` },
+      biblical_reading: { reference: `[${type} biblical ref]`, text: `[${type} biblical reading]`, responsory: resp },
+      patristic_reading: {
+        author: "[Author]", work: "[Work]", reference: `[${type} patristic ref]`,
+        biographical_note: "[Note]", text: `[${type} patristic reading]`, responsory: resp,
+      },
+      hagiographical_reading: {
+        author: "[Author]", work: "[Work]", reference: `[${type} hagiographical ref]`,
+        biographical_note: "[Note]", text: `[${type} hagiographical reading]`, responsory: resp,
+      },
+    },
+    first_vespers: vespersSlot("First Vespers"),
+    lauds: {
+      hymn: stubHymn(`${type} Lauds hymn`),
+      psalm_assignments: psalmody("Lauds"),
+      short_reading: stubReading(`${type} Lauds reading`),
+      short_responsory: { text: "[Short responsory]", versicle: "[Short responsory versicle]" },
+      benedictus_antiphon: stubAntiphon(`${type} Benedictus antiphon`),
+      intercessions: stubIntercessions("Lauds"),
+      concluding_prayer: { text: `[${type} concluding prayer]` },
+    },
+    terce: daytimeSlot("Terce"),
+    sext: daytimeSlot("Sext"),
+    none: daytimeSlot("None"),
+    vespers: vespersSlot("Vespers"),
+  };
+}
+
+async function generateCommonsStubs() {
+  const dir = path.join(dataDir, "commons");
+  let created = 0;
+  for (const type of COMMON_TYPES) {
+    const fp = path.join(dir, `${type}.yaml`);
+    try {
+      await fs.access(fp);
+    } catch {
+      await writeYaml(fp, { type, variants: [stubCommonVariant(type)] });
+      created += 1;
+    }
+  }
+  return created;
+}
+
+/** Seed fixed_texts.yaml and calendars/ for a new locale from the en bundle. */
+async function seedLocaleBaseline() {
+  if (locale === "en") return;
+  const enDir = path.join(repoRoot, "data", "en");
+  const fixedTarget = path.join(dataDir, "fixed_texts.yaml");
+  try {
+    await fs.access(fixedTarget);
+  } catch {
+    await fs.copyFile(path.join(enDir, "fixed_texts.yaml"), fixedTarget);
+    console.log(`seeded ${locale}/fixed_texts.yaml from en (translate in place)`);
+  }
+  const calendarsTarget = path.join(dataDir, "calendars");
+  try {
+    await fs.access(calendarsTarget);
+  } catch {
+    await fs.cp(path.join(enDir, "calendars"), calendarsTarget, { recursive: true });
+    console.log(`seeded ${locale}/calendars/ from en`);
+  }
+}
+
 async function main() {
+  await fs.mkdir(dataDir, { recursive: true });
   const { psalmIds, canticleIds } = await generatePsalter();
   const compIds = await generateComplementary();
   const allPsalms = new Set([...psalmIds, ...compIds]);
@@ -389,7 +568,10 @@ async function main() {
   const keys = await collectSeasonalKeys();
   await generateSeasonalProper(keys);
   await writePsalterReadme();
-  console.log(`Generated psalter (28), psalms (${allPsalms.size}), canticles, complementary (21), seasonal (${keys.length})`);
+  await seedLocaleBaseline();
+  const saints = await generateSaintStubs();
+  const commons = await generateCommonsStubs();
+  console.log(`Generated [${locale}] psalter (28), psalms (${allPsalms.size}), canticles, complementary (21), seasonal (${keys.length}), saints (+${saints}), commons (+${commons})`);
 }
 
 main().catch((e) => {

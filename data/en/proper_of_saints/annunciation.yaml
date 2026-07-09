@@ -1,0 +1,9 @@
+id: annunciation
+name: Annunciation of the Lord
+rank: solemnity
+calendar_position:
+  type: fixed
+  month: 3
+  day: 25
+applicable_commons:
+  - bvm

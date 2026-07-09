@@ -48,6 +48,7 @@ describe("FixedTexts and repository", () => {
         psalterWeek: 2,
         psalterDay: "Sunday",
         readingYear: "II",
+        sundayCycle: "A",
         ordinaryTimeWeek: 0,
         celebration: {
           type: "sunday",

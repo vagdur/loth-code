@@ -3,6 +3,7 @@
  * These drive Layer 2 (the abstract hour builders).
  */
 
+import type { SundayCycle } from "./melody.js";
 import type { CommonType, SeasonalDayKey } from "./proper.js";
 import type { PsalterWeek, Weekday } from "./psalter.js";
 
@@ -66,6 +67,8 @@ export interface LiturgicalDay {
   /** Day of week as used to look up the psalter entry. */
   psalterDay: Weekday;
   readingYear: ReadingYear;
+  /** Sunday gospel lectionary cycle (Year A/B/C) of the current liturgical year. */
+  sundayCycle: SundayCycle;
   /**
    * The current week number within Ordinary Time (1–34).
    * Used for the OoR reading selection. Set to 0 outside OT.

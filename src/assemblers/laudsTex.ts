@@ -77,11 +77,11 @@ export class LaudsTexAssembler implements Assembler<string> {
 
     if (!hour.suppressIntroVerse) body.push(texIntroductoryVerse(repo, flags));
 
-    const hymn = resolveHymn(hour.hymnRef, repo);
+    const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay);
     if (hymn) body.push(this.texHymnBlock(hymn));
 
     for (const slot of hour.psalmSlots) {
-      const assignment = resolvePsalmAssignment(slot.assignmentRef, repo);
+      const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay);
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
         body.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
@@ -92,12 +92,12 @@ export class LaudsTexAssembler implements Assembler<string> {
     if (reading) body.push(texShortReading(reading));
 
     if (hour.shortResponsoryRef) {
-      const resp = resolveShortResponsory(hour.shortResponsoryRef, repo);
+      const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay);
       if (resp) body.push(this.texShortResponsoryBlock(repo, resp));
     }
 
     body.push(texSectionHeading(repo, "benedictus"));
-    const benAntiphon = resolveAntiphon(hour.benedictuAntiphonRef, repo);
+    const benAntiphon = resolveAntiphon(hour.benedictusAntiphonRef, repo, hour.liturgicalDay);
     if (benAntiphon) body.push(this.texAntiphonBlock(repo, benAntiphon, flags, true));
     body.push(texGospelCanticle(repo, "benedictus"));
     if (benAntiphon) body.push(this.texAntiphonBlock(repo, benAntiphon, flags, false));
@@ -111,7 +111,7 @@ export class LaudsTexAssembler implements Assembler<string> {
     if (prayer) body.push(texConcludingPrayer(repo, prayer.text, "lauds"));
 
     if (hour.memoriaAddendum) {
-      const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo);
+      const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay);
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo);
       if (addAntiphon) body.push(this.texAntiphonBlock(repo, addAntiphon, flags, true));
       if (addPrayer) body.push(escapeTexPlain(addPrayer.text));
@@ -203,8 +203,13 @@ export class LaudsTexAssembler implements Assembler<string> {
     const chunks: string[] = [];
     const rubric = texMelodyRubric(r.melody);
     if (rubric) chunks.push(rubric);
-    if (r.melody?.gabc) {
-      const line = this.emitScore(r.melody.gabc);
+    for (const gabc of [
+      r.melody?.responsory,
+      r.melody?.responsorySecond,
+      r.melody?.versicle,
+      r.melody?.gloria,
+    ]) {
+      const line = this.emitScore(gabc);
       if (line) chunks.push(line);
     }
     chunks.push(texShortResponsory(repo, r));
