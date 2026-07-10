@@ -431,21 +431,27 @@ Regenerate files: \`npm run generate:data\`
 
 /** One proper_of_saints stub per sanctoral calendar entry (id only; schedule lives in calendars/). */
 async function generateSaintStubs() {
-  const entriesPath = path.join(dataDir, "calendars", "general", "entries.yaml");
-  let doc;
+  const ids = new Set();
+  const generalPath = path.join(dataDir, "calendars", "general", "entries.yaml");
   try {
-    doc = yaml.load(await fs.readFile(entriesPath, "utf-8"));
-  } catch {
-    return 0;
-  }
+    const doc = yaml.load(await fs.readFile(generalPath, "utf-8"));
+    for (const e of doc?.entries ?? []) ids.add(e.id);
+  } catch { /* no general calendar */ }
+
+  const stockholmPath = path.join(dataDir, "calendars", "local", "stockholm.yaml");
+  try {
+    const overlay = yaml.load(await fs.readFile(stockholmPath, "utf-8"));
+    for (const e of overlay?.additions ?? []) ids.add(e.id);
+  } catch { /* no particular overlay */ }
+
   const dir = path.join(dataDir, "proper_of_saints");
   let created = 0;
-  for (const e of doc?.entries ?? []) {
-    const fp = path.join(dir, `${e.id}.yaml`);
+  for (const id of ids) {
+    const fp = path.join(dir, `${id}.yaml`);
     try {
       await fs.access(fp);
     } catch {
-      await writeYaml(fp, { id: e.id });
+      await writeYaml(fp, { id });
       created += 1;
     }
   }

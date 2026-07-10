@@ -1,4 +1,7 @@
+import fs from "fs/promises";
+import path from "path";
 import { beforeAll, describe, expect, test } from "vitest";
+import yaml from "js-yaml";
 import { utcDate } from "../../src/calendar/computus.js";
 import { SanctoralCalendarRegistry } from "../../src/calendar/sanctoralRegistry.js";
 import {
@@ -6,7 +9,41 @@ import {
   initSanctoralRegistry,
 } from "../../src/calendar/saints.js";
 import { ensureSanctoralCalendar } from "../helpers/initSanctoralCalendar.js";
-import { dataRoot, defaultLocale } from "../helpers/paths.js";
+import { dataRoot, defaultLocale, repoRoot } from "../helpers/paths.js";
+
+describe("Ordo calendar coverage", () => {
+  let expected: { entries: Array<{ id: string; layer?: string; rank?: string; fixed_date?: { month: number; day: number } }> };
+
+  beforeAll(async () => {
+    const raw = await fs.readFile(
+      path.join(repoRoot, "data", "ordo", "expected-calendar.yaml"),
+      "utf-8",
+    );
+    expected = yaml.load(raw) as typeof expected;
+  });
+
+  test("expected manifest matches merged stockholm registry", async () => {
+    const registry = await SanctoralCalendarRegistry.load(dataRoot, "sv");
+    const general = registry.getMergedEntries("general");
+    const stockholm = registry.getMergedEntries("stockholm");
+    const generalById = new Map(general.map((e) => [e.id, e]));
+    const stockholmById = new Map(stockholm.map((e) => [e.id, e]));
+    const stockholmOnly = new Set(
+      stockholm.filter((e) => !generalById.has(e.id)).map((e) => e.id),
+    );
+
+    for (const exp of expected.entries) {
+      if (exp.layer === "stockholm" && !("kind" in exp)) {
+        expect(stockholmOnly.has(exp.id)).toBe(true);
+      }
+      if (exp.layer === "general" && exp.fixed_date) {
+        expect(generalById.has(exp.id)).toBe(true);
+      }
+    }
+
+    expect(stockholmById.get("st_birgitta")?.rank).toBe("optional_memoria");
+  });
+});
 
 describe("SanctoralCalendarRegistry", () => {
   let registry: SanctoralCalendarRegistry;
@@ -16,17 +53,25 @@ describe("SanctoralCalendarRegistry", () => {
     initSanctoralRegistry(registry);
   });
 
-  test("general calendar is non-empty", () => {
-    expect(registry.getMergedEntries("general")).not.toHaveLength(0);
+  test("general calendar has full GRC sanctoral coverage", () => {
+    const entries = registry.getMergedEntries("general");
+    expect(entries.length).toBeGreaterThanOrEqual(200);
+    expect(entries.map((e) => e.id)).toContain("annunciation");
+    expect(entries.map((e) => e.id)).toContain("francis_xavier");
   });
 
-  test("stockholm merge includes local additions and Birgitta adjustments", () => {
+  test("stockholm merge includes Nordic additions and Birgitta adjustments", () => {
+    const general = registry.getMergedEntries("general");
     const entries = registry.getMergedEntries("stockholm");
-    // Local overlay on top of the general calendar: 3 Stockholm additions.
-    expect(entries.length).toBe(registry.getMergedEntries("general").length + 3);
+    const stockholmOnly = entries.filter(
+      (e) => !general.some((g) => g.id === e.id),
+    );
+    expect(stockholmOnly.length).toBeGreaterThanOrEqual(15);
     expect(entries.map((e) => e.id)).toContain("st_henrik");
     expect(entries.map((e) => e.id)).toContain("st_erik");
     expect(entries.map((e) => e.id)).toContain("st_birgitta_patron");
+    expect(entries.map((e) => e.id)).toContain("ansgar");
+    expect(entries.map((e) => e.id)).toContain("sigfrid_of_vaxjo");
 
     const birgittaJul = entries.find((e) => e.id === "st_birgitta");
     expect(birgittaJul?.rank).toBe("optional_memoria");
@@ -81,6 +126,13 @@ describe("getSaintsOnDate with calendarId", () => {
     );
     expect(getSaintsOnDate(oct7, "general").map((s) => s.saintId)).not.toContain(
       "st_birgitta_patron",
+    );
+  });
+
+  test("st_andrew remains in registry on First Sunday of Advent 2025 (suppressed by ranking, not absent)", () => {
+    const nov30 = utcDate(2025, 11, 30);
+    expect(getSaintsOnDate(nov30, "stockholm").map((s) => s.saintId)).toContain(
+      "andrew_apostle",
     );
   });
 });

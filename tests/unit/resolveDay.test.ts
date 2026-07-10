@@ -22,8 +22,8 @@ describe("resolveDay", () => {
   });
 
   test("Saturday in Ordinary Time after Pentecost: optional BVM memoria permitted", () => {
-    // office-spec §5.6 — Saturday in OT, ordinary ferial
-    const d = resolveDay(new Date("2026-06-06T12:00:00Z"), cal);
+    // office-spec §5.6 — Saturday in OT with no sanctoral entry
+    const d = resolveDay(utcDate(2026, 5, 30), cal);
     expect(d.psalterDay).toBe("Saturday");
     expect(d.season).toBe("ordinary_time");
     expect(d.celebration.type).toBe("ordinary_ferial");
@@ -31,8 +31,8 @@ describe("resolveDay", () => {
   });
 
   test("Saturday in Lent: privileged ferial, no Saturday BVM overlay", () => {
-    // office-spec §5.5 — privileged season ferial
-    const d = resolveDay(utcDate(2026, 3, 7), cal);
+    // office-spec §5.5 — privileged season ferial (no saint on this date)
+    const d = resolveDay(utcDate(2026, 3, 14), cal);
     expect(d.psalterDay).toBe("Saturday");
     expect(d.season).toBe("lent");
     expect(d.celebration.type).toBe("privileged_ferial");
