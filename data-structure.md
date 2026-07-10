@@ -133,6 +133,7 @@ MelodyCondition {
   seasons?:       Season[]
   day_classes?:   DayClass[]
   sunday_cycles?: SundayCycle[]
+  weekdays?:      Weekday[]   // "Sunday" … "Saturday" (psalter day name)
   date_range?:    { from: string, to: string }  // inclusive "MM-DD", may wrap year end
 }
 

@@ -128,6 +128,13 @@ describe("matchesCondition", () => {
     expect(matchesCondition(cond, makeDay())).toBe(false);
   });
 
+  test("weekdays", () => {
+    expect(matchesCondition({ weekdays: ["Sunday"] }, day)).toBe(true);
+    expect(matchesCondition({ weekdays: ["Monday", "Friday"] }, day)).toBe(false);
+    const monday = makeDay({ psalterDay: "Monday" });
+    expect(matchesCondition({ weekdays: ["Monday"] }, monday)).toBe(true);
+  });
+
   test("fields combine with AND", () => {
     expect(
       matchesCondition({ seasons: ["eastertide"], sundayCycles: ["B"] }, day),

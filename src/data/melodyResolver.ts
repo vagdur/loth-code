@@ -43,6 +43,7 @@ export function matchesCondition(
     const inRange = from <= to ? d >= from && d <= to : d >= from || d <= to;
     if (!inRange) return false;
   }
+  if (cond.weekdays && !cond.weekdays.includes(day.psalterDay)) return false;
   return true;
 }
 

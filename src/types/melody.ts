@@ -10,6 +10,7 @@
  */
 
 import type { DayClass, Season } from "./calendar.js";
+import type { Weekday } from "./psalter.js";
 
 /** Sunday gospel lectionary cycle (Year A/B/C). */
 export type SundayCycle = "A" | "B" | "C";
@@ -23,6 +24,8 @@ export interface MelodyCondition {
   seasons?: Season[];
   dayClasses?: DayClass[];
   sundayCycles?: SundayCycle[];
+  /** Psalter weekday (capitalized English name). */
+  weekdays?: Weekday[];
   /** Inclusive month-day range "MM-DD"; may wrap the year end (e.g. 12-17 .. 01-05). */
   dateRange?: { from: string; to: string };
 }

@@ -26,7 +26,7 @@ const DAY_CLASSES = new Set([
   "obligatory_memoria", "optional_memoria", "privileged_ferial", "ordinary_ferial",
 ]);
 const SUNDAY_CYCLES = new Set(["A", "B", "C"]);
-const CONDITION_KEYS = new Set(["seasons", "day_classes", "sunday_cycles", "date_range"]);
+const CONDITION_KEYS = new Set(["seasons", "day_classes", "sunday_cycles", "weekdays", "date_range"]);
 const PART_KEYS = new Set([
   "antiphon", "antiphon_paschal", "psalm_tone", "first_verse",
   "responsory", "responsory_second", "versicle", "gloria",
@@ -85,6 +85,9 @@ function validateCondition(cond, where, errors) {
   }
   for (const c of cond.sunday_cycles ?? []) {
     if (!SUNDAY_CYCLES.has(c)) errors.push(`${where}: unknown sunday cycle "${c}"`);
+  }
+  for (const w of cond.weekdays ?? []) {
+    if (!WEEKDAYS.includes(w)) errors.push(`${where}: unknown weekday "${w}"`);
   }
   if (cond.date_range) {
     for (const bound of ["from", "to"]) {
