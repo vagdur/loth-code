@@ -1,8 +1,7 @@
 /**
  * The season-wide "under dagen" booklets route to the coarse
- * daytime_<season>[_<weekday>] keys. These melodies are still unreviewed in
- * raw_data, so the live pipeline doesn't exercise the rule yet — this pins the
- * routing against the real section labels so it is correct when they land.
+ * daytime_<season>[_<weekday>] keys. This pins the routing against the real
+ * section labels.
  */
 
 import { describe, expect, test } from "vitest";

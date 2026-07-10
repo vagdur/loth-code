@@ -119,7 +119,7 @@ These types appear throughout the larger structures below.
 Sung texts normally do not embed GABC. Instead they carry `melody_refs` into a
 per-locale **melody store** (`data/{locale}/melodies/*.yaml`), which is
 *generated* by `npm run compile:melodies` from the raw extraction pipeline
-(`raw_data/kln/split/**/index.json`, approved entries only) and committed so
+(`raw_data/kln/split/**/index.json`, all non-failed entries) and committed so
 that re-extraction produces reviewable diffs. Rubrics never specify melodies,
 so attaching several condition-selected melodies to one rubric-specified text
 is an enrichment, not an override.
