@@ -124,11 +124,6 @@ export type CalendarPosition =
 
 export interface SaintEntry {
   id: string;
-  name: string;
-  rank: "solemnity" | "feast" | "obligatory_memoria" | "optional_memoria";
-  calendarPosition: CalendarPosition;
-  /** Ordered fallback commons if proper texts are absent. */
-  applicableCommons: CommonType[];
 
   invitatoryAntiphon?: Antiphon;
   officeOfReadings?: OorProperSlot & {

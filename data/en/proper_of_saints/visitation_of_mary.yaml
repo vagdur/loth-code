@@ -1,9 +1,1 @@
 id: visitation_of_mary
-name: Visitation of the Blessed Virgin Mary
-rank: feast
-calendar_position:
-  type: fixed
-  month: 5
-  day: 31
-applicable_commons:
-  - bvm

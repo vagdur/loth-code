@@ -570,19 +570,11 @@ DaytimeProperSlot {
 
 ## 6. Proper of Saints
 
-**Collection:** `proper_of_saints` — one entry per saint in the General Roman Calendar (and particular calendars).
+**Collection:** `proper_of_saints` — one entry per saint with proper texts. Schedule fields (`name`, `rank`, `calendar_position`, `applicable_commons`) live in `calendars/` (§6.1); entries here share the same `id`.
 
 ```
 SaintEntry {
   id:    string           // stable identifier, e.g. "immaculate_conception"
-  name:  string
-  rank:  "solemnity" | "feast" | "obligatory_memoria" | "optional_memoria"
-
-  calendar_position: CalendarPosition
-
-  // Ordered list of Commons to use when proper texts are absent (§2, §5.2–5.4).
-  // e.g. ["apostles"] or ["martyrs", "pastors"]
-  applicable_commons: CommonType[]
 
   // Proper texts — all optional; absent = fall back per fallback chain (§8).
   invitatory_antiphon?: Antiphon

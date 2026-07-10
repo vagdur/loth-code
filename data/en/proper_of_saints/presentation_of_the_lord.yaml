@@ -1,9 +1,1 @@
 id: presentation_of_the_lord
-name: Presentation of the Lord
-rank: feast
-calendar_position:
-  type: fixed
-  month: 2
-  day: 2
-applicable_commons:
-  - bvm

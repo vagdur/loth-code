@@ -1,9 +1,1 @@
 id: mark_evangelist
-name: St. Mark, Evangelist
-rank: feast
-calendar_position:
-  type: fixed
-  month: 4
-  day: 25
-applicable_commons:
-  - apostles

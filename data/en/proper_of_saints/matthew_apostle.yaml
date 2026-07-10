@@ -1,9 +1,1 @@
 id: matthew_apostle
-name: St. Matthew, Apostle and Evangelist
-rank: feast
-calendar_position:
-  type: fixed
-  month: 9
-  day: 21
-applicable_commons:
-  - apostles

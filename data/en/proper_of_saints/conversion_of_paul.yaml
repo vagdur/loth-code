@@ -1,9 +1,1 @@
 id: conversion_of_paul
-name: Conversion of St. Paul
-rank: feast
-calendar_position:
-  type: fixed
-  month: 1
-  day: 25
-applicable_commons:
-  - apostles

@@ -1,9 +1,1 @@
 id: lawrence_deacon
-name: St. Lawrence, Deacon and Martyr
-rank: feast
-calendar_position:
-  type: fixed
-  month: 8
-  day: 10
-applicable_commons:
-  - martyrs

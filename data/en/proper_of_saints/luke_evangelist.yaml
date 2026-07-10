@@ -1,9 +1,1 @@
 id: luke_evangelist
-name: St. Luke, Evangelist
-rank: feast
-calendar_position:
-  type: fixed
-  month: 10
-  day: 18
-applicable_commons:
-  - apostles

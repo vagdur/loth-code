@@ -1,9 +1,1 @@
 id: andrew_apostle
-name: St. Andrew, Apostle
-rank: feast
-calendar_position:
-  type: fixed
-  month: 11
-  day: 30
-applicable_commons:
-  - apostles

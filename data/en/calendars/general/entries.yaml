@@ -244,3 +244,129 @@ entries:
       day: 30
     applicable_commons:
       - apostles
+  - id: scholastica
+    name: St. Scholastica, Virgin
+    rank: obligatory_memoria
+    calendar_position:
+      type: fixed
+      month: 2
+      day: 10
+    applicable_commons:
+      - virgins
+  - id: john_baptist_nativity
+    name: Nativity of St. John the Baptist
+    rank: solemnity
+    calendar_position:
+      type: fixed
+      month: 6
+      day: 24
+    applicable_commons: []
+  - id: thomas_apostle
+    name: St. Thomas, Apostle
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 7
+      day: 3
+    applicable_commons:
+      - apostles
+  - id: bernard_of_clairvaux
+    name: St. Bernard of Clairvaux, Abbot and Doctor
+    rank: obligatory_memoria
+    calendar_position:
+      type: fixed
+      month: 8
+      day: 20
+    applicable_commons:
+      - doctors
+      - holy_men_women
+  - id: monica
+    name: St. Monica
+    rank: obligatory_memoria
+    calendar_position:
+      type: fixed
+      month: 8
+      day: 27
+    applicable_commons:
+      - holy_men_women
+  - id: augustine_of_hippo
+    name: St. Augustine of Hippo, Bishop and Doctor
+    rank: obligatory_memoria
+    calendar_position:
+      type: fixed
+      month: 8
+      day: 28
+    applicable_commons:
+      - doctors
+      - pastors
+  - id: exaltation_of_holy_cross
+    name: Exaltation of the Holy Cross
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 9
+      day: 14
+    applicable_commons: []
+  - id: vincent_de_paul
+    name: St. Vincent de Paul, Priest
+    rank: obligatory_memoria
+    calendar_position:
+      type: fixed
+      month: 9
+      day: 27
+    applicable_commons:
+      - pastors
+      - holy_men_women
+  - id: therese_of_lisieux
+    name: St. Thérèse of the Child Jesus, Virgin and Doctor
+    rank: obligatory_memoria
+    calendar_position:
+      type: fixed
+      month: 10
+      day: 1
+    applicable_commons:
+      - virgins
+      - doctors
+  - id: guardian_angels
+    name: The Holy Guardian Angels
+    rank: obligatory_memoria
+    calendar_position:
+      type: fixed
+      month: 10
+      day: 2
+    applicable_commons: []
+  - id: all_saints
+    name: All Saints
+    rank: solemnity
+    calendar_position:
+      type: fixed
+      month: 11
+      day: 1
+    applicable_commons: []
+  - id: stephen_proto_martyr
+    name: St. Stephen, the First Martyr
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 12
+      day: 26
+    applicable_commons:
+      - martyrs
+  - id: john_apostle_evangelist
+    name: St. John, Apostle and Evangelist
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 12
+      day: 27
+    applicable_commons:
+      - apostles
+  - id: holy_innocents
+    name: The Holy Innocents, Martyrs
+    rank: feast
+    calendar_position:
+      type: fixed
+      month: 12
+      day: 28
+    applicable_commons:
+      - martyrs

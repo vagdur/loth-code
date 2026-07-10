@@ -1,9 +1,1 @@
 id: peter_paul_apostles
-name: St. Peter and St. Paul, Apostles
-rank: solemnity
-calendar_position:
-  type: fixed
-  month: 6
-  day: 29
-applicable_commons:
-  - apostles

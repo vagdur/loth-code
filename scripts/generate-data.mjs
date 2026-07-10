@@ -429,7 +429,7 @@ Regenerate files: \`npm run generate:data\`
   await fs.writeFile(path.join(dataDir, "psalter", "README.md"), readme, "utf-8");
 }
 
-/** One proper_of_saints stub per sanctoral calendar entry (sparse: core fields only). */
+/** One proper_of_saints stub per sanctoral calendar entry (id only; schedule lives in calendars/). */
 async function generateSaintStubs() {
   const entriesPath = path.join(dataDir, "calendars", "general", "entries.yaml");
   let doc;
@@ -445,13 +445,7 @@ async function generateSaintStubs() {
     try {
       await fs.access(fp);
     } catch {
-      await writeYaml(fp, {
-        id: e.id,
-        name: e.name,
-        rank: e.rank,
-        calendar_position: e.calendar_position,
-        applicable_commons: e.applicable_commons ?? [],
-      });
+      await writeYaml(fp, { id: e.id });
       created += 1;
     }
   }
