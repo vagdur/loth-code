@@ -165,6 +165,28 @@ describe("selectMelodyRef / resolveAllMelodies", () => {
     expect(selectMelodyRef(refs, repo, makeDay())?.stored.id).toBe("kln/a/ot-antifon");
   });
 
+  test("failed stub is skipped in favour of a later importable ref", () => {
+    const failedRepo = {
+      getMelody(id: string): StoredMelody | undefined {
+        if (id === "kln/failed/stub") {
+          return {
+            id: "kln/failed/stub",
+            kind: "antiphon",
+            status: "failed",
+            contentHash: "dead",
+            source: {
+              index: "i", pdf: "p", sourceCategory: "c",
+              page: 1, sectionLabel: "Antifon", filename: "f",
+            },
+          };
+        }
+        return (repo as unknown as { getMelody(i: string): StoredMelody | undefined }).getMelody(id);
+      },
+    } as unknown as DataRepository;
+    const refs = [{ ref: "kln/failed/stub" }, { ref: "kln/a/ot-antifon" }];
+    expect(selectMelodyRef(refs, failedRepo, makeDay())?.stored.id).toBe("kln/a/ot-antifon");
+  });
+
   test("resolveAllMelodies returns every matching alternative in order", () => {
     const refs = [
       { ref: "kln/a/ot-antifon" },

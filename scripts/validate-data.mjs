@@ -134,7 +134,9 @@ async function validateMelodies(localeDir, locale, errors, warnings) {
       for (const k of Object.keys(m.parts ?? {})) {
         if (!PART_KEYS.has(k)) errors.push(`${where}: unknown part key "${k}"`);
       }
-      if (!m.gabc && !m.parts) errors.push(`${where}: neither gabc nor parts present`);
+      if (!m.gabc && !m.parts && m.status !== "failed") {
+        errors.push(`${where}: neither gabc nor parts present`);
+      }
     }
   }
   if (byId.size === 0) return; // no store for this locale

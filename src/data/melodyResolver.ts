@@ -18,6 +18,11 @@ import type { Melody, ShortResponsoryMelody } from "../types/texts.js";
 import { gabcToText } from "../tools/gabcText.js";
 import type { DataRepository } from "./repository.js";
 
+/** Store entries marked failed carry provenance only — skip during hydration. */
+function importableMelody(stored: StoredMelody | undefined): stored is StoredMelody {
+  return !!stored && stored.status !== "failed" && !!(stored.gabc || stored.parts);
+}
+
 // ---------------------------------------------------------------------------
 // Condition matching
 // ---------------------------------------------------------------------------
@@ -75,13 +80,13 @@ export function selectMelodyRef(
       if (wantedIndex !== undefined && i !== wantedIndex) continue;
       if (!matchesCondition(ref.condition, day)) continue;
       const stored = repo.getMelody(ref.ref);
-      if (stored) return { ref, stored };
+      if (importableMelody(stored)) return { ref, stored };
     }
   }
   for (const ref of refs ?? []) {
     if (!matchesCondition(ref.condition, day)) continue;
     const stored = repo.getMelody(ref.ref);
-    if (stored) return { ref, stored };
+    if (importableMelody(stored)) return { ref, stored };
   }
   return undefined;
 }
@@ -96,7 +101,7 @@ export function resolveAllMelodies(
   for (const ref of refs ?? []) {
     if (!matchesCondition(ref.condition, day)) continue;
     const stored = repo.getMelody(ref.ref);
-    if (stored) out.push(stored);
+    if (importableMelody(stored)) out.push(stored);
   }
   return out;
 }
@@ -264,7 +269,7 @@ export function collectMelodyOptions(
     for (const [i, ref] of refs.entries()) {
       if (!matchesCondition(ref.condition, day)) continue;
       const stored = repo.getMelody(ref.ref);
-      if (!stored) continue;
+      if (!importableMelody(stored)) continue;
       const count = seenRefIds.get(ref.ref) ?? 0;
       seenRefIds.set(ref.ref, count + 1);
       choices.push({
