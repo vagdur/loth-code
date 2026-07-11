@@ -2,6 +2,9 @@
 \ProvidesPackage{loth}[2026/05/20 LoTH liturgical markup]
 
 \RequirePackage{gregoriotex}
+% GregorioTeX 6.x defaults to \gre@compilegabc=0 (input .gtex only, no shell-escape).
+% LoTH embeds .gabc via filecontents and expects on-the-fly compilation.
+\gresetcompilegabc{auto}
 
 % Rubric strings (defaults; override via \LothRubrics* before \begin{document})
 \newcommand{\LothAntiphonPrefix}{Ant.}

@@ -1,16 +1,18 @@
 /**
  * Golden .tex snapshots for every hour + the full-day document, in each locale.
  * `en` is dummy data (no melodies); `sv` is real data that embeds GABC scores.
- * Regenerate goldens: `npm run test:fixtures:update` (sets UPDATE_FIXTURES=1).
+ * Regenerate goldens (`.tex` + `.pdf`): `npm run test:fixtures:update` (sets UPDATE_FIXTURES=1).
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { readFileSync } from "fs";
 import path from "path";
 import { expect, test } from "vitest";
 import { TexAssembler } from "../../src/assemblers/texAssembler.js";
 import {
   buildSampleAbstractDay, loadSampleRepo, SAMPLE_LOCALES,
 } from "../helpers/buildSampleDay.js";
+import { needsGregorioScores, writeFixtureTexAndPdf } from "../helpers/compileFixtureTex.js";
+import { gregorioAutocompileDiagnosis, gregorioAutocompileWorks } from "../helpers/gregorioAutocompile.js";
 import { normalizeLf } from "../helpers/normalizeLf.js";
 import { fixturesDir } from "../helpers/paths.js";
 import type { DataRepository } from "../../src/data/repository.js";
@@ -69,10 +71,18 @@ test.each(matrix)("[$locale] $name TeX matches fixture", async ({ jobName, local
   const fixturePath = path.join(fixturesDir, `${jobName}-${locale}-2026-05-10-general.tex`);
 
   if (process.env.UPDATE_FIXTURES === "1") {
-    mkdirSync(fixturesDir, { recursive: true });
-    writeFileSync(fixturePath, tex, "utf-8");
+    if (needsGregorioScores(tex) && !(await gregorioAutocompileWorks())) {
+      const diagnosis = gregorioAutocompileDiagnosis();
+      console.warn(
+        diagnosis
+          ? `Skipping PDF update for ${path.basename(fixturePath)}:\n${diagnosis}`
+          : `Skipping PDF update for ${path.basename(fixturePath)}: Gregorio unavailable`,
+      );
+    } else {
+      await writeFixtureTexAndPdf(fixturePath, tex, "loth", gregorioAutocompileWorks);
+    }
   }
 
   const expected = normalizeLf(readFileSync(fixturePath, "utf-8"));
   expect(tex).toBe(expected);
-});
+}, process.env.UPDATE_FIXTURES === "1" ? 180_000 : 5_000);
