@@ -116,14 +116,12 @@ describe("summarizeOrdoDay (stockholm)", () => {
     expect(summary.defaultBody).toBe("Allt från söndagen.");
   });
 
-  test("2025-12-07 second Advent Sunday keeps commune in lone first vespers hour", () => {
+  test("2025-12-07 second Advent Sunday evening is second vespers of the Sunday", () => {
     const summary = summarizeOrdoDay(utcDate(2025, 12, 7), ctx, repo);
     expect(summary.headline).toBe("7 december. Andra söndagen i Advent.");
     expect(summary.defaultBody).toBe("Allt från söndagen.");
     expect(summary.communeLine).toBeUndefined();
-    const firstVespers = summary.hours.find((h) => h.key === "firstVespers");
-    expect(firstVespers).toBeDefined();
-    expect(firstVespers!.prose).toContain("[bvm variant 1]");
+    expect(summary.hours.find((h) => h.key === "firstVespers")).toBeUndefined();
   });
 
   test("2025-12-06 optional memoria shows ferial baseline and memoria block", () => {

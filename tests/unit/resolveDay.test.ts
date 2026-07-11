@@ -61,6 +61,18 @@ describe("resolveDay", () => {
     expect(d.celebration.saintId).toBe("immaculate_conception");
   });
 
+  test("Advent Sunday evening outranks Immaculate Conception first vespers", () => {
+    const sun = resolveDay(utcDate(2025, 12, 7), cal);
+    expect(sun.celebration.type).toBe("sunday");
+    expect(sun.evening.hasFirstVespers).toBe(false);
+  });
+
+  test("weekday evening before Immaculate Conception has its first vespers", () => {
+    const sat = resolveDay(utcDate(2026, 12, 7), cal);
+    expect(sat.evening.hasFirstVespers).toBe(true);
+    expect(sat.evening.firstVespersCelebration?.saintId).toBe("immaculate_conception");
+  });
+
   test("St. Francis obligatory memoria on a weekday in Ordinary Time", () => {
     const d = resolveDay(utcDate(2024, 10, 4), cal);
     expect(d.celebration.type).toBe("obligatory_memoria");

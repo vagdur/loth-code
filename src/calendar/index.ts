@@ -132,22 +132,16 @@ function resolveEvening(date: Date, calendarId: string): EveningContext {
     calendarId,
   );
 
-  const seasonalFirstVespers = tomorrowHasFirstVespers(
+  const tomorrowWouldHaveFirstVespers = tomorrowHasFirstVespers(
     tomorrowCelebration,
     tomorrowSeasonalKey,
     tomorrowWeekday,
     tomorrowSeason,
   );
 
-  const tomorrowHasSaintSolemnity =
-    tomorrowCelebration.type === "solemnity" &&
-    tomorrowCelebration.source === "saint";
-
-  const saintFirstVespers =
-    tomorrowHasSaintSolemnity &&
+  const hasFirstVespers =
+    tomorrowWouldHaveFirstVespers &&
     !todayOutranksI3FirstVespers(date, todaySeason, todaySeasonalKey);
-
-  const hasFirstVespers = seasonalFirstVespers || saintFirstVespers;
 
   if (hasFirstVespers) {
     return {
