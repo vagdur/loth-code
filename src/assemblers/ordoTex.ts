@@ -38,10 +38,18 @@ function assembleOrdoBody(summaries: OrdoDaySummary[], months: string[]): string
   for (const day of summaries) {
     const key = monthSectionKey(day.date);
     if (key !== currentKey) {
+      if (currentKey !== null) {
+        parts.push("\\end{multicols}");
+      }
       parts.push(`\\section{${escapeTexPlain(formatMonthSection(day.date, months))}}`);
+      parts.push("\\begin{multicols}{2}");
       currentKey = key;
     }
     parts.push(assembleOrdoDayTex(day));
+  }
+
+  if (currentKey !== null) {
+    parts.push("\\end{multicols}");
   }
 
   return parts.join("\n\n");
