@@ -5,20 +5,27 @@
 import type { DataRepository } from "../data/repository.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type {
-  Antiphon, Hymn, Intercessions, ShortResponsory,
+  Antiphon, Hymn, Intercessions, LongResponsory, ShortResponsory, Versicle,
 } from "../types/texts.js";
 import type { GospelCanticleKind } from "../types/texts.js";
 import {
   alleluiaAntiphonSuffix,
+  formatResponseLinePlain,
+  formatVersicleLinePlain,
   getLabels,
   includesLetUsPrayRubric,
   type HourLabelKey,
   type SectionLabelKey,
 } from "./labels.js";
 import {
+  formatComplineBlessingPlain,
   formatDismissalPlain,
+  formatExaminationOfConsciencePlain,
   formatIntroductoryVersePlain,
+  formatInvitatoryVersePlain,
   formatLordsPrayerPlain,
+  formatOorAcclamationPlain,
+  formatTeDeumPlain,
 } from "./liturgicalText.js";
 import { escapeTexPlain } from "./texEscape.js";
 
@@ -81,12 +88,13 @@ export function texShortResponsory(_repo: DataRepository, r: ShortResponsory): s
   return `\\shortResponsory{${escapeTexPlain(r.text)}}{${escapeTexPlain(r.versicle)}}{${escapeTexPlain(r.text)}}`;
 }
 
-export function texIntroductoryVerse(
-  repo: DataRepository,
-  flags: LiturgicalFlags,
-): string {
+/**
+ * Render a plain versicle/response dialogue block (symbol-prefixed lines) into
+ * `\versicle`/`\response` macros; lines without a known symbol pass through as
+ * escaped text (e.g. the multi-line Gloria of the introductory verse).
+ */
+export function texDialogueLines(repo: DataRepository, plain: string): string {
   const labels = getLabels(repo).rubrics;
-  const plain = formatIntroductoryVersePlain(repo, flags);
   return plain
     .split("\n")
     .map((line) => {
@@ -99,6 +107,59 @@ export function texIntroductoryVerse(
       return escapeTexPlain(line);
     })
     .join("\\LothVsmall\n");
+}
+
+export function texIntroductoryVerse(
+  repo: DataRepository,
+  flags: LiturgicalFlags,
+): string {
+  return texDialogueLines(repo, formatIntroductoryVersePlain(repo, flags));
+}
+
+export function texInvitatoryVerse(repo: DataRepository): string {
+  return texDialogueLines(repo, formatInvitatoryVersePlain(repo));
+}
+
+/**
+ * The OoR closing acclamation is an opaque raw data string (its own ℣./℟.
+ * glyphs baked in), so emit it as escaped text rather than parsing it into
+ * dialogue macros — matching PlainTextAssembler, which treats it as raw text.
+ */
+export function texOorAcclamation(repo: DataRepository): string {
+  return formatOorAcclamationPlain(repo)
+    .split("\n")
+    .map((line) => escapeTexPlain(line))
+    .join("\\LothVsmall\n");
+}
+
+/** Standalone versicle/response (OoR before readings, Daytime after reading). */
+export function texVersicle(repo: DataRepository, v: Versicle): string {
+  return texDialogueLines(
+    repo,
+    `${formatVersicleLinePlain(repo, v.verse)}\n${formatResponseLinePlain(repo, v.response)}`,
+  );
+}
+
+/** Long responsory (OoR): same R/V/R shape as the short responsory macro. */
+export function texLongResponsory(_repo: DataRepository, r: LongResponsory): string {
+  return `\\shortResponsory{${escapeTexPlain(r.text)}}{${escapeTexPlain(r.verse)}}{${escapeTexPlain(r.repeatCue)}}`;
+}
+
+/** Long biblical/patristic/hagiographical reading: attribution then body. */
+export function texReading(attribution: string, text: string): string {
+  return `\\reading{${escapeTexPlain(attribution)}}{${escapeTexPlain(text)}}`;
+}
+
+export function texTeDeum(repo: DataRepository): string {
+  return `\\teDeum{${escapeTexPlain(formatTeDeumPlain(repo))}}`;
+}
+
+export function texExaminationOfConscience(repo: DataRepository): string {
+  return `\\examinationOfConscience{${escapeTexPlain(formatExaminationOfConsciencePlain(repo))}}`;
+}
+
+export function texComplineBlessing(repo: DataRepository): string {
+  return `\\complineBlessing{${escapeTexPlain(formatComplineBlessingPlain(repo))}}`;
 }
 
 export function texGospelCanticle(
