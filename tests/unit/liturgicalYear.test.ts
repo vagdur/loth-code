@@ -21,6 +21,7 @@ import {
   getReadingYear,
   getSeason,
   getSeasonalDayKey,
+  getSundayUnderYearNumber,
   getWeekday,
 } from "../../src/calendar/liturgicalYear.js";
 
@@ -146,6 +147,22 @@ describe("getOrdinaryTimeWeek", () => {
   test("OT II: continues after Pentecost Monday", () => {
     const otII = addDays(pentecost(Y), 1);
     expect(getOrdinaryTimeWeek(otII)).toBeGreaterThan(0);
+  });
+
+  test("OT II 2026: resumes at week 8 on Monday after Pentecost (33-week year)", () => {
+    const otII = addDays(pentecost(Y), 1);
+    expect(getOrdinaryTimeWeek(otII)).toBe(8);
+    expect(getOrdinaryTimeWeek(utcDate(2026, 7, 12))).toBe(14);
+  });
+});
+
+describe("getSundayUnderYearNumber", () => {
+  test("2026-01-18 is the 2nd Sunday under året (Baptism Sunday counts as 1st)", () => {
+    expect(getSundayUnderYearNumber(utcDate(2026, 1, 18))).toBe(2);
+  });
+
+  test("2026-07-12 is the 15th Sunday under året per Ordo 2025-2026", () => {
+    expect(getSundayUnderYearNumber(utcDate(2026, 7, 12))).toBe(15);
   });
 });
 

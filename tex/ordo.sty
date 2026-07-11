@@ -1,0 +1,55 @@
+% ordo.sty — compact Ordo calendar layout (no Gregorio)
+\ProvidesPackage{ordo}[2026/07/11 LoTH Ordo layout]
+
+\RequirePackage[margin=2cm]{geometry}
+\RequirePackage{multicol}
+\RequirePackage[swedish]{babel}
+\RequirePackage[hidelinks]{hyperref}
+
+\setlength{\columnsep}{1.5em}
+
+\setcounter{secnumdepth}{-1}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.4em}
+
+\newcommand{\ordoTitle}[1]{%
+  \begin{center}
+    {\LARGE\bfseries #1}
+  \end{center}
+  \vspace{1em}
+}
+
+\newcommand{\ordoDay}[3]{%
+  \vspace{0.6em}
+  \noindent\textbf{#1}\par
+  \vspace{0.05em}
+  \noindent{\small #2}\par
+  \vspace{0.15em}
+  \noindent #3\par
+}
+
+\newcommand{\ordoHour}[2]{%
+  \noindent\textit{#1:} #2\par
+}
+
+\newcommand{\ordoCommune}[1]{%
+  \noindent #1\par
+  \vspace{0.1em}
+}
+
+\newcommand{\ordoDefault}[1]{%
+  \noindent #1\par
+}
+
+\newcommand{\ordoMemoriaBlock}[2]{%
+  \vspace{0.2em}%
+  \noindent\textit{#1}\par
+  #2\par
+}
+
+\newcommand{\ordoOptions}[1]{%
+  \noindent{\small #1}\par
+}
+
+\endinput

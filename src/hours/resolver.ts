@@ -47,8 +47,12 @@ function adLibChain(adLibFrom: number, ...sources: SlotSourceDirect[]): SlotSour
 }
 
 /** Memoria arrangement (§5.4) applies — the common-vs-feria tail is ad libitum. */
-function isMemoria(c: Celebration): boolean {
+export function isMemoriaCelebration(c: Celebration): boolean {
   return c.type === "obligatory_memoria" || c.type === "optional_memoria";
+}
+
+function isMemoria(c: Celebration): boolean {
+  return isMemoriaCelebration(c);
 }
 
 /** Build common sources for all applicable commons in order, using the given field. */
@@ -134,6 +138,18 @@ export function psalmAssignmentRef(
 // Short reading
 // ---------------------------------------------------------------------------
 
+/** §5.4 — Daytime Prayer on memorias: short reading from the ferial day only. */
+export function ferialShortReadingRef(
+  ctx: SlotContext,
+  hourField: string,
+): SlotSource {
+  const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
+  if (c.seasonalKey) {
+    return chain(seasonalSrc(c.seasonalKey, hourField), psalterSrc(w, d, hourField));
+  }
+  return psalterSrc(w, d, hourField);
+}
+
 export function shortReadingRef(
   ctx: SlotContext,
   hourField: string,  // e.g. "lauds.shortReading"
@@ -159,6 +175,15 @@ export function shortReadingRef(
 // Antiphon (Benedictus / Magnificat / Invitatory / Nunc Dimittis)
 // ---------------------------------------------------------------------------
 
+/** Canticle antiphons on memorias: proper or Common only (§5.4 — not the ferial psalter). */
+function isCanticleAntiphonField(field: string): boolean {
+  return (
+    field.includes("benedictusAntiphon") ||
+    field.includes("magnificatAntiphon") ||
+    field.includes("nuncDimittisAntiphon")
+  );
+}
+
 export function antiphonRef(
   ctx: SlotContext,
   field: string,    // e.g. "lauds.benedictusAntiphon"
@@ -167,6 +192,12 @@ export function antiphonRef(
   const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
 
   if (c.source === "saint" && c.saintId && !c.memoriaFullySuppressed) {
+    if (isMemoria(c) && isCanticleAntiphonField(field)) {
+      return chain(
+        saintSrc(c.saintId, field),
+        ...commonSources(c.applicableCommons, 0, field),
+      );
+    }
     const make = isMemoria(c) ? adLibChain.bind(null, 1) : chain;
     return make(
       saintSrc(c.saintId, field),
@@ -265,7 +296,8 @@ export function concludingPrayerRef(
 // Biblical / patristic readings (OoR)
 // ---------------------------------------------------------------------------
 
-export function biblicalReadingRef(
+/** §5.4 / §12 — scripture reading of the ferial day (Proper of Season). */
+function ferialBiblicalReadingRef(
   ctx: SlotContext,
   readingYear: "I" | "II",
 ): SlotSource {
@@ -275,20 +307,32 @@ export function biblicalReadingRef(
     : "officeOfReadings.biblicalReadingYr2";
   const singleField = "officeOfReadings.biblicalReading";
 
+  if (c.seasonalKey) {
+    return chain(
+      seasonalSrc(c.seasonalKey, yrField),
+      seasonalSrc(c.seasonalKey, singleField),
+    );
+  }
+  return seasonalSrc("", singleField);
+}
+
+export function biblicalReadingRef(
+  ctx: SlotContext,
+  readingYear: "I" | "II",
+): SlotSource {
+  const { celebration: c } = ctx;
+  const singleField = "officeOfReadings.biblicalReading";
+
+  if (c.source === "saint" && c.saintId && isMemoriaCelebration(c)) {
+    return ferialBiblicalReadingRef(ctx, readingYear);
+  }
   if (c.source === "saint" && c.saintId) {
     return chain(
       saintSrc(c.saintId, singleField),
       ...commonSources(c.applicableCommons, 0, singleField),
     );
   }
-  if (c.seasonalKey) {
-    // Prefer two-year cycle if present; fall back to one-year.
-    return chain(
-      seasonalSrc(c.seasonalKey, yrField),
-      seasonalSrc(c.seasonalKey, singleField),
-    );
-  }
-  return seasonalSrc("", singleField); // will resolve to undefined; caller handles
+  return ferialBiblicalReadingRef(ctx, readingYear);
 }
 
 export function patristicReadingRef(

@@ -11,6 +11,7 @@ import {
   antiphonRef,
   biblicalReadingRef,
   concludingPrayerRef,
+  ferialShortReadingRef,
   hymnRef,
   intercessionsRef,
   marianAntiphonRef,
@@ -185,14 +186,34 @@ describe("shortReadingRef and antiphonRef and intercessionsRef", () => {
     expect(kinds).toEqual(["saint", "common", "seasonal", "psalter"]);
   });
 
-  test("antiphonRef: memoria uses psalterField path last", () => {
+  test("ferialShortReadingRef: memoria daytime uses psalter only on ordinary ferial", () => {
+    const mem: Celebration = {
+      ...obligatoryMemoria(),
+      seasonalKey: undefined,
+    };
+    const ctx = baseCtx(mem);
+    const src = ferialShortReadingRef(ctx, "sext.shortReading");
+    expect(src).toEqual({
+      kind: "psalter",
+      week: 2,
+      day: "Monday",
+      field: "sext.shortReading",
+    });
+  });
+
+  test("antiphonRef: memoria canticle antiphon ends at common (no psalter)", () => {
     const ctx = baseCtx(obligatoryMemoria());
     const src = antiphonRef(ctx, "lauds.benedictusAntiphon", "lauds.benedictusAntiphonPsalter");
+    const kinds = flattenSources(src).map((s) => s.kind);
+    expect(kinds).toEqual(["saint", "common"]);
+    expect(flattenSources(src).some((s) => s.kind === "psalter")).toBe(false);
+  });
+
+  test("antiphonRef: memoria invitatory still falls back to psalter", () => {
+    const ctx = baseCtx(obligatoryMemoria());
+    const src = antiphonRef(ctx, "invitatoryAntiphon", "invitatoryAntiphon");
     const last = flattenSources(src).at(-1);
-    expect(last).toMatchObject({
-      kind: "psalter",
-      field: "lauds.benedictusAntiphonPsalter",
-    });
+    expect(last).toMatchObject({ kind: "psalter", field: "invitatoryAntiphon" });
   });
 
   test("intercessionsRef: saint solemnity ends at psalter", () => {
@@ -234,6 +255,19 @@ describe("biblicalReadingRef", () => {
       key: "",
       field: "officeOfReadings.biblicalReading",
     });
+  });
+
+  test("office-spec §5.4 — memoria: ferial scripture, not saint or common", () => {
+    const ctx = baseCtx(obligatoryMemoria());
+    const src = biblicalReadingRef(ctx, "I");
+    const flat = flattenSources(src);
+    expect(flat.map((s) => s.kind)).toEqual(["seasonal", "seasonal"]);
+    expect(flat[0]).toMatchObject({
+      kind: "seasonal",
+      key: "ot_w3_fri",
+      field: "officeOfReadings.biblicalReadingYr1",
+    });
+    expect(flat.some((s) => s.kind === "saint" || s.kind === "common")).toBe(false);
   });
 });
 

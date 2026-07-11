@@ -190,6 +190,110 @@ export interface DismissalFixed {
   response: string;
 }
 
+/** Swedish Ordo PDF/summary presentation strings. */
+export interface OrdoLabels {
+  hours: {
+    invitatory: string;
+    officeOfReadings: string;
+    lauds: string;
+    daytime: string;
+    vespers: string;
+    firstVespers: string;
+    compline: string;
+  };
+  ranks: Partial<Record<
+    | "triduum" | "sunday" | "solemnity" | "feastOfLordOnSunday" | "feast"
+    | "obligatoryMemoria" | "optionalMemoria" | "privilegedFerial" | "ordinaryFerial",
+    string
+  >>;
+  sources: {
+    /** Short phrase after "från", e.g. "propriet". */
+    propriet: string;
+    seasonalPropriet: string;
+    /** Neuter/indefinite form in hour prose, e.g. "communet" in "Allt från communet". */
+    communeInline: string;
+    feria: string;
+    psalterPrefix: string;
+    sundayWeekI: string;
+    complementaryPsalmody: string;
+    fixed: string;
+  };
+  parts: {
+    hymn: string;
+    antiphons: string;
+    psalms: string;
+    shortReading: string;
+    responsory: string;
+    benedictusAntiphon: string;
+    magnificatAntiphon: string;
+    nuncDimittisAntiphon: string;
+    intercessions: string;
+    concludingPrayer: string;
+    prayerForDay: string;
+    firstReading: string;
+    secondReading: string;
+    versicle: string;
+    teDeum: string;
+    marianAntiphon: string;
+    memoriaAddendum: string;
+    invitatoryAntiphon: string;
+    invitatoryPsalm: string;
+  };
+  prose: {
+    from: string;
+    /** Preposition for fixed single-source parts, e.g. "ur" in "Hymn ur communet." */
+    fromUr?: string;
+    and: string;
+    /** Disjunction for applicable commons, e.g. "eller". */
+    or?: string;
+    alternatives: string;
+    teDeumSaid: string;
+    firstVespersForSunday: string;
+    allFromSunday: string;
+    allFromFeria: string;
+    allFromPropriet: string;
+    /** Hour prose naming a common variant; {commune} = communeInline, {name} = variant label. */
+    allFromCommune: string;
+    /** Day-level heading, e.g. "Commune: herdar". */
+    dayCommune?: string;
+    allFromPsalter: string;
+    except: string;
+    ifMemoriaCelebrated: string;
+    /** e.g. "Om {name} firas:" — per-saint memoria block heading. */
+    ifMemoriaNamed?: string;
+    memoriaAddendum: string;
+    readingsFrom: string;
+    restFrom: string;
+    psalmodyOption: string;
+    otSunday: string;
+    complineForWeekday: string;
+    /** e.g. "Psaltarets vecka {week}" ({week} = I–IV) */
+    psalterWeek?: string;
+    /** e.g. "{weekday} i {week} veckan i advent" */
+    ferialInAdvent?: string;
+    ferialInLent?: string;
+    ferialInEaster?: string;
+    ferialInOt?: string;
+    ferialInEasterOctave?: string;
+    ferialInHolyWeek?: string;
+    /** e.g. "{day} dagen i juloktaven" (day = andra, tredje, …) */
+    ferialInChristmasOctave?: string;
+    ferialInChristmas?: string;
+    ferialInEpiphany?: string;
+    /** e.g. "{week} söndagen i Advent" */
+    sundayInAdvent?: string;
+    sundayInLent?: string;
+    sundayInEaster?: string;
+    sundayAfterChristmas?: string;
+  };
+  weekdays: Record<string, string>;
+  /** Definite form for compline labels, e.g. "måndagen". */
+  weekdaysDefinite: Record<string, string>;
+  months: string[];
+  seasonalNames?: Record<string, string>;
+  documentTitle?: string;
+}
+
 /** Presentation strings for assemblers (headings, rubrics, prefixes). */
 export interface AssemblerLabels {
   hours: {
@@ -225,6 +329,8 @@ export interface AssemblerLabels {
   errors?: {
     textNotLoaded: string;
   };
+  /** Swedish Ordo summary labels (see src/ordo/). */
+  ordo?: OrdoLabels;
   /** Labels for the per-day options UI (see src/options/enumerate.ts). */
   options?: {
     celebration?: string;

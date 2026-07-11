@@ -5,6 +5,7 @@ import {
   buildSaintCandidate,
   buildSeasonalFrame,
   compareObservances,
+  eveningFirstVespersOutranksDayVespers,
   isAdvent17Through24,
   isChristmasOctaveFerial,
   isLentenFerial,
@@ -203,5 +204,25 @@ describe("resolveCelebrationFromParts", () => {
     expect(c.type).toBe("solemnity");
     expect(c.source).toBe("saint");
     expect(c.saintId).toBe("annunciation");
+  });
+});
+
+describe("eveningFirstVespersOutranksDayVespers", () => {
+  test("Sunday First Vespers outranks a Saturday feast", () => {
+    expect(
+      eveningFirstVespersOutranksDayVespers(
+        { type: "feast" } as import("../../src/types/calendar.js").Celebration,
+        { type: "sunday" } as import("../../src/types/calendar.js").Celebration,
+      ),
+    ).toBe(true);
+  });
+
+  test("Saturday solemnity Second Vespers outranks Sunday First Vespers", () => {
+    expect(
+      eveningFirstVespersOutranksDayVespers(
+        { type: "solemnity" } as import("../../src/types/calendar.js").Celebration,
+        { type: "sunday" } as import("../../src/types/calendar.js").Celebration,
+      ),
+    ).toBe(false);
   });
 });

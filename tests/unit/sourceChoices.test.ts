@@ -41,15 +41,14 @@ function ctxFor(celebration: Celebration): SlotContext {
 }
 
 describe("§5.4 chains carry adLibFrom on memorias only", () => {
-  const slots = [
+  const adLibSlots = [
     (c: SlotContext) => hymnRef(c, "lauds.hymns"),
     (c: SlotContext) => shortReadingRef(c, "lauds.shortReading"),
-    (c: SlotContext) => antiphonRef(c, "lauds.benedictusAntiphon", "lauds.benedictusAntiphon"),
     (c: SlotContext) => intercessionsRef(c, "lauds.intercessions"),
   ];
 
-  test("memoria chains are marked after the saint head", () => {
-    for (const make of slots) {
+  test("memoria hymn/reading/intercessions chains are marked after the saint head", () => {
+    for (const make of adLibSlots) {
       const src = make(ctxFor(memoria())) as FallbackChain;
       expect(src.kind).toBe("fallback_chain");
       expect(src.adLibFrom).toBe(1);
@@ -57,7 +56,22 @@ describe("§5.4 chains carry adLibFrom on memorias only", () => {
     }
   });
 
+  test("memoria canticle antiphon is strict proper → common only", () => {
+    const src = antiphonRef(
+      ctxFor(memoria()),
+      "lauds.benedictusAntiphon",
+      "lauds.benedictusAntiphon",
+    ) as FallbackChain;
+    expect(src.kind).toBe("fallback_chain");
+    expect(src.adLibFrom).toBeUndefined();
+    expect(src.sources.map((s) => s.kind)).toEqual(["saint", "common", "common"]);
+  });
+
   test("feast chains stay strict", () => {
+    const slots = [
+      ...adLibSlots,
+      (c: SlotContext) => antiphonRef(c, "lauds.benedictusAntiphon", "lauds.benedictusAntiphon"),
+    ];
     for (const make of slots) {
       const src = make(ctxFor(feast())) as FallbackChain;
       expect(src.kind).toBe("fallback_chain");
