@@ -109,6 +109,8 @@ export interface StoredMelody {
   incipit?: string;
   /** Hash of normalized GABC content; used for rename/duplicate detection. */
   contentHash: string;
+  /** When `"failed"`, the entry carries provenance only — no importable GABC. */
+  status?: "failed";
   /** Ids of exact-content duplicates folded into this canonical entry. */
   aliases?: string[];
   source: MelodySource;
