@@ -36,13 +36,14 @@ function groupEntries(entries: SlotEntry[]): Map<string, SlotEntry[]> {
 }
 
 export function communeName(phrase: string, labels: OrdoLabels): string | null {
-  const prefix = `${labels.sources.communePrefix} (`;
+  const prefix = `${labels.sources.communeInline} (`;
   if (!phrase.startsWith(prefix) || !phrase.endsWith(")")) return null;
   return phrase.slice(prefix.length, -1);
 }
 
 interface ProseContext {
   dayCommuneVariant?: string;
+  dayCommuneVariants?: string[];
   feriaPsalter?: { week: PsalterWeek; day: Weekday };
   psalterBaseline?: "feria" | "sunday";
 }
@@ -52,8 +53,14 @@ function proseContextFromOpts(opts?: CompactHourOptions): ProseContext {
     psalterBaseline: opts?.psalterBaseline ?? "feria",
   };
   if (opts?.dayCommuneVariant) ctx.dayCommuneVariant = opts.dayCommuneVariant;
+  if (opts?.dayCommuneVariants?.length) ctx.dayCommuneVariants = opts.dayCommuneVariants;
   if (opts?.feriaPsalter) ctx.feriaPsalter = opts.feriaPsalter;
   return ctx;
+}
+
+function communeInDayContext(commune: string, ctx: ProseContext): boolean {
+  if (ctx.dayCommuneVariants?.includes(commune)) return true;
+  return ctx.dayCommuneVariant === commune;
 }
 
 function isCurrentPsalter(groupKey: string, ctx: ProseContext): boolean {
@@ -89,9 +96,9 @@ function phraseForProse(
   if (isCurrentPsalter(groupKey, ctx)) {
     return psalterBaselinePhrase(labels, ctx.psalterBaseline ?? "feria");
   }
-  if (!ctx.dayCommuneVariant) return phrase;
+  if (!ctx.dayCommuneVariant && !ctx.dayCommuneVariants?.length) return phrase;
   const commune = communeName(phrase, labels);
-  if (commune === ctx.dayCommuneVariant) return labels.sources.communePrefix;
+  if (commune && communeInDayContext(commune, ctx)) return labels.sources.communeInline;
   return phrase;
 }
 
@@ -104,10 +111,12 @@ function allFromClause(
   if (phrase === labels.sources.propriet) return labels.prose.allFromPropriet;
   const commune = communeName(phrase, labels);
   if (commune) {
-    if (ctx.dayCommuneVariant && commune === ctx.dayCommuneVariant) {
-      return `Allt från ${labels.sources.communePrefix}.`;
+    if (communeInDayContext(commune, ctx)) {
+      return `Allt från ${labels.sources.communeInline}.`;
     }
-    return labels.prose.allFromCommune.replace("{name}", commune);
+    return labels.prose.allFromCommune
+      .replace("{commune}", labels.sources.communeInline)
+      .replace("{name}", commune);
   }
   if (isCurrentPsalter(groupKey, ctx)) {
     return psalterBaselineClause(labels, ctx.psalterBaseline ?? "feria");
@@ -252,6 +261,8 @@ export interface CompactHourOptions {
   hourKey?: string;
   /** When set, commune variant name is omitted from hour prose (shown at day level). */
   dayCommuneVariant?: string;
+  /** When several commons are ad-lib choices, omit all listed variant names from hour prose. */
+  dayCommuneVariants?: string[];
   /** Psalter week/day for the calendar date — current psalter sources collapse to feria. */
   feriaPsalter?: { week: PsalterWeek; day: Weekday };
   /** Baseline label when collapsing the current psalter (feria vs Sunday). */

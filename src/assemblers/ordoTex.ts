@@ -39,15 +39,17 @@ export function assembleOrdoDayTex(day: OrdoDaySummary): string {
   if (day.hours.length > 0) {
     bodyParts.push(formatHourBlocks(day.hours));
   }
-  if (day.memoriaIfCelebrated && day.memoriaIfCelebrated.length > 0) {
-    const memoriaParts: string[] = [];
-    if (day.memoriaCommuneLine) {
-      memoriaParts.push(`\\ordoCommune{${escapeTexPlain(day.memoriaCommuneLine)}}`);
+  if (day.memoriaBlocks && day.memoriaBlocks.length > 0) {
+    for (const block of day.memoriaBlocks) {
+      const memoriaParts: string[] = [];
+      if (block.communeLine) {
+        memoriaParts.push(`\\ordoCommune{${escapeTexPlain(block.communeLine)}}`);
+      }
+      memoriaParts.push(formatHourBlocks(block.hours));
+      bodyParts.push(
+        `\\ordoMemoriaBlock{${escapeTexPlain(block.heading)}}{${memoriaParts.join("\n")}}`,
+      );
     }
-    memoriaParts.push(formatHourBlocks(day.memoriaIfCelebrated));
-    bodyParts.push(
-      `\\ordoMemoriaBlock{${memoriaParts.join("\n")}}`,
-    );
   }
 
   const body = bodyParts.join("\n");

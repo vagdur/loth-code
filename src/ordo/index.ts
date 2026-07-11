@@ -2,7 +2,7 @@ export {
   compactHourProse, hourEntriesEquivalent,
   type SlotEntry,
 } from "./compactHour.js";
-export { compactOrdoDayBody } from "./compactDay.js";
+export { compactOrdoDayBody, type OrdoMemoriaBlock } from "./compactDay.js";
 export { complineWeekday, summarizeComplineLabel } from "./complineLabel.js";
 export { formatFerialTitle } from "./ferialTitle.js";
 export { lookupSeasonalName } from "./seasonalNames.js";

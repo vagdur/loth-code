@@ -130,8 +130,22 @@ describe("summarizeOrdoDay (stockholm)", () => {
     const summary = summarizeOrdoDay(utcDate(2025, 12, 6), ctx, repo);
     expect(summary.celebrationOptions).toContain("Alternativ:");
     expect(summary.defaultBody).toBe("Allt från ferian.");
-    expect(summary.memoriaIfCelebrated?.length).toBeGreaterThan(0);
-    expect(summary.memoriaIfCelebrated!.some((h) => h.prose.includes("commune"))).toBe(true);
+    expect(summary.memoriaBlocks?.length).toBeGreaterThan(0);
+    expect(summary.memoriaBlocks!.some((b) => b.hours.some((h) => h.prose.includes("commune")))).toBe(true);
+  });
+
+  test("2026-01-20 two optional memorias each get their own block and commons", () => {
+    const summary = summarizeOrdoDay(utcDate(2026, 1, 20), ctx, repo);
+    expect(summary.memoriaBlocks?.length).toBe(2);
+    const fabian = summary.memoriaBlocks!.find((b) => b.heading.includes("Fabianus"));
+    const sebastian = summary.memoriaBlocks!.find((b) => b.heading.includes("Sebastian"));
+    expect(fabian).toBeDefined();
+    expect(sebastian).toBeDefined();
+    expect(fabian!.communeLine).toContain("en martyr");
+    expect(fabian!.communeLine).toContain("herdar");
+    expect(fabian!.communeLine).toContain("eller");
+    expect(sebastian!.communeLine).toContain("en martyr");
+    expect(sebastian!.communeLine).not.toContain("herdar");
   });
 
   test("2025-12-03 obligatory memoria uses except pattern not dual all-from", () => {
@@ -153,7 +167,7 @@ describe("summarizeOrdoDay (stockholm)", () => {
       "11 juli. S:t Benedictus av Nursia, abbot, Europas skyddspatron. Fest.",
     );
     expect(summary.psalterWeekLine).toBe("Psaltarens vecka II");
-    expect(summary.communeLine).toBe("Från commune: kyrkolärare");
+    expect(summary.communeLine).toBe("Commune: kyrkolärare");
 
     const lauds = summary.hours.find((h) => h.key === "lauds");
     expect(lauds).toBeDefined();

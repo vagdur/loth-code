@@ -15,6 +15,7 @@ import type { OrdoLabels } from "../types/texts.js";
 import {
   compactHourProse, dayCommuneVariantFromHourEntryLists, hourEntriesEquivalent, type SlotEntry,
 } from "./compactHour.js";
+import { formatDayCommuneLine, memoriaCommuneInfo } from "./communeLine.js";
 import { summarizeComplineLabel } from "./complineLabel.js";
 import { collectHourEntries } from "./summarizeHour.js";
 import type { OrdoHourSummary } from "./summarizeDay.js";
@@ -200,11 +201,17 @@ function collectDeltaHourEntryLists(
   return lists;
 }
 
-function formatDayCommuneLine(
-  variant: string,
-  labels: OrdoLabels,
-): string {
-  return (labels.prose.dayCommune ?? "Från commune: {name}").replace("{name}", variant);
+interface DayCommuneDisplay {
+  variant?: string;
+  variants?: string[];
+}
+
+function compactHourCommuneOpts(display?: DayCommuneDisplay) {
+  if (!display) return {};
+  return {
+    ...(display.variant ? { dayCommuneVariant: display.variant } : {}),
+    ...(display.variants?.length ? { dayCommuneVariants: display.variants } : {}),
+  };
 }
 
 function buildCompactHour(
@@ -213,7 +220,7 @@ function buildCompactHour(
   abstractDay: AbstractDay,
   entries: SlotEntry[],
   labels: OrdoLabels,
-  dayCommuneVariant?: string,
+  communeDisplay?: DayCommuneDisplay,
 ): OrdoHourSummary | null {
   if (spec.key === "compline") {
     return {
@@ -240,7 +247,7 @@ function buildCompactHour(
   const prose = compactHourProse(entries, labels, {
     ...(suffix ? { suffix } : {}),
     hourKey: spec.hourKey,
-    ...(dayCommuneVariant ? { dayCommuneVariant } : {}),
+    ...compactHourCommuneOpts(communeDisplay),
     feriaPsalter: {
       week: liturgicalDay.psalterWeek,
       day: liturgicalDay.psalterDay,
@@ -294,7 +301,7 @@ function buildAllCompactHours(
   labels: OrdoLabels,
   choices?: DayChoices,
   includeCompline = true,
-  dayCommuneVariant?: string,
+  communeDisplay?: DayCommuneDisplay,
 ): OrdoHourSummary[] {
   const hours: OrdoHourSummary[] = [];
   for (const spec of HOUR_SPECS) {
@@ -302,7 +309,7 @@ function buildAllCompactHours(
     if (spec.key === "invitatory" && !abstractDay.invitatory) continue;
     const entries = collectEntriesForSpec(spec, abstractDay, repo, labels, choices);
     const hour = buildCompactHour(
-      spec, liturgicalDay, abstractDay, entries, labels, dayCommuneVariant,
+      spec, liturgicalDay, abstractDay, entries, labels, communeDisplay,
     );
     if (hour) hours.push(hour);
   }
@@ -317,7 +324,7 @@ function buildDeltaHours(
   labels: OrdoLabels,
   ferialChoices: DayChoices,
   otherChoices: DayChoices,
-  dayCommuneVariant?: string,
+  communeDisplay?: DayCommuneDisplay,
 ): OrdoHourSummary[] {
   const hours: OrdoHourSummary[] = [];
   for (const spec of HOUR_SPECS) {
@@ -331,7 +338,7 @@ function buildDeltaHours(
     );
     if (hourEntriesEquivalent(ferialEntries, otherEntries)) continue;
     const hour = buildCompactHour(
-      spec, liturgicalDay, otherAbstractDay, otherEntries, labels, dayCommuneVariant,
+      spec, liturgicalDay, otherAbstractDay, otherEntries, labels, communeDisplay,
     );
     if (hour) hours.push(hour);
   }
@@ -343,7 +350,7 @@ function exceptionalFirstVespers(
   repo: DataRepository,
   labels: OrdoLabels,
   choices?: DayChoices,
-  dayCommuneVariant?: string,
+  communeDisplay?: DayCommuneDisplay,
 ): OrdoHourSummary | null {
   const spec = HOUR_SPECS.find((s) => s.key === "firstVespers")!;
   const entries = collectEntriesForSpec(spec, abstractDay, repo, labels, choices);
@@ -357,23 +364,34 @@ function exceptionalFirstVespers(
     };
   }
   return buildCompactHour(
-    spec, abstractDay.liturgicalDay, abstractDay, entries, labels, dayCommuneVariant,
+    spec, abstractDay.liturgicalDay, abstractDay, entries, labels, communeDisplay,
   );
 }
 
-function celebrationChoiceId(options: DayOption[]): string | undefined {
+function optionalMemoriaChoices(options: DayOption[]): { id: string; label: string }[] {
   const celeb = options.find((o) => o.kind === "celebration");
-  if (!celeb || celeb.choices.length < 2) return undefined;
-  const nonFeria = celeb.choices.find((c) => c.id !== "feria");
-  return nonFeria?.id ?? celeb.choices[1]?.id;
+  if (!celeb || celeb.choices.length < 2) return [];
+  return celeb.choices.filter((c) => c.id !== "feria");
+}
+
+function memoriaBlockHeading(name: string, labels: OrdoLabels): string {
+  const template = labels.prose.ifMemoriaNamed ?? labels.prose.ifMemoriaCelebrated;
+  return template.includes("{name}")
+    ? template.replace("{name}", name)
+    : template;
+}
+
+export interface OrdoMemoriaBlock {
+  heading: string;
+  communeLine?: string;
+  hours: OrdoHourSummary[];
 }
 
 export interface CompactedDayBody {
   defaultBody?: string;
   communeLine?: string;
   hours: OrdoHourSummary[];
-  memoriaIfCelebrated?: OrdoHourSummary[];
-  memoriaCommuneLine?: string;
+  memoriaBlocks?: OrdoMemoriaBlock[];
 }
 
 function dayCommuneForHourEntryLists(
@@ -419,38 +437,53 @@ export function compactOrdoDayBody(
     const ferialDay = resolveDay(liturgicalDay.date, context.calendarId, ferialChoices);
     const ferialAbstract = buildDay(ferialDay, context, ferialChoices);
 
-    const memoriaChoiceId = celebrationChoiceId(options);
-    const memoriaChoices: DayChoices = {
-      ...effectiveChoices,
-      ...(memoriaChoiceId ? { celebration: memoriaChoiceId } : {}),
-    };
-    const memoriaDay = resolveDay(liturgicalDay.date, context.calendarId, memoriaChoices);
-    const memoriaAbstract = buildDay(memoriaDay, context, memoriaChoices);
-
-    const memoriaCommune = dayCommuneForHourEntryLists(
-      collectDeltaHourEntryLists(
-        ferialAbstract, memoriaAbstract, repo, labels, ferialChoices, memoriaChoices,
-      ),
-      labels,
-    );
     const defaultBody = labels.prose.allFromFeria;
     const firstVespers = exceptionalFirstVespers(ferialAbstract, repo, labels, ferialChoices);
-    const memoriaHours = buildDeltaHours(
-      ferialAbstract,
-      memoriaAbstract,
-      liturgicalDay,
-      repo,
-      labels,
-      ferialChoices,
-      memoriaChoices,
-      memoriaCommune.variant ?? undefined,
-    );
+    const memoriaBlocks: OrdoMemoriaBlock[] = [];
+
+    for (const choice of optionalMemoriaChoices(options)) {
+      const memoriaChoices: DayChoices = {
+        ...effectiveChoices,
+        celebration: choice.id,
+      };
+      const memoriaDay = resolveDay(liturgicalDay.date, context.calendarId, memoriaChoices);
+      const memoriaAbstract = buildDay(memoriaDay, context, memoriaChoices);
+
+      const deltaEntryLists = collectDeltaHourEntryLists(
+        ferialAbstract, memoriaAbstract, repo, labels, ferialChoices, memoriaChoices,
+      );
+      const commune = memoriaCommuneInfo(
+        memoriaDay.celebration, deltaEntryLists, repo, labels,
+      );
+      const communeDisplay: DayCommuneDisplay = {
+        ...(commune.dayCommuneVariant ? { variant: commune.dayCommuneVariant } : {}),
+        ...(commune.dayCommuneVariants?.length
+          ? { variants: commune.dayCommuneVariants }
+          : {}),
+      };
+      const hours = buildDeltaHours(
+        ferialAbstract,
+        memoriaAbstract,
+        memoriaDay,
+        repo,
+        labels,
+        ferialChoices,
+        memoriaChoices,
+        communeDisplay,
+      );
+      if (hours.length === 0) continue;
+
+      memoriaBlocks.push({
+        heading: memoriaBlockHeading(choice.label, labels),
+        ...(commune.line ? { communeLine: commune.line } : {}),
+        hours,
+      });
+    }
 
     return {
       defaultBody,
       hours: firstVespers ? [firstVespers] : [],
-      ...(memoriaHours.length > 0 ? { memoriaIfCelebrated: memoriaHours } : {}),
-      ...(memoriaCommune.line ? { memoriaCommuneLine: memoriaCommune.line } : {}),
+      ...(memoriaBlocks.length > 0 ? { memoriaBlocks } : {}),
     };
   }
 
@@ -458,12 +491,14 @@ export function compactOrdoDayBody(
     abstractDay, repo, labels, effectiveChoices,
   );
   const communeFields = dayCommune.line ? { communeLine: dayCommune.line } : {};
-  const dayCommuneVariant = dayCommune.variant ?? undefined;
+  const communeDisplay: DayCommuneDisplay | undefined = dayCommune.variant
+    ? { variant: dayCommune.variant }
+    : undefined;
 
   if (profile === "ordinary_ferial" || profile === "seasonal_ferial") {
     if (allHoursMatchFerialBaseline(abstractDay, season, repo, labels, effectiveChoices)) {
       const firstVespers = exceptionalFirstVespers(
-        abstractDay, repo, labels, effectiveChoices, dayCommuneVariant,
+        abstractDay, repo, labels, effectiveChoices, communeDisplay,
       );
       return {
         ...communeFields,
@@ -474,14 +509,14 @@ export function compactOrdoDayBody(
     return {
       ...communeFields,
       hours: buildAllCompactHours(
-        liturgicalDay, abstractDay, repo, labels, effectiveChoices, true, dayCommuneVariant,
+        liturgicalDay, abstractDay, repo, labels, effectiveChoices, true, communeDisplay,
       ),
     };
   }
 
   if (profile === "seasonal_sunday") {
     const firstVespers = exceptionalFirstVespers(
-      abstractDay, repo, labels, effectiveChoices, dayCommuneVariant,
+      abstractDay, repo, labels, effectiveChoices, communeDisplay,
     );
     if (allHoursMatchSundayBaseline(abstractDay, repo, labels, effectiveChoices)) {
       return {
@@ -491,7 +526,7 @@ export function compactOrdoDayBody(
       };
     }
     const hours = buildAllCompactHours(
-      liturgicalDay, abstractDay, repo, labels, effectiveChoices, true, dayCommuneVariant,
+      liturgicalDay, abstractDay, repo, labels, effectiveChoices, true, communeDisplay,
     );
     return { ...communeFields, hours };
   }
@@ -507,7 +542,7 @@ export function compactOrdoDayBody(
       allHoursMatchFerialBaseline(ferialAbstract, season, repo, labels, ferialChoices)
     ) {
       const firstVespers = exceptionalFirstVespers(
-        abstractDay, repo, labels, effectiveChoices, dayCommuneVariant,
+        abstractDay, repo, labels, effectiveChoices, communeDisplay,
       );
       return {
         ...communeFields,
@@ -524,15 +559,15 @@ export function compactOrdoDayBody(
       labels,
       ferialChoices,
       effectiveChoices,
-      dayCommuneVariant,
+      communeDisplay,
     );
     const firstVespers = exceptionalFirstVespers(
-      abstractDay, repo, labels, effectiveChoices, dayCommuneVariant,
+      abstractDay, repo, labels, effectiveChoices, communeDisplay,
     );
 
     if (deltaHours.length === 0) {
       const hours = buildAllCompactHours(
-        liturgicalDay, abstractDay, repo, labels, effectiveChoices, true, dayCommuneVariant,
+        liturgicalDay, abstractDay, repo, labels, effectiveChoices, true, communeDisplay,
       );
       return { ...communeFields, hours };
     }
@@ -548,7 +583,7 @@ export function compactOrdoDayBody(
   return {
     ...communeFields,
     hours: buildAllCompactHours(
-      liturgicalDay, abstractDay, repo, labels, effectiveChoices, true, dayCommuneVariant,
+      liturgicalDay, abstractDay, repo, labels, effectiveChoices, true, communeDisplay,
     ),
   };
 }

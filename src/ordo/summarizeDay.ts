@@ -10,7 +10,7 @@ import type { DataRepository } from "../data/repository.js";
 import type { AssemblyContext, DayClass, LiturgicalDay } from "../types/calendar.js";
 import type { DayOption } from "../types/options.js";
 import type { HourKey } from "../options/slotTable.js";
-import { compactOrdoDayBody } from "./compactDay.js";
+import { compactOrdoDayBody, type OrdoMemoriaBlock } from "./compactDay.js";
 import { formatFerialTitle } from "./ferialTitle.js";
 import { lookupSeasonalName } from "./seasonalNames.js";
 import { getOrdoLabels } from "./labels.js";
@@ -34,10 +34,8 @@ export interface OrdoDaySummary {
   /** Single-line default when the whole day matches a baseline profile. */
   defaultBody?: string;
   hours: OrdoHourSummary[];
-  /** Compact hour summaries when an optional memoria is celebrated. */
-  memoriaIfCelebrated?: OrdoHourSummary[];
-  /** Commune line for the optional memoria block. */
-  memoriaCommuneLine?: string;
+  /** Per-saint blocks when optional memorials may be celebrated. */
+  memoriaBlocks?: OrdoMemoriaBlock[];
 }
 
 const RANK_KEYS: Record<DayClass, keyof import("../types/texts.js").OrdoLabels["ranks"]> = {
@@ -136,11 +134,6 @@ export function summarizeOrdoDay(
     ...(compacted.communeLine ? { communeLine: compacted.communeLine } : {}),
     ...(compacted.defaultBody ? { defaultBody: compacted.defaultBody } : {}),
     hours: compacted.hours.filter((h) => h.prose.length > 0),
-    ...(compacted.memoriaIfCelebrated?.length
-      ? { memoriaIfCelebrated: compacted.memoriaIfCelebrated }
-      : {}),
-    ...(compacted.memoriaCommuneLine
-      ? { memoriaCommuneLine: compacted.memoriaCommuneLine }
-      : {}),
+    ...(compacted.memoriaBlocks?.length ? { memoriaBlocks: compacted.memoriaBlocks } : {}),
   };
 }

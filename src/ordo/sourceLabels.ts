@@ -75,7 +75,7 @@ export function describeSource(
       const name = typeof variantLabel === "string" ? variantLabel : s.type;
       return {
         groupKey: sourceGroupKey(s),
-        phrase: `${labels.sources.communePrefix} (${name})`,
+        phrase: `${labels.sources.communeInline} (${name})`,
         isProper: false,
       };
     }

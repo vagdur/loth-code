@@ -6,7 +6,7 @@ const labels = {
   sources: {
     propriet: "propriet",
     seasonalPropriet: "årstidens proprium",
-    communePrefix: "commune",
+    communeInline: "communet",
     feria: "ferian",
     psalterPrefix: "psaltaret",
     sundayWeekI: "söndag vecka I",
@@ -43,7 +43,7 @@ const labels = {
     allFromSunday: "Allt från söndagen.",
     allFromFeria: "Allt från ferian.",
     allFromPropriet: "Allt från propriet.",
-    allFromCommune: "Allt från commune ({name}).",
+    allFromCommune: "Allt från {commune} ({name}).",
     allFromPsalter: "Allt från {source}.",
     except: "utom",
     ifMemoriaCelebrated: "Om minnesdagen firas:",
@@ -82,19 +82,19 @@ describe("compactHourProse", () => {
   test("two sources use except pattern with feria dominant", () => {
     const prose = compactHourProse([
       entry("hymn", "hymn", "saint:st_benedict", "propriet"),
-      entry("shortReading", "kort läsning", "common:doctors:0", "commune ([doctors variant 1])"),
+      entry("shortReading", "kort läsning", "common:doctors:0", "communet ([doctors variant 1])"),
     ], labels);
     expect(prose).toContain("utom");
-    expect(prose).toContain("commune");
+    expect(prose).toContain("communet");
   });
 
   test("commune over psalter uses psalter as baseline", () => {
     const prose = compactHourProse([
-      entry("hymn", "hymn", "common:pastors:0", "commune ([pastors variant 1])"),
+      entry("hymn", "hymn", "common:pastors:0", "communet ([pastors variant 1])"),
       entry("psalmSlots[0]", "antifoner", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
       entry("psalmSlots[1]", "antifoner", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
       entry("shortResponsory", "responsorium", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
-      entry("magnificatAntiphon", "antifon till Magnificat", "common:pastors:0", "commune ([pastors variant 1])"),
+      entry("magnificatAntiphon", "antifon till Magnificat", "common:pastors:0", "communet ([pastors variant 1])"),
     ], labels, hourOpts);
     expect(prose).toContain("utom");
     expect(prose).toContain("Allt från ferian");
@@ -105,12 +105,12 @@ describe("compactHourProse", () => {
     const prose = compactHourProse([
       entry("hymn", "hymn", "saint:st_benedict", "propriet"),
       entry("benedictusAntiphon", "antifon till Benedictus", "saint:st_benedict", "propriet"),
-      entry("shortReading", "kort läsning", "common:doctors:0", "commune ([doctors variant 1])"),
-      entry("concludingPrayer", "kollekt", "common:doctors:0", "commune ([doctors variant 1])"),
+      entry("shortReading", "kort läsning", "common:doctors:0", "communet ([doctors variant 1])"),
+      entry("concludingPrayer", "kollekt", "common:doctors:0", "communet ([doctors variant 1])"),
       entry("shortResponsory", "responsorium", "psalter:2:Saturday", "psaltaret vecka 2 lördag"),
     ], labels, { feriaPsalter: { week: 2, day: "Saturday" } });
     expect(prose).toContain("utom");
-    expect(prose).toContain("commune");
+    expect(prose).toContain("communet");
     expect(prose).toContain("från ferian");
   });
 
@@ -127,15 +127,15 @@ describe("dayCommuneVariantFromHourEntryLists", () => {
   test("returns null when commune appears in only one hour", () => {
     const variant = dayCommuneVariantFromHourEntryLists([
       [entry("hymn", "hymn", "saint:st_benedict", "propriet")],
-      [entry("shortReading", "kort läsning", "common:bvm:0", "commune ([bvm variant 1])")],
+      [entry("shortReading", "kort läsning", "common:bvm:0", "communet ([bvm variant 1])")],
     ], labels);
     expect(variant).toBeNull();
   });
 
   test("returns variant when commune appears in two hours", () => {
     const variant = dayCommuneVariantFromHourEntryLists([
-      [entry("shortReading", "kort läsning", "common:bvm:0", "commune ([bvm variant 1])")],
-      [entry("concludingPrayer", "kollekt", "common:bvm:0", "commune ([bvm variant 1])")],
+      [entry("shortReading", "kort läsning", "common:bvm:0", "communet ([bvm variant 1])")],
+      [entry("concludingPrayer", "kollekt", "common:bvm:0", "communet ([bvm variant 1])")],
     ], labels);
     expect(variant).toBe("[bvm variant 1]");
   });

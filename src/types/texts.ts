@@ -210,7 +210,8 @@ export interface OrdoLabels {
     /** Short phrase after "från", e.g. "propriet". */
     propriet: string;
     seasonalPropriet: string;
-    communePrefix: string;
+    /** Neuter/indefinite form in hour prose, e.g. "communet" in "Allt från communet". */
+    communeInline: string;
     feria: string;
     psalterPrefix: string;
     sundayWeekI: string;
@@ -241,17 +242,23 @@ export interface OrdoLabels {
   prose: {
     from: string;
     and: string;
+    /** Disjunction for applicable commons, e.g. "eller". */
+    or?: string;
     alternatives: string;
     teDeumSaid: string;
     firstVespersForSunday: string;
     allFromSunday: string;
     allFromFeria: string;
     allFromPropriet: string;
+    /** Hour prose naming a common variant; {commune} = communeInline, {name} = variant label. */
     allFromCommune: string;
-    allFromPsalter: string;
+    /** Day-level heading, e.g. "Commune: herdar". */
     dayCommune?: string;
+    allFromPsalter: string;
     except: string;
     ifMemoriaCelebrated: string;
+    /** e.g. "Om {name} firas:" — per-saint memoria block heading. */
+    ifMemoriaNamed?: string;
     memoriaAddendum: string;
     readingsFrom: string;
     restFrom: string;
