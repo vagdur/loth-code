@@ -5,7 +5,7 @@ import type { OrdoLabels } from "../../src/types/texts.js";
 const labels = {
   sources: {
     propriet: "propriet",
-    seasonalPropriet: "årstidens propriet",
+    seasonalPropriet: "årstidens proprium",
     communePrefix: "commune",
     feria: "ferian",
     psalterPrefix: "psaltaret",
