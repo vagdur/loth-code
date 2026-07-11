@@ -1,5 +1,6 @@
 /**
- * Requires `lualatex` + Gregorio on PATH. Regenerate fixture PDF with
+ * Compiles every hour + the full-day document with lualatex.
+ * Requires `lualatex` + Gregorio on PATH. Regenerate fixture PDFs with
  * `npm run test:fixtures:update` (sets UPDATE_FIXTURES=1).
  */
 
@@ -7,15 +8,56 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync } from "
 import os from "os";
 import path from "path";
 import { afterEach, expect, test } from "vitest";
-import { LaudsTexAssembler } from "../../src/assemblers/laudsTex.js";
+import { TexAssembler } from "../../src/assemblers/texAssembler.js";
 import { buildSampleAbstractDay, loadSampleRepo } from "../helpers/buildSampleDay.js";
 import { normalizeLf } from "../helpers/normalizeLf.js";
 import { parseLualatexLog, partitionHboxWarnings } from "../helpers/parseLualatexLog.js";
 import { fixturesDir } from "../helpers/paths.js";
 import { copyLothSty, runLualatex, writeTexFile } from "../../src/tools/compileTex.js";
+import type { DataRepository } from "../../src/data/repository.js";
+import type { AbstractDay } from "../../src/types/hours.js";
 
-const jobName = "lauds";
-const pdfFixtureName = "lauds-2026-05-10-general.pdf";
+type Case = {
+  name: string;
+  jobName: string;
+  render: (day: AbstractDay, repo: DataRepository) => string;
+};
+
+const cases: Case[] = [
+  {
+    name: "Office of Readings",
+    jobName: "office-of-readings",
+    render: (day, repo) => new TexAssembler().assembleOfficeOfReadings(day.officeOfReadings, repo),
+  },
+  {
+    name: "Lauds",
+    jobName: "lauds",
+    render: (day, repo) => new TexAssembler().assembleLauds(day.lauds, repo),
+  },
+  {
+    name: "Daytime Prayer (Sext)",
+    jobName: "sext",
+    render: (day, repo) => {
+      if (!day.sext) throw new Error("sample day has no Sext");
+      return new TexAssembler().assembleDaytimePrayer(day.sext, repo);
+    },
+  },
+  {
+    name: "Vespers",
+    jobName: "vespers",
+    render: (day, repo) => new TexAssembler().assembleVespers(day.vespers, repo),
+  },
+  {
+    name: "Compline",
+    jobName: "compline",
+    render: (day, repo) => new TexAssembler().assembleCompline(day.compline, repo),
+  },
+  {
+    name: "Full day",
+    jobName: "day",
+    render: (day, repo) => new TexAssembler().assembleDay(day, repo),
+  },
+];
 
 let tempDir: string | undefined;
 
@@ -30,12 +72,12 @@ afterEach(() => {
   }
 });
 
-test(
-  "Lauds TeX compiles with lualatex",
-  async () => {
+test.each(cases)(
+  "$name TeX compiles with lualatex",
+  async ({ jobName, render }) => {
     const repo = await loadSampleRepo();
     const abs = buildSampleAbstractDay();
-    const tex = normalizeLf(new LaudsTexAssembler().assembleLauds(abs.lauds, repo));
+    const tex = normalizeLf(render(abs, repo));
 
     tempDir = mkdtempSync(path.join(os.tmpdir(), "loth-lualatex-"));
     const texPath = path.join(tempDir, `${jobName}.tex`);
@@ -71,7 +113,7 @@ test(
 
     if (process.env.UPDATE_FIXTURES === "1") {
       mkdirSync(fixturesDir, { recursive: true });
-      cpSync(pdfPath, path.join(fixturesDir, pdfFixtureName));
+      cpSync(pdfPath, path.join(fixturesDir, `${jobName}-2026-05-10-general.pdf`));
     }
   },
   120_000,

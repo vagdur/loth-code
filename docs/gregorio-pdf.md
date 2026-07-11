@@ -1,6 +1,6 @@
-# LaTeX / Gregorio PDF output (Lauds)
+# LaTeX / Gregorio PDF output
 
-The [`LaudsTexAssembler`](../src/assemblers/laudsTex.ts) builds a UTF-8 `.tex` file for **Morning Prayer (Lauds)** using **semantic markup** (roles such as `\antiphon`, `\versicle`, `\response`). Visual formatting lives in [`tex/loth.sty`](../tex/loth.sty), not in the generated `.tex`.
+The [`TexAssembler`](../src/assemblers/texAssembler.ts) builds a UTF-8 `.tex` file for **every liturgical hour** — Office of Readings, Lauds, Daytime Prayer (Terce/Sext/None), Vespers, and Compline — plus a full-day document (`assembleDay`) that lays out all the day's hours in one PDF, separated by `\clearpage`. It uses **semantic markup** (roles such as `\antiphon`, `\versicle`, `\response`). Visual formatting lives in [`tex/loth.sty`](../tex/loth.sty), not in the generated `.tex`. It mirrors [`PlainTextAssembler`](../src/assemblers/plainText.ts) slot-for-slot (the reference implementation).
 
 GABC from the data model (`Melody.gabc`, `Antiphon.psalmTone`, canticle melodies) is embedded with the LaTeX `filecontents` environment so Gregorio can read sibling `.gabc` files when you run **LuaLaTeX**.
 
@@ -17,7 +17,7 @@ Locale-specific rubric strings (e.g. `Ant.`, `℣.`, `℟.`) come from [`fixed_t
 
 **Compile requirement:** copy `tex/loth.sty` into the same directory as the `.tex` file (the integration test does this automatically via [`copyLothSty`](../src/tools/compileTex.ts)).
 
-## Semantic macros (Lauds)
+## Semantic macros
 
 Defined in `loth.sty` and emitted from [`liturgicalTex.ts`](../src/assemblers/liturgicalTex.ts):
 
@@ -30,20 +30,24 @@ Defined in `loth.sty` and emitted from [`liturgicalTex.ts`](../src/assemblers/li
 | `\hymn` / `\hymnStanza` | Hymn stanzas |
 | `\psalmText{text}` | Psalm or canticle verses |
 | `\shortReading{ref}{text}` | Short reading |
-| `\shortResponsory{R}{V}{R}` | Short responsory |
+| `\reading{attribution}{text}` | Long reading (Office of Readings) |
+| `\shortResponsory{R}{V}{R}` | Short responsory (also used for the long responsory) |
 | `\gospelCanticle{ref}{text}` | Gospel canticle |
+| `\teDeum{text}` | Te Deum |
 | `\intercessionsIntro`, `\intercessionsResponse`, `\intention{V}{R}` | Intercessions |
 | `\lordsPrayerSection{title}{text}` | Our Father block |
 | `\concludingPrayer{rubric}{text}` | Concluding prayer |
+| `\examinationOfConscience{text}` | Compline examination of conscience |
+| `\complineBlessing{text}` | Compline blessing |
 | `\dismissal{verse}{response}` | Dismissal |
 | `\melodyRubric{text}` | Mode / editorial note |
 | `\lothScore{basename}` / `\psalmToneScore{basename}` | Gregorio scores |
 
 ## Integration tests (LaTeX + PDF)
 
-From the repository root, `npm test` runs Vitest integration tests. One assembles the sample Lauds `.tex` into a temporary directory, copies `loth.sty` beside it, and runs **LuaLaTeX** twice there.
+From the repository root, `npm test` runs Vitest integration tests. For each hour (and the full-day document) one test assembles the sample `.tex` into a temporary directory, copies `loth.sty` beside it, and runs **LuaLaTeX** twice there.
 
-Golden `.tex` and a reference `.pdf` for the sample day live under [`tests/fixtures/`](../tests/fixtures/) (for example `lauds-2026-05-10-general.tex` and `lauds-2026-05-10-general.pdf`). The test suite compares generated TeX to the fixture text; it does **not** byte-compare PDFs, but when you refresh goldens you can commit an updated PDF for human review.
+Golden `.tex` and reference `.pdf` files for the sample day live under [`tests/fixtures/`](../tests/fixtures/), one per hour plus the whole day (for example `lauds-2026-05-10-general.tex`, `office-of-readings-2026-05-10-general.tex`, `day-2026-05-10-general.tex`, and matching `.pdf`s). The test suite compares generated TeX to the fixture text; it does **not** byte-compare PDFs, but when you refresh goldens you can commit updated PDFs for human review.
 
 To rewrite the TeX fixture and copy a freshly built PDF into `tests/fixtures/`:
 
@@ -69,4 +73,4 @@ That requires LuaLaTeX + Gregorio on `PATH`, same as a normal `npm test` on a ma
 
 - The plain-text placeholder `[Benedictus text — Lk 1:68-79]` matches [`PlainTextAssembler`](../src/assemblers/plainText.ts) until the Gospel canticle text is wired into data.
 - GABC is written literally into `filecontents` blocks; avoid placing the substring `\end{filecontents}` inside real GABC sources.
-- CI or machines without TeX cannot pass `npm test` as long as the Lauds compile integration test is enabled; use a TeX-capable runner or adjust that test for your pipeline.
+- CI or machines without TeX cannot pass `npm test` as long as the compile integration tests are enabled; use a TeX-capable runner or adjust those tests for your pipeline.
