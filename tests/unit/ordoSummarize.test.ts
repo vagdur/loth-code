@@ -150,13 +150,13 @@ describe("summarizeOrdoDay (stockholm)", () => {
     expect(summary.headline).toBe(
       "11 juli. S:t Benedictus av Nursia, abbot, Europas skyddspatron. Fest.",
     );
-    expect(summary.communeLine).toBe("Från commune: [doctors variant 1]");
+    expect(summary.communeLine).toBe("Från commune: kyrkolärare");
 
     const lauds = summary.hours.find((h) => h.key === "lauds");
     expect(lauds).toBeDefined();
     expect(lauds!.prose).toContain("utom");
     expect(lauds!.prose).toContain("commune");
-    expect(lauds!.prose).not.toContain("[doctors variant 1]");
+    expect(lauds!.prose).not.toContain("kyrkolärare");
 
     const compline = summary.hours.find((h) => h.key === "compline");
     expect(compline!.prose).toBe("Kompletorium för lördagen.");
@@ -164,7 +164,7 @@ describe("summarizeOrdoDay (stockholm)", () => {
     const oor = summary.hours.find((h) => h.key === "officeOfReadings");
     expect(oor!.prose).toContain("Te Deum");
     expect(oor!.prose).toContain("commune");
-    expect(oor!.prose).not.toContain("[doctors variant 1]");
+    expect(oor!.prose).not.toContain("kyrkolärare");
 
     const firstVespers = summary.hours.find((h) => h.key === "firstVespers");
     expect(firstVespers).toBeDefined();
