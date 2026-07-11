@@ -200,6 +200,9 @@ describe("summarizeOrdoDay (stockholm)", () => {
     const compline = summary.hours.find((h) => h.key === "compline");
     expect(compline!.prose).toBe("Kompletorium för lördagen.");
 
+    const vespers = summary.hours.find((h) => h.key === "vespers");
+    expect(vespers).toBeUndefined();
+
     const oor = summary.hours.find((h) => h.key === "officeOfReadings");
     expect(oor!.prose).toContain("Te Deum");
     expect(oor!.prose).toContain("communet");
@@ -207,7 +210,7 @@ describe("summarizeOrdoDay (stockholm)", () => {
 
     const firstVespers = summary.hours.find((h) => h.key === "firstVespers");
     expect(firstVespers).toBeDefined();
-    expect(firstVespers!.prose).toContain("ur");
+    expect(firstVespers!.prose).toContain("söndagen");
 
     const melodyOptions = summary.hours.some((h) => h.prose.includes("melodi"));
     expect(melodyOptions).toBe(false);

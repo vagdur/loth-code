@@ -648,6 +648,22 @@ export function enumerateCelebrationAlternatives(
   return alternatives;
 }
 
+/** GILH Table of Liturgical Days n. 61 — lower number = higher rank. */
+export function celebrationRank(dayClass: DayClass): number {
+  return RANK[dayClass];
+}
+
+/**
+ * True when this evening's First Vespers of tomorrow outranks today's Vespers
+ * (Table of Liturgical Days n. 61; office-spec §4).
+ */
+export function eveningFirstVespersOutranksDayVespers(
+  today: Celebration,
+  tomorrowFirstVespers: Celebration,
+): boolean {
+  return celebrationRank(tomorrowFirstVespers.type) < celebrationRank(today.type);
+}
+
 /** True when today's Second Vespers outranks a Class I.3 saint's First Vespers. */
 export function todayOutranksI3FirstVespers(
   date: Date,

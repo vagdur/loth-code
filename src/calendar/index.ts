@@ -8,6 +8,7 @@
 import { addDays } from "./computus.js";
 import {
   enumerateCelebrationAlternatives,
+  eveningFirstVespersOutranksDayVespers,
   resolveCelebrationFromParts,
   todayOutranksI3FirstVespers,
   tomorrowHasFirstVespers,
@@ -132,6 +133,13 @@ function resolveEvening(date: Date, calendarId: string): EveningContext {
     calendarId,
   );
 
+  const todayCelebration = resolveCelebration(
+    date,
+    todaySeason,
+    todaySeasonalKey,
+    calendarId,
+  );
+
   const tomorrowWouldHaveFirstVespers = tomorrowHasFirstVespers(
     tomorrowCelebration,
     tomorrowSeasonalKey,
@@ -141,7 +149,8 @@ function resolveEvening(date: Date, calendarId: string): EveningContext {
 
   const hasFirstVespers =
     tomorrowWouldHaveFirstVespers &&
-    !todayOutranksI3FirstVespers(date, todaySeason, todaySeasonalKey);
+    !todayOutranksI3FirstVespers(date, todaySeason, todaySeasonalKey) &&
+    eveningFirstVespersOutranksDayVespers(todayCelebration, tomorrowCelebration);
 
   if (hasFirstVespers) {
     return {
@@ -176,6 +185,7 @@ export * from "./seasonalObservance.js";
 export {
   BVM_SATURDAY_SAINT_ID,
   enumerateCelebrationAlternatives,
+  eveningFirstVespersOutranksDayVespers,
   resolveCelebrationFromParts,
   SEASONAL_SOLEMNITY_KEYS,
   SOLEMNITY_FIRST_VESPERS_KEYS,

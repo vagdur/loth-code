@@ -3,6 +3,7 @@
  */
 
 import { resolveDay } from "../calendar/index.js";
+import { eveningFirstVespersOutranksDayVespers } from "../calendar/celebrationRanking.js";
 import { buildDay } from "../hours/index.js";
 import type { DataRepository } from "../data/repository.js";
 import type {
@@ -307,9 +308,19 @@ function buildAllCompactHours(
   includeCompline = true,
   communeDisplay?: DayCommuneDisplay,
 ): OrdoHourSummary[] {
+  const eveningOutranks =
+    liturgicalDay.evening.hasFirstVespers &&
+    liturgicalDay.evening.firstVespersCelebration !== undefined &&
+    eveningFirstVespersOutranksDayVespers(
+      liturgicalDay.celebration,
+      liturgicalDay.evening.firstVespersCelebration,
+    );
+
   const hours: OrdoHourSummary[] = [];
   for (const spec of HOUR_SPECS) {
     if (!includeCompline && spec.key === "compline") continue;
+    if (spec.key === "vespers" && eveningOutranks) continue;
+    if (spec.key === "firstVespers" && !eveningOutranks) continue;
     if (spec.key === "invitatory" && !abstractDay.invitatory) continue;
     const entries = collectEntriesForSpec(spec, abstractDay, repo, labels, choices);
     const hour = buildCompactHour(

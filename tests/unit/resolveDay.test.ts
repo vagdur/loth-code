@@ -46,6 +46,14 @@ describe("resolveDay", () => {
     expect(sat.evening.firstVespersCelebration?.type).toBe("sunday");
   });
 
+  test("Saturday feast before Sunday has First Vespers, not feast Vespers in evening", () => {
+    const sat = resolveDay(utcDate(2026, 7, 11), cal);
+    expect(sat.celebration.type).toBe("feast");
+    expect(sat.celebration.saintId).toBe("benedict_of_nursia");
+    expect(sat.evening.hasFirstVespers).toBe(true);
+    expect(sat.evening.firstVespersCelebration?.type).toBe("sunday");
+  });
+
   test("Annunciation transferred onto civil date yields saint solemnity", () => {
     // 2024: 25 March falls in Holy Week; celebration moves to 8 April.
     const d = resolveDay(new Date("2024-04-08T12:00:00Z"), cal);
