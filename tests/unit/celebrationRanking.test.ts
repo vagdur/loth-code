@@ -35,8 +35,11 @@ describe("celebrationRanking date helpers", () => {
 
   test("isChristmasOctaveFerial excludes Dec 25 and Jan 1", () => {
     expect(isChristmasOctaveFerial(utcDate(2026, 12, 26), "christmas")).toBe(true);
+    expect(isChristmasOctaveFerial(utcDate(2026, 12, 31), "christmas")).toBe(true);
     expect(isChristmasOctaveFerial(utcDate(2026, 12, 25), "christmas")).toBe(false);
     expect(isChristmasOctaveFerial(utcDate(2027, 1, 1), "christmas")).toBe(false);
+    // Past the octave but still the Christmas season → not an octave ferial.
+    expect(isChristmasOctaveFerial(utcDate(2027, 1, 2), "christmas")).toBe(false);
   });
 
   test("isLentenFerial excludes Ash Wednesday", () => {

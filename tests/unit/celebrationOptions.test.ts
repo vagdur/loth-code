@@ -67,6 +67,39 @@ describe("resolveCelebrationFromParts in partial-suppression seasons (§238)", (
     expect(c.type).toBe("obligatory_memoria");
     expect(c.saintId).toBe("francis_of_assisi");
   });
+
+  test("obligatory memoria is commemorated over a coinciding optional, regardless of id order", () => {
+    // Regression: on a suppression date the obligatory memoria must be the
+    // commemoration even when an optional memoria sorts alphabetically first
+    // (the demotion must not collapse the obligatory/optional ordering).
+    const c = resolveCelebrationFromParts(
+      utcDate(2026, 3, 6),
+      "lent",
+      "lent_w1_fri",
+      [
+        mockSaint("aaa_optional", "optional_memoria"),
+        mockSaint("zzz_obligatory", "obligatory_memoria"),
+      ],
+    );
+    expect(c.type).toBe("privileged_ferial");
+    expect(c.saintId).toBe("zzz_obligatory");
+    expect(c.memoriaReducedToOptional).toBe(true); // obligatory → optional
+    expect(c.allowMemoriaAddendum).toBe(true);
+  });
+
+  test("memoria on a Christmas-season ferial after the octave stays a full office", () => {
+    // Regression: the octave runs Dec 25–Jan 1; a memoria on Jan 2 (still the
+    // Christmas season, but past the octave) must NOT be suppressed.
+    const c = resolveCelebrationFromParts(
+      utcDate(2027, 1, 2),
+      "christmas",
+      null,
+      [mockSaint("basil_and_gregory", "obligatory_memoria")],
+    );
+    expect(c.type).toBe("obligatory_memoria");
+    expect(c.saintId).toBe("basil_and_gregory");
+    expect(c.allowMemoriaAddendum).toBe(false);
+  });
 });
 
 describe("enumerateCelebrationAlternatives", () => {

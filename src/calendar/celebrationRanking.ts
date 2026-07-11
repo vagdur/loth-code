@@ -110,9 +110,12 @@ export function isChristmasOctaveFerial(date: Date, season: Season): boolean {
   if (season !== "christmas") return false;
   const m = date.getUTCMonth() + 1;
   const d = date.getUTCDate();
-  if (m === 12 && d === 25) return false;
-  if (m === 1 && d === 1) return false;
-  return true;
+  // The octave runs Dec 25 (Christmas) to Jan 1 (Mary, Mother of God), both
+  // solemnities; only the intervening ferial days, Dec 26–31, are octave
+  // ferials.  The Christmas *season* continues past Jan 1 to the Baptism of
+  // the Lord, but those later days are NOT part of the octave and do not
+  // suppress memorias (§5.5).
+  return m === 12 && d >= 26 && d <= 31;
 }
 
 export function isLentenFerial(date: Date, season: Season, seasonalKey: SeasonalDayKey | null): boolean {
@@ -247,9 +250,7 @@ export function buildSaintCandidate(
     return {
       kind: "saint",
       dayClass: "obligatory_memoria",
-      rank: memoriaSuppressedByDate(ctx)
-        ? RANK.privileged_ferial + 0.5
-        : RANK.obligatory_memoria,
+      rank: RANK.obligatory_memoria,
       saint,
     };
   }
@@ -257,23 +258,25 @@ export function buildSaintCandidate(
   return {
     kind: "saint",
     dayClass: "optional_memoria",
-    rank: memoriaSuppressedByDate(ctx)
-      ? RANK.privileged_ferial + 0.5
-      : RANK.optional_memoria,
+    rank: RANK.optional_memoria,
     saint,
   };
 }
 
 /**
- * §5.5 — dates on which a memoria cannot win as a full office: the ferial
- * frame takes precedence and the memoria survives at most as the optional
- * addendum (applyMemoriaPolicy decides full vs. partial suppression).
+ * §5.5 — dates on which a winning memoria may not be celebrated as a full
+ * office: the ferial (or seasonal) office takes its place and the memoria
+ * survives at most as the optional addendum.  This is the single predicate
+ * that decides suppression-by-date; the ranking keeps memorias at their
+ * natural rank and `resolveWith` demotes the winner afterwards, so the
+ * obligatory-over-optional ordering is never disturbed.  `applyMemoriaPolicy`
+ * then reads the same date sets to choose full vs. partial suppression.
  */
 export function memoriaSuppressedByDate(ctx: RankingContext): boolean {
-  if (isAshWednesday(ctx.seasonalKey)) return true;
-  if (ctx.season === "holy_week") return true;
-  if (isEasterOctaveWeekday(ctx.date, ctx.season)) return true;
-  return appliesPartialMemoriaSuppression(ctx);
+  return (
+    appliesFullMemoriaSuppressionByDate(ctx) ||
+    appliesPartialMemoriaSuppression(ctx)
+  );
 }
 
 export function compareObservances(
@@ -337,6 +340,19 @@ export interface MemoriaPolicyFlags {
   saintId?: string;
 }
 
+/**
+ * §5.5 dates that fully suppress a memoria (no addendum), independent of the
+ * winning day's rank: Ash Wednesday, Holy Week, and the Easter octave.  This
+ * is the single source of truth for those dates, shared by
+ * `appliesFullMemoriaSuppression` and `memoriaSuppressedByDate`.
+ */
+export function appliesFullMemoriaSuppressionByDate(ctx: RankingContext): boolean {
+  if (isAshWednesday(ctx.seasonalKey)) return true;
+  if (ctx.season === "holy_week") return true;
+  if (isEasterOctaveWeekday(ctx.date, ctx.season)) return true;
+  return false;
+}
+
 export function appliesFullMemoriaSuppression(
   winner: ObservanceCandidate,
   ctx: RankingContext,
@@ -351,10 +367,7 @@ export function appliesFullMemoriaSuppression(
   ) {
     return true;
   }
-  if (isAshWednesday(ctx.seasonalKey)) return true;
-  if (ctx.season === "holy_week") return true;
-  if (isEasterOctaveWeekday(ctx.date, ctx.season)) return true;
-  return false;
+  return appliesFullMemoriaSuppressionByDate(ctx);
 }
 
 export function appliesPartialMemoriaSuppression(ctx: RankingContext): boolean {
@@ -448,9 +461,32 @@ function resolveWith(
   const bestSaint = pickBestSaint(electableSaints, ctx);
   if (bestSaint) candidates.push(bestSaint);
 
-  const winner = pickBestCandidate(candidates);
+  let winner = pickBestCandidate(candidates);
 
-  const suppressedMemoria = pickBestSuppressedMemoria(policySaints, winner, ctx);
+  // §5.5 (GILH 237–239): a memoria may win the ranking but still not be
+  // celebrated as a full office on a suppression date — the ferial (or
+  // seasonal) office takes its place and the memoria survives only as the
+  // optional addendum.  Demote AFTER ranking so the obligatory-over-optional
+  // ordering picked the correct commemoration, and the suppression rule lives
+  // in one place (memoriaSuppressedByDate / applyMemoriaPolicy) rather than in
+  // the candidate ranks.  A memoria that merely loses to a higher-ranked day
+  // is still handled below by pickBestSuppressedMemoria.
+  let suppressedMemoria: CalendarSaint | null;
+  if (
+    winner.kind === "saint" &&
+    isMemoriaRank(winner.dayClass) &&
+    memoriaSuppressedByDate(ctx)
+  ) {
+    suppressedMemoria = winner.saint ?? null;
+    winner = pickBestCandidate(
+      candidates.filter(
+        (c) => !(c.kind === "saint" && isMemoriaRank(c.dayClass)),
+      ),
+    );
+  } else {
+    suppressedMemoria = pickBestSuppressedMemoria(policySaints, winner, ctx);
+  }
+
   const memoriaFlags =
     winner.kind === "saint" && isMemoriaRank(winner.dayClass)
       ? {
