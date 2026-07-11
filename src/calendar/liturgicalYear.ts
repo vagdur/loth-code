@@ -156,8 +156,20 @@ export function getPsalterWeek(date: Date, calendarId = "general"): PsalterWeek 
 // ---------------------------------------------------------------------------
 
 /**
+ * True when Ordinary Time has only 33 weeks this year (GILH 152): the week
+ * immediately after Pentecost is omitted so end-of-year readings are preserved.
+ * Occurs when six or more OT weeks fall before Ash Wednesday.
+ */
+function omitWeekAfterPentecost(year: number, otIStart: Date): boolean {
+  const weeksBeforeLent =
+    Math.floor(daysBetween(ashWednesday(year), otIStart) / 7) + 1;
+  return weeksBeforeLent >= 6;
+}
+
+/**
  * Returns the Ordinary Time week number (1–34), or 0 if not in OT.
  * After Pentecost the numbering continues from where it was interrupted by Lent.
+ * In 33-week years the week immediately after Pentecost is skipped (GILH 152).
  */
 export function getOrdinaryTimeWeek(date: Date, calendarId = "general"): number {
   const season = getSeason(date, calendarId);
@@ -178,12 +190,28 @@ export function getOrdinaryTimeWeek(date: Date, calendarId = "general"): number 
       daysBetween(ashWednesday(year), otIStart) / 7
     ) + 1;
     const weeksSincePentecost = Math.floor(daysBetween(date, b.otIIStart) / 7);
-    // We skip the Sunday readings of the interrupted week.
-    return lentInterruptedWeek + weeksSincePentecost + 1;
+    const skipAfterPentecost = omitWeekAfterPentecost(year, otIStart) ? 1 : 0;
+    // Skip the Sunday readings of the interrupted week; in 33-week years also
+    // skip the week immediately after Pentecost (local_adjustments §7).
+    return lentInterruptedWeek + weeksSincePentecost + 1 + skipAfterPentecost;
   } else {
     // Before Lent (OT I)
     return Math.floor(daysBetween(date, otIStart) / 7) + 1;
   }
+}
+
+/**
+ * Ordinal of a Sunday "under året" in Swedish LOH / Ordo reckoning (1–34).
+ * Equals the OT week number plus one: the Sunday after Epiphany (Baptism of
+ * the Lord) counts as the first Sunday in the yearly sequence even though it
+ * is celebrated under its own title.
+ */
+export function getSundayUnderYearNumber(
+  date: Date,
+  calendarId = "general",
+): number {
+  const otWeek = getOrdinaryTimeWeek(date, calendarId);
+  return otWeek > 0 ? otWeek + 1 : 0;
 }
 
 // ---------------------------------------------------------------------------

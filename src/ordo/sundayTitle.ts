@@ -2,6 +2,7 @@
  * Human-readable Swedish titles for seasonal Sundays in the Ordo headline.
  */
 
+import { getSundayUnderYearNumber } from "../calendar/liturgicalYear.js";
 import { adventWeekNumber } from "./adventWeek.js";
 import { christmasSundayNumber } from "./christmasSunday.js";
 import type { OrdoLabels } from "../types/texts.js";
@@ -32,8 +33,9 @@ export function formatSundayTitle(
   if (named) return named;
 
   const otSun = /^ot_w(\d+)_sun$/.exec(seasonalKey);
-  if (otSun && prose.otSunday) {
-    return prose.otSunday.replace("{n}", otSun[1]!);
+  if (otSun && prose.otSunday && date) {
+    const n = getSundayUnderYearNumber(date, calendarId);
+    return prose.otSunday.replace("{n}", String(n));
   }
 
   const weekly = /^(advent|lent|easter)_w(\d+)_sun$/.exec(seasonalKey);

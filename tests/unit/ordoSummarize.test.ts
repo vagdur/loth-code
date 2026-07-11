@@ -78,7 +78,7 @@ describe("summarizeOrdoDay (stockholm)", () => {
 
   test("2026-01-18 first OT Sunday keeps numeric form without rank", () => {
     const summary = summarizeOrdoDay(utcDate(2026, 1, 18), ctx, repo);
-    expect(summary.headline).toBe("18 januari. 1:e söndagen under året.");
+    expect(summary.headline).toBe("18 januari. 2:e söndagen under året.");
   });
 
   test("2025-12-29 Christmas octave ferial uses octave day number, not weekday", () => {
@@ -98,10 +98,15 @@ describe("summarizeOrdoDay (stockholm)", () => {
 
   test("2026-07-02 ordinary-time ferial uses readable Swedish title without rank", () => {
     const summary = summarizeOrdoDay(utcDate(2026, 7, 2), ctx, repo);
-    expect(summary.headline).toBe("2 juli. Torsdag i tolfte veckan under året.");
+    expect(summary.headline).toBe("2 juli. Torsdag i trettonde veckan under året.");
     expect(summary.psalterWeekLine).toBe("Psaltarens vecka I");
     expect(summary.defaultBody).toBe("Allt från ferian.");
     expect(summary.hours).toHaveLength(0);
+  });
+
+  test("2026-07-12 fifteenth Sunday under året matches Ordo 2025-2026", () => {
+    const summary = summarizeOrdoDay(utcDate(2026, 7, 12), ctx, repo);
+    expect(summary.headline).toBe("12 juli. 15:e söndagen under året.");
   });
 
   test("2025-12-02 Advent ferial collapses to single default line", () => {
