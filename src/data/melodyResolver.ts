@@ -13,6 +13,7 @@ import type { LiturgicalDay } from "../types/calendar.js";
 import type {
   MelodyCondition, MelodyRef, StoredMelody,
 } from "../types/melody.js";
+import type { DayChoices, DayOption, OptionChoice } from "../types/options.js";
 import type { Melody, ShortResponsoryMelody } from "../types/texts.js";
 import { gabcToText } from "../tools/gabcText.js";
 import type { DataRepository } from "./repository.js";
@@ -51,12 +52,32 @@ export function matchesCondition(
 // Ref selection
 // ---------------------------------------------------------------------------
 
-/** First ref whose condition matches and whose id resolves in the store. */
+/**
+ * First ref whose condition matches and whose id resolves in the store.
+ *
+ * With `chosenRefId` (a melody-option choice), the matching alternative is
+ * preferred instead: plain `"<refId>"` picks the first matching ref with
+ * that id, `"<index>:<refId>"` disambiguates duplicates by list position.
+ * A stale/non-matching chosen id falls back to the default first match.
+ */
 export function selectMelodyRef(
   refs: MelodyRef[] | undefined,
   repo: DataRepository,
   day: LiturgicalDay,
+  chosenRefId?: string,
 ): { ref: MelodyRef; stored: StoredMelody } | undefined {
+  if (chosenRefId !== undefined) {
+    const m = /^(\d+):(.*)$/.exec(chosenRefId);
+    const wantedIndex = m ? Number(m[1]) : undefined;
+    const wantedRef = m ? m[2] : chosenRefId;
+    for (const [i, ref] of (refs ?? []).entries()) {
+      if (ref.ref !== wantedRef) continue;
+      if (wantedIndex !== undefined && i !== wantedIndex) continue;
+      if (!matchesCondition(ref.condition, day)) continue;
+      const stored = repo.getMelody(ref.ref);
+      if (stored) return { ref, stored };
+    }
+  }
   for (const ref of refs ?? []) {
     if (!matchesCondition(ref.condition, day)) continue;
     const stored = repo.getMelody(ref.ref);
@@ -128,8 +149,9 @@ function hydrateCarrier(
   carrier: MelodyRefCarrier,
   repo: DataRepository,
   day: LiturgicalDay,
+  chosenRefId?: string,
 ): MelodyRefCarrier {
-  const selected = selectMelodyRef(carrier.melodyRefs, repo, day);
+  const selected = selectMelodyRef(carrier.melodyRefs, repo, day, chosenRefId);
   if (!selected) return carrier; // dangling or nothing matches: keep inline fallback
   const { ref, stored } = selected;
 
@@ -155,17 +177,30 @@ function hydrateCarrier(
   return out;
 }
 
+/** Options steering the deep walk (see hydrateMelodies / collectMelodyOptions). */
+export interface MelodyWalkOptions {
+  /** Day choices; `choices["<path>.melody"]` picks the melody for a carrier. */
+  choices?: DayChoices;
+  /** Option-path prefix of the walked value, e.g. "lauds.hymn". */
+  path?: string;
+}
+
 /**
- * Deep-walk a resolved slot value and hydrate every object carrying
- * `melodyRefs`. Returns a copy; repository-cached objects are not mutated.
+ * Shared deep walk over a resolved slot value.  Visits every object carrying
+ * `melodyRefs`, threading an option path (object keys as `.key`, array
+ * elements as `[i]`).  `visit` returns the (possibly hydrated) replacement
+ * carrier.  Both hydration and option collection use this single walk so the
+ * option ids they see can never diverge.
  */
-export function hydrateMelodies<T>(
+function walkCarriers<T>(
   value: T,
-  repo: DataRepository,
-  day: LiturgicalDay,
+  path: string,
+  visit: (carrier: MelodyRefCarrier, path: string) => MelodyRefCarrier,
 ): T {
   if (Array.isArray(value)) {
-    return value.map((v) => hydrateMelodies(v, repo, day)) as unknown as T;
+    return value.map((v, i) =>
+      walkCarriers(v, `${path}[${i}]`, visit),
+    ) as unknown as T;
   }
   if (value === null || typeof value !== "object" || value instanceof Date) {
     return value;
@@ -174,11 +209,79 @@ export function hydrateMelodies<T>(
     Object.entries(value as Record<string, unknown>).map(([k, v]) => [
       k,
       // melodyRefs / melody subtrees are payload, not slots — copy as-is.
-      k === "melodyRefs" || k === "melody" ? v : hydrateMelodies(v, repo, day),
+      k === "melodyRefs" || k === "melody"
+        ? v
+        : walkCarriers(v, path ? `${path}.${k}` : k, visit),
     ]),
   ) as Record<string, unknown>;
   if (Array.isArray((walked as MelodyRefCarrier).melodyRefs)) {
-    return hydrateCarrier(walked as MelodyRefCarrier, repo, day) as T;
+    return visit(walked as MelodyRefCarrier, path) as T;
   }
   return walked as T;
+}
+
+/**
+ * Deep-walk a resolved slot value and hydrate every object carrying
+ * `melodyRefs`. Returns a copy; repository-cached objects are not mutated.
+ * With `opts`, honors per-carrier melody choices keyed `"<path>.melody"`.
+ */
+export function hydrateMelodies<T>(
+  value: T,
+  repo: DataRepository,
+  day: LiturgicalDay,
+  opts?: MelodyWalkOptions,
+): T {
+  return walkCarriers(value, opts?.path ?? "", (carrier, path) =>
+    hydrateCarrier(carrier, repo, day, opts?.choices?.[`${path}.melody`]),
+  );
+}
+
+function melodyChoiceLabel(stored: StoredMelody, ref: MelodyRef): string {
+  const base = stored.incipit ?? stored.text ?? stored.id;
+  const mode = stored.mode !== undefined ? ` (ton ${stored.mode})` : "";
+  const note = ref.note && ref.note !== "eller" ? ` — ${ref.note}` : "";
+  return `${base}${mode}${note}`;
+}
+
+/**
+ * Collect the melody options of a resolved (un-hydrated) slot value: one
+ * `DayOption` per carrier whose ref list yields two or more distinct
+ * condition-matching, store-resolving melodies.  Option ids are
+ * `"<path>.melody"` with the same path scheme hydrateMelodies applies;
+ * choice ids are the ref ids (`"<index>:<refId>"` when a ref id repeats).
+ */
+export function collectMelodyOptions(
+  value: unknown,
+  repo: DataRepository,
+  day: LiturgicalDay,
+  path: string,
+): DayOption[] {
+  const options: DayOption[] = [];
+  walkCarriers(value, path, (carrier, carrierPath) => {
+    const refs = carrier.melodyRefs ?? [];
+    const choices: OptionChoice[] = [];
+    const seenRefIds = new Map<string, number>();
+    for (const [i, ref] of refs.entries()) {
+      if (!matchesCondition(ref.condition, day)) continue;
+      const stored = repo.getMelody(ref.ref);
+      if (!stored) continue;
+      const count = seenRefIds.get(ref.ref) ?? 0;
+      seenRefIds.set(ref.ref, count + 1);
+      choices.push({
+        id: count === 0 ? ref.ref : `${i}:${ref.ref}`,
+        label: melodyChoiceLabel(stored, ref),
+      });
+    }
+    if (choices.length >= 2) {
+      options.push({
+        id: `${carrierPath}.melody`,
+        kind: "melody",
+        label: carrierPath,
+        choices,
+        defaultChoiceId: choices[0]!.id,
+      });
+    }
+    return carrier;
+  });
+  return options;
 }

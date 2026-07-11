@@ -7,10 +7,13 @@
 
 import { addDays } from "./computus.js";
 import {
+  enumerateCelebrationAlternatives,
   resolveCelebrationFromParts,
   todayOutranksI3FirstVespers,
   tomorrowHasFirstVespers,
 } from "./celebrationRanking.js";
+import type { CelebrationAlternative } from "./celebrationRanking.js";
+import type { DayChoices } from "../types/options.js";
 import {
   getOrdinaryTimeWeek, getPsalterWeek, getReadingYear,
   getSeason, getSeasonalDayKey, getSundayCycle, getWeekday,
@@ -25,9 +28,19 @@ import type { SeasonalDayKey } from "../types/proper.js";
 // Main resolution function
 // ---------------------------------------------------------------------------
 
+/**
+ * Resolve the LiturgicalDay for a civil date.
+ *
+ * `choices` may carry a `celebration` choice id (see
+ * enumerateDayCelebrationAlternatives); an absent or stale id silently
+ * falls back to the default celebration.  Choices apply to THIS day only —
+ * this evening's First Vespers belongs to tomorrow's default celebration,
+ * since tomorrow's choices are a separate per-day concern for the caller.
+ */
 export function resolveDay(
   date: Date,
   _calendarId: string,
+  choices?: DayChoices,
 ): LiturgicalDay {
   const season = getSeason(date, _calendarId);
   const psalterWeek = getPsalterWeek(date, _calendarId);
@@ -37,7 +50,13 @@ export function resolveDay(
   const ordinaryTimeWeek = getOrdinaryTimeWeek(date, _calendarId);
   const seasonalKey = getSeasonalDayKey(date, _calendarId);
 
-  const celebration = resolveCelebration(date, season, seasonalKey, _calendarId);
+  const defaultCelebration = resolveCelebration(date, season, seasonalKey, _calendarId);
+  const chosenId = choices?.["celebration"];
+  const celebration =
+    chosenId !== undefined
+      ? enumerateDayCelebrationAlternatives(date, _calendarId)
+          .find((a) => a.choiceId === chosenId)?.celebration ?? defaultCelebration
+      : defaultCelebration;
   const evening = resolveEvening(date, _calendarId);
 
   const saturdayBvmPermitted =
@@ -57,6 +76,21 @@ export function resolveDay(
     evening,
     saturdayBvmPermitted,
   };
+}
+
+/**
+ * The celebrations that may be observed on this date (feria, optional
+ * memorials, Saturday BVM), with the default marked.  A single-entry result
+ * means the day admits no celebration choice.
+ */
+export function enumerateDayCelebrationAlternatives(
+  date: Date,
+  calendarId: string,
+): CelebrationAlternative[] {
+  const season = getSeason(date, calendarId);
+  const seasonalKey = getSeasonalDayKey(date, calendarId);
+  const saintsToday = getSaintsOnDate(date, calendarId);
+  return enumerateCelebrationAlternatives(date, season, seasonalKey, saintsToday);
 }
 
 // ---------------------------------------------------------------------------
@@ -146,7 +180,10 @@ export * from "./sanctoralRegistry.js";
 export * from "./transferRules.js";
 export * from "./seasonalObservance.js";
 export {
+  BVM_SATURDAY_SAINT_ID,
+  enumerateCelebrationAlternatives,
   resolveCelebrationFromParts,
   SEASONAL_SOLEMNITY_KEYS,
   SOLEMNITY_FIRST_VESPERS_KEYS,
 } from "./celebrationRanking.js";
+export type { CelebrationAlternative } from "./celebrationRanking.js";

@@ -35,6 +35,22 @@ function chain(...sources: SlotSourceDirect[]): SlotSource {
   return { kind: "fallback_chain", sources } satisfies FallbackChain;
 }
 
+/**
+ * Chain whose tail (from index `adLibFrom`) is a rubrically free choice
+ * (office-spec §5.4: "otherwise from the Common or the current ferial day")
+ * rather than strict precedence.  Default resolution is unchanged
+ * (first-non-null), so the first resolvable tail source is the default.
+ */
+function adLibChain(adLibFrom: number, ...sources: SlotSourceDirect[]): SlotSource {
+  if (sources.length === 1) return sources[0] as SlotSourceDirect;
+  return { kind: "fallback_chain", sources, adLibFrom } satisfies FallbackChain;
+}
+
+/** Memoria arrangement (§5.4) applies — the common-vs-feria tail is ad libitum. */
+function isMemoria(c: Celebration): boolean {
+  return c.type === "obligatory_memoria" || c.type === "optional_memoria";
+}
+
 /** Build common sources for all applicable commons in order, using the given field. */
 function commonSources(
   commons: CommonType[],
@@ -72,7 +88,8 @@ export function hymnRef(
   const properField = hourField.replace(/\.hymns$/, ".hymn");
 
   if (c.source === "saint" && c.saintId) {
-    return chain(
+    const make = isMemoria(c) ? adLibChain.bind(null, 1) : chain;
+    return make(
       saintSrc(c.saintId, properField),
       ...commonSources(c.applicableCommons, 0, properField),
       psalterSrc(w, d, psalterField),
@@ -124,7 +141,8 @@ export function shortReadingRef(
   const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
 
   if (c.source === "saint" && c.saintId && !c.memoriaFullySuppressed) {
-    return chain(
+    const make = isMemoria(c) ? adLibChain.bind(null, 1) : chain;
+    return make(
       saintSrc(c.saintId, hourField),
       ...commonSources(c.applicableCommons, 0, hourField),
       ...(c.seasonalKey ? [seasonalSrc(c.seasonalKey, hourField)] : []),
@@ -149,7 +167,8 @@ export function antiphonRef(
   const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
 
   if (c.source === "saint" && c.saintId && !c.memoriaFullySuppressed) {
-    return chain(
+    const make = isMemoria(c) ? adLibChain.bind(null, 1) : chain;
+    return make(
       saintSrc(c.saintId, field),
       ...commonSources(c.applicableCommons, 0, field),
       ...(c.seasonalKey ? [seasonalSrc(c.seasonalKey, field)] : []),
@@ -173,7 +192,8 @@ export function intercessionsRef(
   const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
 
   if (c.source === "saint" && c.saintId && !c.memoriaFullySuppressed) {
-    return chain(
+    const make = isMemoria(c) ? adLibChain.bind(null, 1) : chain;
+    return make(
       saintSrc(c.saintId, hourField),
       ...commonSources(c.applicableCommons, 0, hourField),
       psalterSrc(w, d, hourField),

@@ -225,6 +225,19 @@ export interface AssemblerLabels {
   errors?: {
     textNotLoaded: string;
   };
+  /** Labels for the per-day options UI (see src/options/enumerate.ts). */
+  options?: {
+    celebration?: string;
+    feria?: string;
+    bvmSaturday?: string;
+    fromPsalter?: string;
+    fromSeasonal?: string;
+    /** Prefixed to the common variant's own label. */
+    fromCommonPrefix?: string;
+    psalmody?: string;
+    currentPsalmody?: string;
+    complementaryPsalmody?: string;
+  };
 }
 
 export interface FixedTexts {

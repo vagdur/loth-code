@@ -58,6 +58,8 @@ export interface SanctoralCalendarEntriesFile {
 /** Runtime saint compiled from YAML + transfer rules. */
 export interface CalendarSaint {
   saintId: string;
+  /** Display name from the calendar entry. */
+  name?: string;
   rank: SanctoralRank;
   applicableCommons: CommonType[];
   /** Defaults to "saint" when omitted. */

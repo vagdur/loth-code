@@ -8,6 +8,8 @@
 
 import type { AssemblyContext, LiturgicalDay } from "../types/calendar.js";
 import type { AbstractDay } from "../types/hours.js";
+import type { DayChoices } from "../types/options.js";
+import { PSALMODY_COMPLEMENTARY, PSALMODY_CURRENT } from "../types/options.js";
 
 import { buildCompline } from "./buildCompline.js";
 import { buildDaytimePrayer } from "./buildDaytimePrayer.js";
@@ -16,28 +18,50 @@ import { buildLauds } from "./buildLauds.js";
 import { buildOfficeOfReadings } from "./buildOfficeOfReadings.js";
 import { buildVespers } from "./buildVespers.js";
 
+type DaytimeHour = "terce" | "sext" | "none";
+
+/**
+ * Which daytime hour uses current psalmody by default: the single hour said,
+ * or mid-day when several are said.
+ */
+export function defaultCurrentDaytimeHour(
+  daytimeHoursSaid: AssemblyContext["daytimeHoursSaid"],
+): DaytimeHour {
+  return daytimeHoursSaid.length <= 1
+    ? (daytimeHoursSaid[0] ?? "sext")
+    : "sext";
+}
+
 export function buildDay(
   day: LiturgicalDay,
   context: AssemblyContext,
+  choices?: DayChoices,
 ): AbstractDay {
   const { daytimeHoursSaid } = context;
 
   // For Daytime Prayer: the "current" psalmody is used for the Hour that
   // matches the actual time of day; the others use complementary psalmody.
   // If only one Hour is said, it always uses current psalmody.
-  const currentHour =
-    daytimeHoursSaid.length <= 1
-      ? (daytimeHoursSaid[0] ?? "sext")
-      : "sext"; // default mid-day when multiple are said
+  // Whether another daytime hour was already prayed outside this assembly
+  // cannot be inferred, so a per-hour "<hour>.psalmody" choice overrides the
+  // default ("current" | "complementary"). Cross-hour exclusivity (only one
+  // hour a day takes current psalmody, GILH 80) is the caller's concern.
+  const currentHour = defaultCurrentDaytimeHour(daytimeHoursSaid);
+  const usesCurrent = (hour: DaytimeHour): boolean => {
+    const chosen = choices?.[`${hour}.psalmody`];
+    if (chosen === PSALMODY_CURRENT) return true;
+    if (chosen === PSALMODY_COMPLEMENTARY) return false;
+    return currentHour === hour;
+  };
 
   const terce = daytimeHoursSaid.includes("terce")
-    ? buildDaytimePrayer(day, "terce", currentHour === "terce")
+    ? buildDaytimePrayer(day, "terce", usesCurrent("terce"))
     : undefined;
   const sext = daytimeHoursSaid.includes("sext")
-    ? buildDaytimePrayer(day, "sext", currentHour === "sext")
+    ? buildDaytimePrayer(day, "sext", usesCurrent("sext"))
     : undefined;
   const none = daytimeHoursSaid.includes("none")
-    ? buildDaytimePrayer(day, "none", currentHour === "none")
+    ? buildDaytimePrayer(day, "none", usesCurrent("none"))
     : undefined;
 
   const firstVespers = day.evening.hasFirstVespers && day.evening.firstVespersCelebration

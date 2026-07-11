@@ -874,6 +874,51 @@ AssemblyContext {
 }
 ```
 
+### 10.1 Per-Day Options (`DayOption` / `DayChoices`)
+
+`AssemblyContext` holds *persistent* user settings; a liturgical day additionally
+carries *per-day* choices whose valid values depend on the date and the data
+(`src/types/options.ts`, enumerated by `enumerateDayOptions` in
+`src/options/enumerate.ts`). Four kinds:
+
+| Kind | Option id | Choice ids | Where applied |
+|---|---|---|---|
+| `celebration` | `celebration` | `feria`, `saint:<id>`, `bvm_saturday` | `resolveDay(date, calendarId, choices)` |
+| `part_source` | `<hour>.<slot>.source` (e.g. `lauds.hymn.source`) | `common:<type>:<variant>`, `psalter`, `seasonal:<key>`, … | `resolveSource` on chains marked `adLibFrom` (office-spec §5.4) |
+| `melody` | `<hour>.<slot>[...].melody` | melody ref ids (`<index>:<refId>` for duplicates) | `hydrateMelodies` / `selectMelodyRef` |
+| `psalmody` | `<hour>.psalmody` (daytime hours) | `current`, `complementary` | `buildDay(day, context, choices)` |
+
+`DayChoices` is a flat `Record<optionId, choiceId>` threaded as an optional
+trailing parameter through `resolveDay` → `buildDay` → the assemblers'
+`assemble*` methods. Contract:
+
+- **Defaults**: an absent, unknown, or stale choice id silently falls back to
+  the default; applying every option's `defaultChoiceId` is byte-identical to
+  applying no choices at all.
+- **Strict heads win**: a `part_source` choice only takes effect when the
+  chain's strict head (the saint's proper text) yields nothing — propers are
+  never choosable away (§5.4).
+- **Cascade**: changing an upstream choice (celebration, a `.source` choice)
+  can change which downstream options exist; callers re-enumerate after each
+  change (`enumerateDayOptions` accepts the choices made so far).
+- **Cross-hour psalmody exclusivity** (only one daytime hour takes current
+  psalmody per day, GILH 80) is not enforced by the engine — it cannot know
+  what was already prayed outside the current assembly.
+
+Hour keys: `invitatory`, `officeOfReadings`, `lauds`, `terce`, `sext`, `none`,
+`firstVespers`, `vespers`, `compline`. Slot keys are the runtime camelCase
+field names without the `Ref` suffix (`hymn`, `benedictusAntiphon`,
+`psalmSlots[0]`, `memoriaAddendum.antiphon`, …), shared between assemblers and
+the enumerator via `src/options/slotTable.ts`.
+
+Display labels for options come from the optional `labels.options` block in
+`fixed_texts.yaml`, saint names from the sanctoral calendar entries, and
+common-variant names from each `CommonVariant.label`.
+
+The Saturday memoria of the BVM (§5.6) is backed by the calendar-less
+`proper_of_saints/bvm_saturday.yaml` entry; slots without proper texts fall
+back to the BVM common.
+
 ---
 
 ## 11. Summary of Collections and Approximate Sizes

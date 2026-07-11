@@ -145,6 +145,7 @@ export function nominalDateFromEntry(
 export function compileToCalendarSaint(entry: SanctoralCalendarEntry): CalendarSaint {
   return {
     saintId: entry.id,
+    ...(entry.name !== undefined ? { name: entry.name } : {}),
     rank: entry.rank,
     applicableCommons: entry.applicableCommons,
     ...(entry.observanceOf !== undefined ? { observanceOf: entry.observanceOf } : {}),
