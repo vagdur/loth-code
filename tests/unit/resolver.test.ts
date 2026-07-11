@@ -11,6 +11,7 @@ import {
   antiphonRef,
   biblicalReadingRef,
   concludingPrayerRef,
+  ferialShortReadingRef,
   hymnRef,
   intercessionsRef,
   marianAntiphonRef,
@@ -183,6 +184,21 @@ describe("shortReadingRef and antiphonRef and intercessionsRef", () => {
     const src = shortReadingRef(ctx, "lauds.shortReading");
     const kinds = flattenSources(src).map((s) => s.kind);
     expect(kinds).toEqual(["saint", "common", "seasonal", "psalter"]);
+  });
+
+  test("ferialShortReadingRef: memoria daytime uses psalter only on ordinary ferial", () => {
+    const mem: Celebration = {
+      ...obligatoryMemoria(),
+      seasonalKey: undefined,
+    };
+    const ctx = baseCtx(mem);
+    const src = ferialShortReadingRef(ctx, "sext.shortReading");
+    expect(src).toEqual({
+      kind: "psalter",
+      week: 2,
+      day: "Monday",
+      field: "sext.shortReading",
+    });
   });
 
   test("antiphonRef: memoria uses psalterField path last", () => {

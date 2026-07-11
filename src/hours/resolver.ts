@@ -47,8 +47,12 @@ function adLibChain(adLibFrom: number, ...sources: SlotSourceDirect[]): SlotSour
 }
 
 /** Memoria arrangement (§5.4) applies — the common-vs-feria tail is ad libitum. */
-function isMemoria(c: Celebration): boolean {
+export function isMemoriaCelebration(c: Celebration): boolean {
   return c.type === "obligatory_memoria" || c.type === "optional_memoria";
+}
+
+function isMemoria(c: Celebration): boolean {
+  return isMemoriaCelebration(c);
 }
 
 /** Build common sources for all applicable commons in order, using the given field. */
@@ -133,6 +137,18 @@ export function psalmAssignmentRef(
 // ---------------------------------------------------------------------------
 // Short reading
 // ---------------------------------------------------------------------------
+
+/** §5.4 — Daytime Prayer on memorias: short reading from the ferial day only. */
+export function ferialShortReadingRef(
+  ctx: SlotContext,
+  hourField: string,
+): SlotSource {
+  const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
+  if (c.seasonalKey) {
+    return chain(seasonalSrc(c.seasonalKey, hourField), psalterSrc(w, d, hourField));
+  }
+  return psalterSrc(w, d, hourField);
+}
 
 export function shortReadingRef(
   ctx: SlotContext,

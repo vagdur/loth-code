@@ -146,6 +146,9 @@ describe("summarizeOrdoDay (stockholm)", () => {
     expect(fabian!.communeLine).toContain("eller");
     expect(sebastian!.communeLine).toContain("en martyr");
     expect(sebastian!.communeLine).not.toContain("herdar");
+    // §5.4 — Daytime Prayer stays on the ferial day; no memoria delta.
+    expect(fabian!.hours.find((h) => h.key === "daytime")).toBeUndefined();
+    expect(sebastian!.hours.find((h) => h.key === "daytime")).toBeUndefined();
   });
 
   test("2025-12-03 obligatory memoria uses except pattern not dual all-from", () => {
@@ -156,6 +159,9 @@ describe("summarizeOrdoDay (stockholm)", () => {
     expect(vespers!.prose).toContain("utom");
     expect(vespers!.prose).toContain("ferian");
     expect(vespers!.prose).not.toMatch(/Allt från commune.*Allt från psaltaret/);
+    const daytime = summary.hours.find((h) => h.key === "daytime");
+    expect(daytime?.prose).not.toContain("commune");
+    expect(daytime?.prose).not.toContain("communet");
     const allProse = summary.hours.map((h) => h.prose).join(" ");
     expect(allProse).not.toMatch(/\([^)]*Från commune/);
   });
