@@ -1,5 +1,6 @@
 /**
- * Compiles every hour + the full-day document with lualatex.
+ * Compiles every hour + the full-day document with lualatex, in each locale.
+ * The `sv` locale embeds real GABC scores, so this also exercises GregorioTeX.
  * Requires `lualatex` + Gregorio on PATH. Regenerate fixture PDFs with
  * `npm run test:fixtures:update` (sets UPDATE_FIXTURES=1).
  */
@@ -9,11 +10,14 @@ import os from "os";
 import path from "path";
 import { afterEach, expect, test } from "vitest";
 import { TexAssembler } from "../../src/assemblers/texAssembler.js";
-import { buildSampleAbstractDay, loadSampleRepo } from "../helpers/buildSampleDay.js";
+import {
+  buildSampleAbstractDay, loadSampleRepo, SAMPLE_LOCALES,
+} from "../helpers/buildSampleDay.js";
 import { normalizeLf } from "../helpers/normalizeLf.js";
 import { parseLualatexLog, partitionHboxWarnings } from "../helpers/parseLualatexLog.js";
 import { fixturesDir } from "../helpers/paths.js";
 import { copyLothSty, runLualatex, writeTexFile } from "../../src/tools/compileTex.js";
+import { gregorioAutocompileWorks } from "../helpers/gregorioAutocompile.js";
 import type { DataRepository } from "../../src/data/repository.js";
 import type { AbstractDay } from "../../src/types/hours.js";
 
@@ -59,6 +63,10 @@ const cases: Case[] = [
   },
 ];
 
+const matrix = SAMPLE_LOCALES.flatMap((locale) =>
+  cases.map((c) => ({ ...c, locale })),
+);
+
 let tempDir: string | undefined;
 
 afterEach(() => {
@@ -72,12 +80,20 @@ afterEach(() => {
   }
 });
 
-test.each(cases)(
-  "$name TeX compiles with lualatex",
-  async ({ jobName, render }) => {
-    const repo = await loadSampleRepo();
+test.for(matrix)(
+  "[$locale] $name TeX compiles with lualatex",
+  async ({ jobName, locale, render }, ctx) => {
+    const repo = await loadSampleRepo(locale);
     const abs = buildSampleAbstractDay();
     const tex = normalizeLf(render(abs, repo));
+
+    // Real data (sv) embeds GABC scores that need GregorioTeX auto-compilation.
+    // Skip when the host toolchain can't do it (see gregorioAutocompile helper).
+    const hasScores = /\\(lothScore|psalmToneScore)\{/.test(tex);
+    if (hasScores && !(await gregorioAutocompileWorks())) {
+      ctx.skip();
+      return;
+    }
 
     tempDir = mkdtempSync(path.join(os.tmpdir(), "loth-lualatex-"));
     const texPath = path.join(tempDir, `${jobName}.tex`);
@@ -113,8 +129,8 @@ test.each(cases)(
 
     if (process.env.UPDATE_FIXTURES === "1") {
       mkdirSync(fixturesDir, { recursive: true });
-      cpSync(pdfPath, path.join(fixturesDir, `${jobName}-2026-05-10-general.pdf`));
+      cpSync(pdfPath, path.join(fixturesDir, `${jobName}-${locale}-2026-05-10-general.pdf`));
     }
   },
-  120_000,
+  180_000,
 );

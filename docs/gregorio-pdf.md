@@ -45,11 +45,13 @@ Defined in `loth.sty` and emitted from [`liturgicalTex.ts`](../src/assemblers/li
 
 ## Integration tests (LaTeX + PDF)
 
-From the repository root, `npm test` runs Vitest integration tests. For each hour (and the full-day document) one test assembles the sample `.tex` into a temporary directory, copies `loth.sty` beside it, and runs **LuaLaTeX** twice there.
+From the repository root, `npm test` runs Vitest integration tests. For each hour (and the full-day document) one test assembles the sample `.tex` into a temporary directory, copies `loth.sty` beside it, and runs **LuaLaTeX** (with `--shell-escape`, needed for GregorioTeX auto-compilation) twice there.
 
-Golden `.tex` and reference `.pdf` files for the sample day live under [`tests/fixtures/`](../tests/fixtures/), one per hour plus the whole day (for example `lauds-2026-05-10-general.tex`, `office-of-readings-2026-05-10-general.tex`, `day-2026-05-10-general.tex`, and matching `.pdf`s). The test suite compares generated TeX to the fixture text; it does **not** byte-compare PDFs, but when you refresh goldens you can commit updated PDFs for human review.
+The fixtures cover **two locales**: `en` is dummy placeholder data with no melodies, so its `.tex` embeds no scores; `sv` is real data whose antiphons/hymns/responsories carry GABC, so it also exercises the `filecontents` → GregorioTeX score path. Golden `.tex` and reference `.pdf` files live under [`tests/fixtures/`](../tests/fixtures/), named `<hour>-<locale>-2026-05-10-general.{tex,pdf}` (for example `lauds-en-…`, `lauds-sv-…`, `day-sv-…`). The suite compares generated TeX to the fixture text; it does **not** byte-compare PDFs, but when you refresh goldens you can commit updated PDFs for human review.
 
-To rewrite the TeX fixture and copy a freshly built PDF into `tests/fixtures/`:
+The score-bearing (`sv`) **compile** tests need a working GregorioTeX toolchain: `lualatex --shell-escape` **and** a `gregorio` binary whose major.minor matches the installed `gregoriotex` package. When that isn't available (e.g. a stale MiKTeX whose `gregorio` binary lags the package), those cases **skip** rather than fail; the `en` compiles and all golden `.tex` comparisons still run. The skip is decided by a one-off probe (`tests/helpers/gregorioAutocompile.ts`).
+
+To rewrite the TeX fixtures and copy freshly built PDFs into `tests/fixtures/`:
 
 ```powershell
 npm run test:fixtures:update

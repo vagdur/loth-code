@@ -27,6 +27,10 @@ export type LualatexStdio = "inherit" | "pipe" | "ignore";
 
 /**
  * Run `lualatex` twice in `jobDir` on `jobName.tex` (Gregorio often needs a second pass).
+ *
+ * `--shell-escape` is required so GregorioTeX can auto-compile embedded GABC
+ * scores (`\gregorioscore` → gregorio) on the fly; without it, any document
+ * that emits a score fails to find its `.gtex`.
  */
 export async function runLualatex(
   jobDir: string,
@@ -36,7 +40,7 @@ export async function runLualatex(
   const stdio = options?.stdio ?? "inherit";
   const texFile = `${jobName}.tex`;
   for (let i = 0; i < 2; i++) {
-    await spawnAsync("lualatex", ["-interaction=nonstopmode", texFile], {
+    await spawnAsync("lualatex", ["-interaction=nonstopmode", "--shell-escape", texFile], {
       cwd: jobDir,
       stdio,
     });

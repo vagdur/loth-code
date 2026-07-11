@@ -1,5 +1,6 @@
 /**
- * Golden .tex snapshots for every hour + the full-day document.
+ * Golden .tex snapshots for every hour + the full-day document, in each locale.
+ * `en` is dummy data (no melodies); `sv` is real data that embeds GABC scores.
  * Regenerate goldens: `npm run test:fixtures:update` (sets UPDATE_FIXTURES=1).
  */
 
@@ -7,7 +8,9 @@ import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { expect, test } from "vitest";
 import { TexAssembler } from "../../src/assemblers/texAssembler.js";
-import { buildSampleAbstractDay, loadSampleRepo } from "../helpers/buildSampleDay.js";
+import {
+  buildSampleAbstractDay, loadSampleRepo, SAMPLE_LOCALES,
+} from "../helpers/buildSampleDay.js";
 import { normalizeLf } from "../helpers/normalizeLf.js";
 import { fixturesDir } from "../helpers/paths.js";
 import type { DataRepository } from "../../src/data/repository.js";
@@ -15,24 +18,24 @@ import type { AbstractDay } from "../../src/types/hours.js";
 
 type Case = {
   name: string;
-  fixture: string;
+  jobName: string;
   render: (day: AbstractDay, repo: DataRepository) => string;
 };
 
 const cases: Case[] = [
   {
     name: "Office of Readings",
-    fixture: "office-of-readings-2026-05-10-general.tex",
+    jobName: "office-of-readings",
     render: (day, repo) => new TexAssembler().assembleOfficeOfReadings(day.officeOfReadings, repo),
   },
   {
     name: "Lauds",
-    fixture: "lauds-2026-05-10-general.tex",
+    jobName: "lauds",
     render: (day, repo) => new TexAssembler().assembleLauds(day.lauds, repo),
   },
   {
     name: "Daytime Prayer (Sext)",
-    fixture: "sext-2026-05-10-general.tex",
+    jobName: "sext",
     render: (day, repo) => {
       if (!day.sext) throw new Error("sample day has no Sext");
       return new TexAssembler().assembleDaytimePrayer(day.sext, repo);
@@ -40,26 +43,30 @@ const cases: Case[] = [
   },
   {
     name: "Vespers",
-    fixture: "vespers-2026-05-10-general.tex",
+    jobName: "vespers",
     render: (day, repo) => new TexAssembler().assembleVespers(day.vespers, repo),
   },
   {
     name: "Compline",
-    fixture: "compline-2026-05-10-general.tex",
+    jobName: "compline",
     render: (day, repo) => new TexAssembler().assembleCompline(day.compline, repo),
   },
   {
     name: "Full day",
-    fixture: "day-2026-05-10-general.tex",
+    jobName: "day",
     render: (day, repo) => new TexAssembler().assembleDay(day, repo),
   },
 ];
 
-test.each(cases)("$name TeX matches fixture", async ({ fixture, render }) => {
-  const repo = await loadSampleRepo();
+const matrix = SAMPLE_LOCALES.flatMap((locale) =>
+  cases.map((c) => ({ ...c, locale })),
+);
+
+test.each(matrix)("[$locale] $name TeX matches fixture", async ({ jobName, locale, render }) => {
+  const repo = await loadSampleRepo(locale);
   const abs = buildSampleAbstractDay();
   const tex = normalizeLf(render(abs, repo));
-  const fixturePath = path.join(fixturesDir, fixture);
+  const fixturePath = path.join(fixturesDir, `${jobName}-${locale}-2026-05-10-general.tex`);
 
   if (process.env.UPDATE_FIXTURES === "1") {
     mkdirSync(fixturesDir, { recursive: true });

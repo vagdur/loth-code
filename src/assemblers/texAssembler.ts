@@ -75,6 +75,17 @@ function slotOpts(
   };
 }
 
+/**
+ * Ensure a GABC body is a complete, compilable score: Gregorio requires a
+ * header section terminated by a `%%` line before the notation. Our data
+ * stores notation-only bodies, so prepend a minimal `name:…;` header unless the
+ * body already carries its own `%%` delimiter.
+ */
+function withGabcHeader(gabc: string, name: string): string {
+  if (/^%%\s*$/m.test(gabc)) return gabc;
+  return `name:${name};\n%%\n${gabc}`;
+}
+
 export class TexAssembler implements Assembler<string> {
   private scoreCounter = 0;
   private scorePrefix = "loth";
@@ -395,7 +406,7 @@ export class TexAssembler implements Assembler<string> {
     const base = `${this.scorePrefix}-score-${++this.scoreCounter}`;
     const filename = `${base}.gabc`;
     this.fileContentsBlocks.push(
-      `\\begin{filecontents}[overwrite,noheader]{${filename}}\n${trimmed}\n\\end{filecontents}`,
+      `\\begin{filecontents}[overwrite,noheader]{${filename}}\n${withGabcHeader(trimmed, base)}\n\\end{filecontents}`,
     );
     return kind === "psalmTone" ? texPsalmToneScoreLine(base) : texScoreLine(base);
   }

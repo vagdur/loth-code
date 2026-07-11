@@ -7,8 +7,18 @@ import { dataRoot, defaultLocale } from "./paths.js";
 export const SAMPLE_DATE = new Date("2026-05-10T00:00:00Z");
 export const SAMPLE_CALENDAR = "general" as const;
 
-export async function loadSampleRepo(): Promise<DataRepository> {
-  return DataRepository.load(dataRoot, defaultLocale);
+/**
+ * Locales exercised by the assembler fixtures. `en` is dummy placeholder data
+ * (no melodies); `sv` is real data that embeds GABC scores, so it also
+ * exercises the `filecontents`/GregorioTeX path.
+ */
+export const SAMPLE_LOCALES = ["en", "sv"] as const;
+export type SampleLocale = (typeof SAMPLE_LOCALES)[number];
+
+export async function loadSampleRepo(
+  locale: string = defaultLocale,
+): Promise<DataRepository> {
+  return DataRepository.load(dataRoot, locale);
 }
 
 export function buildSampleAbstractDay() {
