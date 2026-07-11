@@ -23,6 +23,17 @@ export async function copyLothSty(jobDir: string): Promise<void> {
   await fs.copyFile(LOTH_STY_SOURCE, dest);
 }
 
+const ORDO_STY_SOURCE = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../tex/ordo.sty",
+);
+
+/** Copy `tex/ordo.sty` next to a generated `.tex` so LuaLaTeX can `\\usepackage{ordo}`. */
+export async function copyOrdoSty(jobDir: string): Promise<void> {
+  const dest = path.join(jobDir, "ordo.sty");
+  await fs.copyFile(ORDO_STY_SOURCE, dest);
+}
+
 export type LualatexStdio = "inherit" | "pipe" | "ignore";
 
 /**

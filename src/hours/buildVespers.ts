@@ -162,8 +162,12 @@ export function buildVespers(
         ],
       }
     : antiphonRef(ctx, `${vespersField}.magnificatAntiphon`, "vespers.magnificatAntiphon");
-  const intercessions = intercessionsRef(ctx, `${vespersField}.intercessions`);
-  const concludingPrayer = concludingPrayerRef(ctx, "vespers");
+  const intercessions: SlotSource = isSundayFirstVespers
+    ? fvPsalterSrc("intercessions")
+    : intercessionsRef(ctx, `${vespersField}.intercessions`);
+  const concludingPrayer: SlotSource = isSundayFirstVespers
+    ? fvPsalterSrc("concludingPrayer")
+    : concludingPrayerRef(ctx, "vespers");
 
   const memoriaAddendum =
     c.allowMemoriaAddendum && c.saintId

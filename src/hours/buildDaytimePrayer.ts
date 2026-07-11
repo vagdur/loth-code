@@ -7,7 +7,13 @@ import type {
   AbstractDaytimePrayer, PsalmSlot, SlotSource, SlotSourceDirect,
 } from "../types/hours.js";
 
-import { psalmAssignmentRef, seasonDaytimeKeys, shortReadingRef } from "./resolver.js";
+import {
+  ferialShortReadingRef,
+  isMemoriaCelebration,
+  psalmAssignmentRef,
+  seasonDaytimeKeys,
+  shortReadingRef,
+} from "./resolver.js";
 import { makeCtx, makeFlags, psalmSlot } from "./shared.js";
 
 export function buildDaytimePrayer(
@@ -43,7 +49,7 @@ export function buildDaytimePrayer(
   // Proper daytime antiphons (1 or 3) override the psalmody's own antiphons;
   // the assembler decides shared-vs-per-psalm from the resolved array length.
   const properAntiphonSources: SlotSourceDirect[] = [
-    ...(c.source === "saint" && c.saintId
+    ...(c.source === "saint" && c.saintId && !isMemoriaCelebration(c)
       ? [{ kind: "saint" as const, id: c.saintId, field: `${hourKind}.antiphons` }]
       : []),
     ...(c.seasonalKey
@@ -58,7 +64,9 @@ export function buildDaytimePrayer(
       ? properAntiphonSources[0]
       : { kind: "fallback_chain", sources: properAntiphonSources };
 
-  const shortReading = shortReadingRef(ctx, `${hourKind}.shortReading`);
+  const shortReading = isMemoriaCelebration(c)
+    ? ferialShortReadingRef(ctx, `${hourKind}.shortReading`)
+    : shortReadingRef(ctx, `${hourKind}.shortReading`);
   const versicle: SlotSource = c.seasonalKey
     ? {
         kind: "fallback_chain",
@@ -71,7 +79,7 @@ export function buildDaytimePrayer(
 
   const concludingPrayer: SlotSource = (() => {
     const daytimeField = `${hourKind}.concludingPrayer`;
-    if (c.source === "saint" && c.saintId) {
+    if (c.source === "saint" && c.saintId && !isMemoriaCelebration(c)) {
       return {
         kind: "fallback_chain",
         sources: [

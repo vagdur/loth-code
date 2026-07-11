@@ -89,4 +89,36 @@ describe("buildDaytimePrayer season-default fallback", () => {
     // No crash; hymn still ends at the psalter.
     expect(flatten(hour.hymnRef).at(-1)).toMatchObject({ kind: "psalter", field: "none.hymn" });
   });
+
+  test("memoria §5.4 — short reading, antiphons, and prayer stay ferial", () => {
+    const day: LiturgicalDay = {
+      date: new Date("2026-01-20T00:00:00Z"),
+      season: "ordinary_time",
+      psalterWeek: 1,
+      psalterDay: "Tuesday",
+      readingYear: "II",
+      sundayCycle: "A",
+      ordinaryTimeWeek: 2,
+      celebration: {
+        type: "optional_memoria",
+        source: "saint",
+        saintId: "fabian_pope",
+        applicableCommons: ["martyrs", "pastors"],
+        memoriaFullySuppressed: false,
+        memoriaReducedToOptional: false,
+        allowMemoriaAddendum: false,
+        isTriduum: false,
+      },
+      evening: { hasFirstVespers: false },
+      saturdayBvmPermitted: false,
+    };
+    const hour = buildDaytimePrayer(day, "sext", true);
+    expect(flatten(hour.shortReadingRef)).toEqual([
+      { kind: "psalter", week: 1, day: "Tuesday", field: "sext.shortReading" },
+    ]);
+    expect(flatten(hour.properAntiphonsRef).every((s) => s.kind !== "saint")).toBe(true);
+    expect(flatten(hour.concludingPrayerRef)).toEqual([
+      { kind: "psalter", week: 1, day: "Tuesday", field: "sext.concludingPrayer" },
+    ]);
+  });
 });
