@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:fixtures:update": "cross-env UPDATE_FIXTURES=1 vitest run tests/integration",
     "generate:data": "npm run build && node scripts/generate-data.mjs",
+    "generate:ordo": "npm run build && node scripts/generate-ordo.mjs",
     "validate:data": "npm run build && node scripts/validate-data.mjs",
     "extract:ordo-calendar": "python scripts/extract-ordo-calendar.py",
     "build:calendars": "python scripts/build-sanctoral-calendars.py",

@@ -1,0 +1,32 @@
+% ordo.sty — compact Ordo calendar layout (no Gregorio)
+\ProvidesPackage{ordo}[2026/07/11 LoTH Ordo layout]
+
+\RequirePackage[margin=2cm]{geometry}
+% LuaLaTeX renders UTF-8 (Swedish) natively; avoid polyglossia/babel version pins.
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.4em}
+
+\newcommand{\ordoTitle}[1]{%
+  \begin{center}
+    {\LARGE\bfseries #1}
+  \end{center}
+  \vspace{1em}
+}
+
+\newcommand{\ordoDay}[2]{%
+  \vspace{0.6em}
+  \noindent\textbf{#1}\par
+  \vspace{0.15em}
+  \noindent #2\par
+}
+
+\newcommand{\ordoHour}[2]{%
+  \noindent\textit{#1:} #2\par
+}
+
+\newcommand{\ordoOptions}[1]{%
+  \noindent{\small #1}\par
+}
+
+\endinput

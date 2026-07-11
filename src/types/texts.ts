@@ -190,6 +190,73 @@ export interface DismissalFixed {
   response: string;
 }
 
+/** Swedish Ordo PDF/summary presentation strings. */
+export interface OrdoLabels {
+  hours: {
+    invitatory: string;
+    officeOfReadings: string;
+    lauds: string;
+    daytime: string;
+    vespers: string;
+    firstVespers: string;
+    compline: string;
+  };
+  ranks: Partial<Record<
+    | "triduum" | "sunday" | "solemnity" | "feastOfLordOnSunday" | "feast"
+    | "obligatoryMemoria" | "optionalMemoria" | "privilegedFerial" | "ordinaryFerial",
+    string
+  >>;
+  sources: {
+    /** Short phrase after "från", e.g. "propriet". */
+    propriet: string;
+    seasonalPropriet: string;
+    communePrefix: string;
+    feria: string;
+    psalterPrefix: string;
+    sundayWeekI: string;
+    complementaryPsalmody: string;
+    fixed: string;
+  };
+  parts: {
+    hymn: string;
+    antiphons: string;
+    psalms: string;
+    shortReading: string;
+    responsory: string;
+    benedictusAntiphon: string;
+    magnificatAntiphon: string;
+    nuncDimittisAntiphon: string;
+    intercessions: string;
+    concludingPrayer: string;
+    prayerForDay: string;
+    firstReading: string;
+    secondReading: string;
+    versicle: string;
+    teDeum: string;
+    marianAntiphon: string;
+    memoriaAddendum: string;
+    invitatoryAntiphon: string;
+    invitatoryPsalm: string;
+  };
+  prose: {
+    from: string;
+    and: string;
+    alternatives: string;
+    teDeumSaid: string;
+    firstVespersForSunday: string;
+    allFromSunday: string;
+    psalmodyOption: string;
+    otSunday: string;
+    complineForWeekday: string;
+  };
+  weekdays: Record<string, string>;
+  /** Definite form for compline labels, e.g. "måndagen". */
+  weekdaysDefinite: Record<string, string>;
+  months: string[];
+  seasonalNames?: Record<string, string>;
+  documentTitle?: string;
+}
+
 /** Presentation strings for assemblers (headings, rubrics, prefixes). */
 export interface AssemblerLabels {
   hours: {
@@ -225,6 +292,8 @@ export interface AssemblerLabels {
   errors?: {
     textNotLoaded: string;
   };
+  /** Swedish Ordo summary labels (see src/ordo/). */
+  ordo?: OrdoLabels;
   /** Labels for the per-day options UI (see src/options/enumerate.ts). */
   options?: {
     celebration?: string;
