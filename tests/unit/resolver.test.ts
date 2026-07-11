@@ -251,6 +251,19 @@ describe("biblicalReadingRef", () => {
       field: "officeOfReadings.biblicalReading",
     });
   });
+
+  test("office-spec §5.4 — memoria: ferial scripture, not saint or common", () => {
+    const ctx = baseCtx(obligatoryMemoria());
+    const src = biblicalReadingRef(ctx, "I");
+    const flat = flattenSources(src);
+    expect(flat.map((s) => s.kind)).toEqual(["seasonal", "seasonal"]);
+    expect(flat[0]).toMatchObject({
+      kind: "seasonal",
+      key: "ot_w3_fri",
+      field: "officeOfReadings.biblicalReadingYr1",
+    });
+    expect(flat.some((s) => s.kind === "saint" || s.kind === "common")).toBe(false);
+  });
 });
 
 describe("patristicReadingRef", () => {

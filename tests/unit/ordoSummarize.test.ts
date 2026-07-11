@@ -146,7 +146,12 @@ describe("summarizeOrdoDay (stockholm)", () => {
     expect(fabian!.communeLine).toContain("eller");
     expect(sebastian!.communeLine).toContain("en martyr");
     expect(sebastian!.communeLine).not.toContain("herdar");
-    // §5.4 — Daytime Prayer stays on the ferial day; no memoria delta.
+    // §5.4 — first reading stays on the ferial day; only hymn and 2nd reading from Common.
+    const fabianOor = fabian!.hours.find((h) => h.key === "officeOfReadings");
+    expect(fabianOor).toBeDefined();
+    expect(fabianOor!.prose).toContain("andra läsning");
+    expect(fabianOor!.prose).not.toContain("första läsning");
+    expect(fabianOor!.prose).not.toContain("första läsning från communet");
     expect(fabian!.hours.find((h) => h.key === "daytime")).toBeUndefined();
     expect(sebastian!.hours.find((h) => h.key === "daytime")).toBeUndefined();
   });

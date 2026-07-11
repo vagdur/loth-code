@@ -281,7 +281,8 @@ export function concludingPrayerRef(
 // Biblical / patristic readings (OoR)
 // ---------------------------------------------------------------------------
 
-export function biblicalReadingRef(
+/** §5.4 / §12 — scripture reading of the ferial day (Proper of Season). */
+function ferialBiblicalReadingRef(
   ctx: SlotContext,
   readingYear: "I" | "II",
 ): SlotSource {
@@ -291,20 +292,32 @@ export function biblicalReadingRef(
     : "officeOfReadings.biblicalReadingYr2";
   const singleField = "officeOfReadings.biblicalReading";
 
+  if (c.seasonalKey) {
+    return chain(
+      seasonalSrc(c.seasonalKey, yrField),
+      seasonalSrc(c.seasonalKey, singleField),
+    );
+  }
+  return seasonalSrc("", singleField);
+}
+
+export function biblicalReadingRef(
+  ctx: SlotContext,
+  readingYear: "I" | "II",
+): SlotSource {
+  const { celebration: c } = ctx;
+  const singleField = "officeOfReadings.biblicalReading";
+
+  if (c.source === "saint" && c.saintId && isMemoriaCelebration(c)) {
+    return ferialBiblicalReadingRef(ctx, readingYear);
+  }
   if (c.source === "saint" && c.saintId) {
     return chain(
       saintSrc(c.saintId, singleField),
       ...commonSources(c.applicableCommons, 0, singleField),
     );
   }
-  if (c.seasonalKey) {
-    // Prefer two-year cycle if present; fall back to one-year.
-    return chain(
-      seasonalSrc(c.seasonalKey, yrField),
-      seasonalSrc(c.seasonalKey, singleField),
-    );
-  }
-  return seasonalSrc("", singleField); // will resolve to undefined; caller handles
+  return ferialBiblicalReadingRef(ctx, readingYear);
 }
 
 export function patristicReadingRef(

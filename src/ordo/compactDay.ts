@@ -13,7 +13,7 @@ import type { HourKey } from "../options/slotTable.js";
 import type { AbstractDay } from "../types/hours.js";
 import type { OrdoLabels } from "../types/texts.js";
 import {
-  compactHourProse, dayCommuneVariantFromHourEntryLists, hourEntriesEquivalent, type SlotEntry,
+  compactHourProse, compactDeltaHourProse, dayCommuneVariantFromHourEntryLists, deltaSlotEntries, hourEntriesEquivalent, type SlotEntry,
 } from "./compactHour.js";
 import { formatDayCommuneLine, memoriaCommuneInfo } from "./communeLine.js";
 import { summarizeComplineLabel } from "./complineLabel.js";
@@ -196,7 +196,7 @@ function collectDeltaHourEntryLists(
       spec, otherAbstractDay, repo, labels, otherChoices,
     );
     if (hourEntriesEquivalent(ferialEntries, otherEntries)) continue;
-    lists.push(otherEntries);
+    lists.push(deltaSlotEntries(ferialEntries, otherEntries));
   }
   return lists;
 }
@@ -221,6 +221,7 @@ function buildCompactHour(
   entries: SlotEntry[],
   labels: OrdoLabels,
   communeDisplay?: DayCommuneDisplay,
+  deltaFromFeria = false,
 ): OrdoHourSummary | null {
   if (spec.key === "compline") {
     return {
@@ -244,7 +245,7 @@ function buildCompactHour(
   }
 
   const suffix = spec.teDeum?.(abstractDay) ? labels.prose.teDeumSaid : undefined;
-  const prose = compactHourProse(entries, labels, {
+  const proseOpts = {
     ...(suffix ? { suffix } : {}),
     hourKey: spec.hourKey,
     ...compactHourCommuneOpts(communeDisplay),
@@ -252,8 +253,11 @@ function buildCompactHour(
       week: liturgicalDay.psalterWeek,
       day: liturgicalDay.psalterDay,
     },
-    psalterBaseline: liturgicalDay.celebration.type === "sunday" ? "sunday" : "feria",
-  });
+    psalterBaseline: liturgicalDay.celebration.type === "sunday" ? "sunday" as const : "feria" as const,
+  };
+  const prose = deltaFromFeria
+    ? compactDeltaHourProse(entries, labels, proseOpts)
+    : compactHourProse(entries, labels, proseOpts);
   if (!prose) return null;
 
   return {
@@ -337,8 +341,10 @@ function buildDeltaHours(
       spec, otherAbstractDay, repo, labels, otherChoices,
     );
     if (hourEntriesEquivalent(ferialEntries, otherEntries)) continue;
+    const deltaEntries = deltaSlotEntries(ferialEntries, otherEntries);
+    if (deltaEntries.length === 0) continue;
     const hour = buildCompactHour(
-      spec, liturgicalDay, otherAbstractDay, otherEntries, labels, communeDisplay,
+      spec, liturgicalDay, otherAbstractDay, deltaEntries, labels, communeDisplay, true,
     );
     if (hour) hours.push(hour);
   }

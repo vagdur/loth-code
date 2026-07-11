@@ -345,12 +345,48 @@ export function compactHourProse(
   return prose;
 }
 
+/** Prose for memoria delta hours: always "all from feria except" changed slots. */
+export function compactDeltaHourProse(
+  deltaEntries: SlotEntry[],
+  labels: OrdoLabels,
+  opts?: CompactHourOptions,
+): string {
+  if (deltaEntries.length === 0) {
+    return opts?.suffix?.trim() ?? "";
+  }
+  const ctx = proseContextFromOpts(opts);
+  const groups = groupEntries(deltaEntries);
+  const feriaDescribed: DescribedSource = {
+    groupKey: "feria-baseline",
+    phrase: psalterBaselinePhrase(labels, ctx.psalterBaseline ?? "feria"),
+    isProper: false,
+  };
+  const prose = exceptClause(feriaDescribed, groups, labels, ctx);
+  if (opts?.suffix) {
+    return prose ? `${prose} ${opts.suffix}` : opts.suffix;
+  }
+  return prose;
+}
+
 /** True when two hour entry sets resolve to the same source groups per slot. */
 export function hourEntriesEquivalent(a: SlotEntry[], b: SlotEntry[]): boolean {
   if (a.length !== b.length) return false;
   const aKeys = a.map((e) => `${e.slotKey}:${e.described.groupKey}`).sort();
   const bKeys = b.map((e) => `${e.slotKey}:${e.described.groupKey}`).sort();
   return aKeys.every((k, i) => k === bKeys[i]);
+}
+
+/** Slots whose resolved source group differs from the ferial baseline. */
+export function deltaSlotEntries(
+  ferialEntries: SlotEntry[],
+  otherEntries: SlotEntry[],
+): SlotEntry[] {
+  const ferialBySlot = new Map(
+    ferialEntries.map((e) => [e.slotKey, e.described.groupKey]),
+  );
+  return otherEntries.filter(
+    (e) => ferialBySlot.get(e.slotKey) !== e.described.groupKey,
+  );
 }
 
 export { groupEntries, shortFromClause, allFromClause };
