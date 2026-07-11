@@ -156,13 +156,24 @@ describe("summarizeOrdoDay (stockholm)", () => {
     expect(sebastian!.hours.find((h) => h.key === "daytime")).toBeUndefined();
   });
 
-  test("2025-12-03 obligatory memoria uses except pattern not dual all-from", () => {
+  test("2026-01-20 Fabianus lauds shows fixed canticle antiphon and optional hymn parts", () => {
+    const summary = summarizeOrdoDay(utcDate(2026, 1, 20), ctx, repo);
+    const fabian = summary.memoriaBlocks!.find((b) => b.heading.includes("Fabianus"));
+    expect(fabian).toBeDefined();
+    const lauds = fabian!.hours.find((h) => h.key === "lauds");
+    expect(lauds).toBeDefined();
+    expect(lauds!.prose).toContain("Antifon till Benedictus ur communet");
+    expect(lauds!.prose).toContain("Hymn, kort läsning, och förböner från communet eller ferian");
+    expect(lauds!.prose).not.toContain("utom");
+  });
+
+  test("2025-12-03 obligatory memoria uses positive listing not dual all-from", () => {
     const summary = summarizeOrdoDay(utcDate(2025, 12, 3), ctx, repo);
     expect(summary.headline).toContain("Francisco Xavier");
     const vespers = summary.hours.find((h) => h.key === "vespers");
     expect(vespers).toBeDefined();
-    expect(vespers!.prose).toContain("utom");
     expect(vespers!.prose).toContain("ferian");
+    expect(vespers!.prose).not.toContain("utom");
     expect(vespers!.prose).not.toMatch(/Allt från commune.*Allt från psaltaret/);
     const daytime = summary.hours.find((h) => h.key === "daytime");
     expect(daytime?.prose).not.toContain("commune");
@@ -182,8 +193,8 @@ describe("summarizeOrdoDay (stockholm)", () => {
 
     const lauds = summary.hours.find((h) => h.key === "lauds");
     expect(lauds).toBeDefined();
-    expect(lauds!.prose).toContain("utom");
-    expect(lauds!.prose).toContain("commune");
+    expect(lauds!.prose).toContain("ur communet");
+    expect(lauds!.prose).not.toContain("utom");
     expect(lauds!.prose).not.toContain("kyrkolärare");
 
     const compline = summary.hours.find((h) => h.key === "compline");
@@ -191,12 +202,12 @@ describe("summarizeOrdoDay (stockholm)", () => {
 
     const oor = summary.hours.find((h) => h.key === "officeOfReadings");
     expect(oor!.prose).toContain("Te Deum");
-    expect(oor!.prose).toContain("commune");
+    expect(oor!.prose).toContain("communet");
     expect(oor!.prose).not.toContain("kyrkolärare");
 
     const firstVespers = summary.hours.find((h) => h.key === "firstVespers");
     expect(firstVespers).toBeDefined();
-    expect(firstVespers!.prose).toContain("utom");
+    expect(firstVespers!.prose).toContain("ur");
 
     const melodyOptions = summary.hours.some((h) => h.prose.includes("melodi"));
     expect(melodyOptions).toBe(false);

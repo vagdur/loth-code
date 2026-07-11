@@ -175,6 +175,15 @@ export function shortReadingRef(
 // Antiphon (Benedictus / Magnificat / Invitatory / Nunc Dimittis)
 // ---------------------------------------------------------------------------
 
+/** Canticle antiphons on memorias: proper or Common only (§5.4 — not the ferial psalter). */
+function isCanticleAntiphonField(field: string): boolean {
+  return (
+    field.includes("benedictusAntiphon") ||
+    field.includes("magnificatAntiphon") ||
+    field.includes("nuncDimittisAntiphon")
+  );
+}
+
 export function antiphonRef(
   ctx: SlotContext,
   field: string,    // e.g. "lauds.benedictusAntiphon"
@@ -183,6 +192,12 @@ export function antiphonRef(
   const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
 
   if (c.source === "saint" && c.saintId && !c.memoriaFullySuppressed) {
+    if (isMemoria(c) && isCanticleAntiphonField(field)) {
+      return chain(
+        saintSrc(c.saintId, field),
+        ...commonSources(c.applicableCommons, 0, field),
+      );
+    }
     const make = isMemoria(c) ? adLibChain.bind(null, 1) : chain;
     return make(
       saintSrc(c.saintId, field),

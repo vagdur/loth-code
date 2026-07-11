@@ -36,7 +36,9 @@ const labels = {
   },
   prose: {
     from: "från",
+    fromUr: "ur",
     and: "och",
+    or: "eller",
     alternatives: "Alternativ:",
     teDeumSaid: "Te Deum.",
     firstVespersForSunday: "Första vesper för söndagen.",
@@ -62,11 +64,18 @@ const labels = {
 const feriaPsalter = { week: 1 as const, day: "Wednesday" as const };
 const hourOpts = { feriaPsalter, psalterBaseline: "feria" as const };
 
-function entry(slotKey: string, partLabel: string, groupKey: string, phrase: string): SlotEntry {
+function entry(
+  slotKey: string,
+  partLabel: string,
+  groupKey: string,
+  phrase: string,
+  alternatives?: SlotEntry["alternatives"],
+): SlotEntry {
   return {
     slotKey,
     partLabel,
     described: { groupKey, phrase, isProper: groupKey.startsWith("saint:") },
+    ...(alternatives?.length ? { alternatives } : {}),
   };
 }
 
@@ -79,16 +88,16 @@ describe("compactHourProse", () => {
     expect(prose).toBe("Allt från propriet.");
   });
 
-  test("two sources use except pattern with feria dominant", () => {
+  test("lists non-baseline parts with ur for fixed sources", () => {
     const prose = compactHourProse([
       entry("hymn", "hymn", "saint:st_benedict", "propriet"),
       entry("shortReading", "kort läsning", "common:doctors:0", "communet ([doctors variant 1])"),
     ], labels);
-    expect(prose).toContain("utom");
-    expect(prose).toContain("communet");
+    expect(prose).toBe("Kort läsning ur communet ([doctors variant 1]).");
+    expect(prose).not.toContain("utom");
   });
 
-  test("commune over psalter uses psalter as baseline", () => {
+  test("commune over psalter lists only commune deviations", () => {
     const prose = compactHourProse([
       entry("hymn", "hymn", "common:pastors:0", "communet ([pastors variant 1])"),
       entry("psalmSlots[0]", "antifoner", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
@@ -96,12 +105,13 @@ describe("compactHourProse", () => {
       entry("shortResponsory", "responsorium", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
       entry("magnificatAntiphon", "antifon till Magnificat", "common:pastors:0", "communet ([pastors variant 1])"),
     ], labels, hourOpts);
-    expect(prose).toContain("utom");
-    expect(prose).toContain("Allt från ferian");
-    expect(prose).not.toMatch(/Allt från commune.*Allt från psaltaret/);
+    expect(prose).toBe(
+      "Hymn och antifon till Magnificat ur communet ([pastors variant 1]).",
+    );
+    expect(prose).not.toContain("Allt från ferian");
   });
 
-  test("three sources use except pattern", () => {
+  test("lists common and psalter deviations from propriet baseline", () => {
     const prose = compactHourProse([
       entry("hymn", "hymn", "saint:st_benedict", "propriet"),
       entry("benedictusAntiphon", "antifon till Benedictus", "saint:st_benedict", "propriet"),
@@ -109,9 +119,58 @@ describe("compactHourProse", () => {
       entry("concludingPrayer", "kollekt", "common:doctors:0", "communet ([doctors variant 1])"),
       entry("shortResponsory", "responsorium", "psalter:2:Saturday", "psaltaret vecka 2 lördag"),
     ], labels, { feriaPsalter: { week: 2, day: "Saturday" } });
-    expect(prose).toContain("utom");
     expect(prose).toContain("communet");
-    expect(prose).toContain("från ferian");
+    expect(prose).toContain("ur ferian");
+    expect(prose).not.toContain("utom");
+  });
+
+  test("optional ad-lib slots use från … eller ferian", () => {
+    const psalterAlt = {
+      groupKey: "psalter:1:Wednesday",
+      phrase: "psaltaret vecka 1 onsdag",
+      isProper: false,
+    };
+    const commonAlt = {
+      groupKey: "common:pastors:0",
+      phrase: "communet ([pastors variant 1])",
+      isProper: false,
+    };
+    const prose = compactHourProse([
+      entry(
+        "benedictusAntiphon",
+        "antifon till Benedictus",
+        "common:pastors:0",
+        "communet ([pastors variant 1])",
+      ),
+      entry(
+        "hymn",
+        "hymn",
+        "common:pastors:0",
+        "communet ([pastors variant 1])",
+        [psalterAlt, commonAlt],
+      ),
+      entry(
+        "shortReading",
+        "kort läsning",
+        "common:pastors:0",
+        "communet ([pastors variant 1])",
+        [psalterAlt, commonAlt],
+      ),
+      entry(
+        "intercessions",
+        "förböner",
+        "common:pastors:0",
+        "communet ([pastors variant 1])",
+        [psalterAlt, commonAlt],
+      ),
+      entry("psalmSlots[0]", "antifoner", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
+      entry("psalmSlots[1]", "antifoner", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
+      entry("psalmSlots[2]", "antifoner", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
+      entry("shortResponsory", "responsorium", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
+    ], labels, hourOpts);
+    expect(prose).toContain("Antifon till Benedictus ur communet");
+    expect(prose).toContain("Hymn, kort läsning, och förböner från communet eller ferian");
+    expect(prose).not.toContain("utom");
   });
 
   test("invitatory omits psalm 94 when antiphon has another source", () => {

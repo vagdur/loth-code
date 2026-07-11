@@ -1,5 +1,5 @@
 /**
- * Compact Swedish prose for one Hour — baseline + delta style.
+ * Compact Swedish prose for one Hour — positive listing style.
  */
 
 import type { OrdoLabels } from "../types/texts.js";
@@ -11,6 +11,8 @@ export interface SlotEntry {
   slotKey: string;
   partLabel: string;
   described: DescribedSource;
+  /** Ad-lib tail sources that also resolve (for option annotation). */
+  alternatives?: DescribedSource[];
 }
 
 function capitalizeFirst(s: string): string {
@@ -102,6 +104,15 @@ function phraseForProse(
   return phrase;
 }
 
+function dedupeSourcePhrases(phrases: string[], labels: OrdoLabels): string[] {
+  const normalized = phrases.map((p) => {
+    if (p === labels.sources.communeInline) return p;
+    if (communeName(p, labels)) return labels.sources.communeInline;
+    return p;
+  });
+  return [...new Set(normalized)];
+}
+
 function allFromClause(
   described: DescribedSource,
   labels: OrdoLabels,
@@ -129,23 +140,6 @@ function allFromClause(
 
 function shortFromClause(described: DescribedSource, labels: OrdoLabels): string {
   return `${capitalizeFirst(described.phrase)}.`;
-}
-
-function readingsRestClauses(
-  readingEntries: SlotEntry[],
-  otherEntries: SlotEntry[],
-  labels: OrdoLabels,
-  ctx: ProseContext,
-): string {
-  const readingPhrase = phraseForProse(readingEntries[0]!.described, labels, ctx);
-  const otherGroups = groupEntries(otherEntries);
-  const otherKey = [...otherGroups.keys()].sort(
-    (a, b) => sourceGroupOrder(a) - sourceGroupOrder(b),
-  )[0]!;
-  const otherPhrase = phraseForProse(
-    otherGroups.get(otherKey)![0]!.described, labels, ctx,
-  );
-  return `${labels.prose.readingsFrom} ${readingPhrase}. ${labels.prose.restFrom} ${otherPhrase}.`;
 }
 
 function dominantGroupKey(
@@ -199,59 +193,212 @@ function isReadingSlot(slotKey: string): boolean {
   );
 }
 
-function exceptFromGroups(
-  groups: Map<string, SlotEntry[]>,
-  sortedKeys: string[],
-  labels: OrdoLabels,
+function matchesBaseline(
+  entry: SlotEntry,
+  baselineKey: string,
   ctx: ProseContext,
-): string {
-  const dominantKey = dominantGroupKey(groups, sortedKeys);
-  const others = new Map(
-    sortedKeys.filter((k) => k !== dominantKey).map((k) => [k, groups.get(k)!]),
-  );
-  return exceptClause(groups.get(dominantKey)![0]!.described, others, labels, ctx);
+): boolean {
+  const key = entry.described.groupKey;
+  if (key === baselineKey) return true;
+  if (isCurrentPsalter(baselineKey, ctx) && isCurrentPsalter(key, ctx)) return true;
+  return false;
 }
 
-function exceptClause(
-  dominant: DescribedSource,
-  others: Map<string, SlotEntry[]>,
+function hasBaselineAlternative(
+  entry: SlotEntry,
+  baselineKey: string,
+  ctx: ProseContext,
+): boolean {
+  if (!entry.alternatives?.length) return false;
+  return entry.alternatives.some(
+    (alt) =>
+      alt.groupKey === baselineKey ||
+      (isCurrentPsalter(baselineKey, ctx) && isCurrentPsalter(alt.groupKey, ctx)),
+  );
+}
+
+function positiveReadingsRestClauses(
+  readingEntries: SlotEntry[],
+  otherEntries: SlotEntry[],
   labels: OrdoLabels,
   ctx: ProseContext,
+  baselineKey: string,
 ): string {
-  const dominantClause = allFromClause(dominant, labels, ctx).replace(/\.$/, "");
-  const exceptParts: string[] = [];
-  for (const [, groupEntries] of others) {
-    const parts = [...new Set(groupEntries.map((e) => e.partLabel))];
-    const phrase = phraseForProse(groupEntries[0]!.described, labels, ctx);
-    exceptParts.push(
-      `${formatPartList(parts, labels.prose.and)} ${labels.prose.from} ${phrase}`,
+  const clauses: string[] = [];
+  const readingDeviations = readingEntries.filter(
+    (e) => !matchesBaseline(e, baselineKey, ctx),
+  );
+  const otherDeviations = otherEntries.filter(
+    (e) => !matchesBaseline(e, baselineKey, ctx),
+  );
+  clauses.push(
+    ...buildPositiveClauses(readingDeviations, labels, ctx, baselineKey),
+  );
+  clauses.push(
+    ...buildPositiveClauses(otherDeviations, labels, ctx, baselineKey),
+  );
+  return clauses.join(" ");
+}
+
+interface ClauseGroup {
+  kind: "fixed" | "optional";
+  parts: string[];
+  /** Fixed: single source phrase. Optional: non-baseline phrases then baseline. */
+  sourcePhrases: string[];
+  baselinePhrase?: string;
+  firstIndex: number;
+}
+
+function clauseGroupKey(group: ClauseGroup): string {
+  if (group.kind === "fixed") {
+    return `fixed:${group.sourcePhrases[0]}`;
+  }
+  return `optional:${group.sourcePhrases.join("|")}:${group.baselinePhrase}`;
+}
+
+function buildPositiveClauses(
+  deviations: SlotEntry[],
+  labels: OrdoLabels,
+  ctx: ProseContext,
+  baselineKey: string,
+): string[] {
+  const baselinePhrase = phraseForProse(
+    deviations.find((e) => matchesBaseline(e, baselineKey, ctx))?.described ??
+      {
+        groupKey: baselineKey,
+        phrase: psalterBaselinePhrase(labels, ctx.psalterBaseline ?? "feria"),
+        isProper: false,
+      },
+    labels,
+    ctx,
+  );
+
+  const groups = new Map<string, ClauseGroup>();
+
+  for (let i = 0; i < deviations.length; i++) {
+    const entry = deviations[i]!;
+    if (matchesBaseline(entry, baselineKey, ctx)) continue;
+
+    const optional = hasBaselineAlternative(entry, baselineKey, ctx);
+    const winnerPhrase = phraseForProse(entry.described, labels, ctx);
+
+    if (optional) {
+      const altPhrases = dedupeSourcePhrases([
+        winnerPhrase,
+        ...(entry.alternatives ?? [])
+          .filter((alt) => !matchesBaseline({ ...entry, described: alt }, baselineKey, ctx))
+          .map((alt) => phraseForProse(alt, labels, ctx)),
+      ], labels);
+      const nonBaseline = altPhrases.filter((p) => p !== baselinePhrase);
+      const group: ClauseGroup = {
+        kind: "optional",
+        parts: [entry.partLabel],
+        sourcePhrases: nonBaseline.length > 0 ? nonBaseline : [winnerPhrase],
+        baselinePhrase,
+        firstIndex: i,
+      };
+      const key = clauseGroupKey(group);
+      const existing = groups.get(key);
+      if (existing) {
+        existing.parts.push(entry.partLabel);
+      } else {
+        groups.set(key, group);
+      }
+    } else {
+      const group: ClauseGroup = {
+        kind: "fixed",
+        parts: [entry.partLabel],
+        sourcePhrases: [winnerPhrase],
+        firstIndex: i,
+      };
+      const key = clauseGroupKey(group);
+      const existing = groups.get(key);
+      if (existing) {
+        existing.parts.push(entry.partLabel);
+      } else {
+        groups.set(key, group);
+      }
+    }
+  }
+
+  const fromUr = labels.prose.fromUr ?? "ur";
+  const orWord = labels.prose.or ?? "eller";
+
+  return [...groups.values()]
+    .sort((a, b) => a.firstIndex - b.firstIndex)
+    .map((group) => {
+      const partList = capitalizeFirst(
+        formatPartList([...new Set(group.parts)], labels.prose.and),
+      );
+      if (group.kind === "fixed") {
+        return `${partList} ${fromUr} ${group.sourcePhrases[0]}.`;
+      }
+      const nonBaseline = group.sourcePhrases;
+      const baseline = group.baselinePhrase!;
+      if (nonBaseline.length === 1) {
+        return `${partList} ${labels.prose.from} ${nonBaseline[0]} ${orWord} ${baseline}.`;
+      }
+      const listed = formatPartList(nonBaseline, labels.prose.and);
+      return `${partList} ${labels.prose.from} ${listed} ${orWord} ${baseline}.`;
+    });
+}
+
+function positiveHourProse(
+  entries: SlotEntry[],
+  labels: OrdoLabels,
+  ctx: ProseContext,
+  opts?: CompactHourOptions,
+): string {
+  const groups = groupEntries(entries);
+  const sortedKeys = [...groups.keys()].sort(
+    (a, b) => sourceGroupOrder(a) - sourceGroupOrder(b),
+  );
+
+  if (sortedKeys.length === 1) {
+    return allFromClause(
+      groups.get(sortedKeys[0]!)![0]!.described, labels, ctx,
     );
   }
-  return `${dominantClause} ${labels.prose.except} ${exceptParts.join(` ${labels.prose.and} `)}.`;
+
+  if (
+    sortedKeys.length === 2 &&
+    sortedKeys.every((k) => k.startsWith("psalter:"))
+  ) {
+    const baselineKey = dominantGroupKey(groups, sortedKeys);
+    const deviations = entries.filter(
+      (e) => !matchesBaseline(e, baselineKey, ctx),
+    );
+    const clauses = buildPositiveClauses(deviations, labels, ctx, baselineKey);
+    return clauses.join(" ") || allFromClause(
+      groups.get(baselineKey)![0]!.described, labels, ctx,
+    );
+  }
+
+  if (opts?.hourKey === "officeOfReadings" && canUseReadingsRest(entries)) {
+    const baselineKey = dominantGroupKey(groups, sortedKeys);
+    const readingEntries = entries.filter((e) => isReadingSlot(e.slotKey));
+    const otherEntries = entries.filter((e) => !isReadingSlot(e.slotKey));
+    return positiveReadingsRestClauses(
+      readingEntries, otherEntries, labels, ctx, baselineKey,
+    );
+  }
+
+  const baselineKey = dominantGroupKey(groups, sortedKeys);
+  const deviations = entries.filter(
+    (e) => !matchesBaseline(e, baselineKey, ctx),
+  );
+  if (deviations.length === 0) {
+    return allFromClause(
+      groups.get(baselineKey)![0]!.described, labels, ctx,
+    );
+  }
+  return buildPositiveClauses(deviations, labels, ctx, baselineKey).join(" ");
 }
 
 function filterInvitatoryBaseline(entries: SlotEntry[]): SlotEntry[] {
   const hasNonPsalm = entries.some((e) => !e.described.groupKey.startsWith("psalm:"));
   if (!hasNonPsalm) return entries;
   return entries.filter((e) => !e.described.groupKey.startsWith("psalm:"));
-}
-
-function twoPsalterExceptClause(
-  groups: Map<string, SlotEntry[]>,
-  sortedKeys: [string, string],
-  labels: OrdoLabels,
-  ctx: ProseContext,
-): string {
-  const [k1, k2] = sortedKeys;
-  const count1 = groups.get(k1)!.length;
-  const count2 = groups.get(k2)!.length;
-  const [dominantKey, otherKey] = count1 >= count2 ? [k1, k2] : [k2, k1];
-  const dominant = groups.get(dominantKey)![0]!.described;
-  const other = groups.get(otherKey)!;
-  const parts = [...new Set(other.map((e) => e.partLabel))];
-  const dominantClause = allFromClause(dominant, labels, ctx).replace(/\.$/, "");
-  const otherPhrase = phraseForProse(other[0]!.described, labels, ctx);
-  return `${dominantClause} ${labels.prose.except} ${formatPartList(parts, labels.prose.and)} ${labels.prose.from} ${otherPhrase}.`;
 }
 
 export interface CompactHourOptions {
@@ -308,36 +455,8 @@ export function compactHourProse(
     return opts?.suffix?.trim() ?? "";
   }
 
-  const groups = groupEntries(filtered);
-  const sortedKeys = [...groups.keys()].sort(
-    (a, b) => sourceGroupOrder(a) - sourceGroupOrder(b),
-  );
-
-  let prose: string;
-
   const ctx = proseContextFromOpts(opts);
-
-  if (sortedKeys.length === 1) {
-    prose = allFromClause(
-      groups.get(sortedKeys[0]!)![0]!.described, labels, ctx,
-    );
-  } else if (
-    sortedKeys.length === 2 &&
-    sortedKeys.every((k) => k.startsWith("psalter:"))
-  ) {
-    prose = twoPsalterExceptClause(
-      groups,
-      [sortedKeys[0]!, sortedKeys[1]!],
-      labels,
-      ctx,
-    );
-  } else if (opts?.hourKey === "officeOfReadings" && canUseReadingsRest(filtered)) {
-    const readingEntries = filtered.filter((e) => isReadingSlot(e.slotKey));
-    const otherEntries = filtered.filter((e) => !isReadingSlot(e.slotKey));
-    prose = readingsRestClauses(readingEntries, otherEntries, labels, ctx);
-  } else {
-    prose = exceptFromGroups(groups, sortedKeys, labels, ctx);
-  }
+  let prose = positiveHourProse(filtered, labels, ctx, opts);
 
   if (opts?.suffix) {
     prose = prose ? `${prose} ${opts.suffix}` : opts.suffix;
@@ -345,7 +464,7 @@ export function compactHourProse(
   return prose;
 }
 
-/** Prose for memoria delta hours: always "all from feria except" changed slots. */
+/** Prose for memoria delta hours: list only parts that differ from the ferial baseline. */
 export function compactDeltaHourProse(
   deltaEntries: SlotEntry[],
   labels: OrdoLabels,
@@ -355,13 +474,10 @@ export function compactDeltaHourProse(
     return opts?.suffix?.trim() ?? "";
   }
   const ctx = proseContextFromOpts(opts);
-  const groups = groupEntries(deltaEntries);
-  const feriaDescribed: DescribedSource = {
-    groupKey: "feria-baseline",
-    phrase: psalterBaselinePhrase(labels, ctx.psalterBaseline ?? "feria"),
-    isProper: false,
-  };
-  const prose = exceptClause(feriaDescribed, groups, labels, ctx);
+  const baselineKey = ctx.feriaPsalter
+    ? `psalter:${ctx.feriaPsalter.week}:${ctx.feriaPsalter.day}`
+    : "feria-baseline";
+  const prose = buildPositiveClauses(deltaEntries, labels, ctx, baselineKey).join(" ");
   if (opts?.suffix) {
     return prose ? `${prose} ${opts.suffix}` : opts.suffix;
   }

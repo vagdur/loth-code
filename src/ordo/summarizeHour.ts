@@ -17,6 +17,7 @@ import {
   type DescribedSource,
 } from "./sourceLabels.js";
 import { partLabelForSlotKey } from "./partLabels.js";
+import type { SlotEntry } from "./compactHour.js";
 
 type HourLike =
   | AbstractInvitatory
@@ -24,12 +25,6 @@ type HourLike =
   | AbstractLauds
   | AbstractDaytimePrayer
   | AbstractVespers;
-
-interface SlotEntry {
-  slotKey: string;
-  partLabel: string;
-  described: DescribedSource;
-}
 
 function formatPartList(parts: string[], andWord: string): string {
   if (parts.length === 0) return "";
@@ -66,10 +61,14 @@ function resolveSlot(
     optionPath: path,
   });
   if (!effective) return null;
+  const alternatives = effective.alternatives?.map((s) =>
+    describeSource(s, repo, labels),
+  );
   return {
     slotKey,
     partLabel,
     described: describeSource(effective.winner, repo, labels),
+    ...(alternatives?.length ? { alternatives } : {}),
   };
 }
 

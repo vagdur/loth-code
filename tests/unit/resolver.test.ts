@@ -201,14 +201,19 @@ describe("shortReadingRef and antiphonRef and intercessionsRef", () => {
     });
   });
 
-  test("antiphonRef: memoria uses psalterField path last", () => {
+  test("antiphonRef: memoria canticle antiphon ends at common (no psalter)", () => {
     const ctx = baseCtx(obligatoryMemoria());
     const src = antiphonRef(ctx, "lauds.benedictusAntiphon", "lauds.benedictusAntiphonPsalter");
+    const kinds = flattenSources(src).map((s) => s.kind);
+    expect(kinds).toEqual(["saint", "common"]);
+    expect(flattenSources(src).some((s) => s.kind === "psalter")).toBe(false);
+  });
+
+  test("antiphonRef: memoria invitatory still falls back to psalter", () => {
+    const ctx = baseCtx(obligatoryMemoria());
+    const src = antiphonRef(ctx, "invitatoryAntiphon", "invitatoryAntiphon");
     const last = flattenSources(src).at(-1);
-    expect(last).toMatchObject({
-      kind: "psalter",
-      field: "lauds.benedictusAntiphonPsalter",
-    });
+    expect(last).toMatchObject({ kind: "psalter", field: "invitatoryAntiphon" });
   });
 
   test("intercessionsRef: saint solemnity ends at psalter", () => {

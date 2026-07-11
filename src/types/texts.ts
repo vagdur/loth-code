@@ -241,6 +241,8 @@ export interface OrdoLabels {
   };
   prose: {
     from: string;
+    /** Preposition for fixed single-source parts, e.g. "ur" in "Hymn ur communet." */
+    fromUr?: string;
     and: string;
     /** Disjunction for applicable commons, e.g. "eller". */
     or?: string;
