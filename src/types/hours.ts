@@ -35,6 +35,14 @@ export type SlotSourceDirect =
 export interface FallbackChain {
   kind: "fallback_chain";
   sources: SlotSourceDirect[];
+  /**
+   * Present when the tail of this chain is rubrically ad libitum
+   * (office-spec §5.4) rather than mere data fallback.  Sources
+   * [0, adLibFrom) are strict precedence; sources [adLibFrom, end) are a
+   * free choice IF the strict head yields nothing.  Absent ⇒ the whole
+   * chain is strict first-non-null.
+   */
+  adLibFrom?: number;
 }
 
 export type SlotSource = SlotSourceDirect | FallbackChain;

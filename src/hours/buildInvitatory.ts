@@ -5,7 +5,8 @@
 import type { LiturgicalDay } from "../types/calendar.js";
 import type { AbstractInvitatory } from "../types/hours.js";
 
-import { makeFlags } from "./shared.js";
+import { antiphonRef } from "./resolver.js";
+import { makeCtx, makeFlags } from "./shared.js";
 
 export function buildInvitatory(day: LiturgicalDay): AbstractInvitatory {
   return {
@@ -15,14 +16,8 @@ export function buildInvitatory(day: LiturgicalDay): AbstractInvitatory {
     // Psalm 94 is the default invitatory psalm; alternatives (Ps 99, 66, 23) are a
     // rubrical choice left to the assembler or user.
     psalmRef: { kind: "psalm", id: "psalm_94" },
-    antiphonRef: day.celebration.seasonalKey
-      ? {
-          kind: "fallback_chain",
-          sources: [
-            { kind: "seasonal", key: day.celebration.seasonalKey, field: "invitatoryAntiphon" },
-            { kind: "psalter", week: day.psalterWeek, day: day.psalterDay, field: "invitatoryAntiphon" },
-          ],
-        }
-      : { kind: "psalter", week: day.psalterWeek, day: day.psalterDay, field: "invitatoryAntiphon" },
+    // §5.4: if proper, from the Office of the saint; otherwise from the
+    // Common or the current ferial day (ad libitum on memorias).
+    antiphonRef: antiphonRef(makeCtx(day), "invitatoryAntiphon", "invitatoryAntiphon"),
   };
 }

@@ -7,6 +7,7 @@ import { getBounds, getWeekday } from "./liturgicalYear.js";
 import type { CalendarSaint } from "../types/sanctoralCalendar.js";
 import type { Celebration, DayClass, Season } from "../types/calendar.js";
 import type { SeasonalDayKey } from "../types/proper.js";
+import type { CommonType } from "../types/proper.js";
 import type { Weekday } from "../types/psalter.js";
 
 // ---------------------------------------------------------------------------
@@ -109,9 +110,12 @@ export function isChristmasOctaveFerial(date: Date, season: Season): boolean {
   if (season !== "christmas") return false;
   const m = date.getUTCMonth() + 1;
   const d = date.getUTCDate();
-  if (m === 12 && d === 25) return false;
-  if (m === 1 && d === 1) return false;
-  return true;
+  // The octave runs Dec 25 (Christmas) to Jan 1 (Mary, Mother of God), both
+  // solemnities; only the intervening ferial days, Dec 26–31, are octave
+  // ferials.  The Christmas *season* continues past Jan 1 to the Baptism of
+  // the Lord, but those later days are NOT part of the octave and do not
+  // suppress memorias (§5.5).
+  return m === 12 && d >= 26 && d <= 31;
 }
 
 export function isLentenFerial(date: Date, season: Season, seasonalKey: SeasonalDayKey | null): boolean {
@@ -259,6 +263,22 @@ export function buildSaintCandidate(
   };
 }
 
+/**
+ * §5.5 — dates on which a winning memoria may not be celebrated as a full
+ * office: the ferial (or seasonal) office takes its place and the memoria
+ * survives at most as the optional addendum.  This is the single predicate
+ * that decides suppression-by-date; the ranking keeps memorias at their
+ * natural rank and `resolveWith` demotes the winner afterwards, so the
+ * obligatory-over-optional ordering is never disturbed.  `applyMemoriaPolicy`
+ * then reads the same date sets to choose full vs. partial suppression.
+ */
+export function memoriaSuppressedByDate(ctx: RankingContext): boolean {
+  return (
+    appliesFullMemoriaSuppressionByDate(ctx) ||
+    appliesPartialMemoriaSuppression(ctx)
+  );
+}
+
 export function compareObservances(
   a: ObservanceCandidate,
   b: ObservanceCandidate,
@@ -292,7 +312,7 @@ function pickBestSaint(
   return pickBestCandidate(candidates);
 }
 
-function isMemoriaRank(dayClass: DayClass): boolean {
+export function isMemoriaRank(dayClass: DayClass): boolean {
   return dayClass === "obligatory_memoria" || dayClass === "optional_memoria";
 }
 
@@ -320,6 +340,19 @@ export interface MemoriaPolicyFlags {
   saintId?: string;
 }
 
+/**
+ * §5.5 dates that fully suppress a memoria (no addendum), independent of the
+ * winning day's rank: Ash Wednesday, Holy Week, and the Easter octave.  This
+ * is the single source of truth for those dates, shared by
+ * `appliesFullMemoriaSuppression` and `memoriaSuppressedByDate`.
+ */
+export function appliesFullMemoriaSuppressionByDate(ctx: RankingContext): boolean {
+  if (isAshWednesday(ctx.seasonalKey)) return true;
+  if (ctx.season === "holy_week") return true;
+  if (isEasterOctaveWeekday(ctx.date, ctx.season)) return true;
+  return false;
+}
+
 export function appliesFullMemoriaSuppression(
   winner: ObservanceCandidate,
   ctx: RankingContext,
@@ -334,10 +367,7 @@ export function appliesFullMemoriaSuppression(
   ) {
     return true;
   }
-  if (isAshWednesday(ctx.seasonalKey)) return true;
-  if (ctx.season === "holy_week") return true;
-  if (isEasterOctaveWeekday(ctx.date, ctx.season)) return true;
-  return false;
+  return appliesFullMemoriaSuppressionByDate(ctx);
 }
 
 export function appliesPartialMemoriaSuppression(ctx: RankingContext): boolean {
@@ -395,6 +425,24 @@ export function resolveCelebrationFromParts(
   seasonalKey: SeasonalDayKey | null,
   saintsToday: CalendarSaint[],
 ): Celebration {
+  return resolveWith(date, season, seasonalKey, saintsToday, saintsToday);
+}
+
+/**
+ * Shared resolution core.
+ *
+ * `electableSaints` compete as winner candidates; `policySaints` feed the
+ * §5.5 memoria policy (addendum flags).  resolveCelebrationFromParts passes
+ * the same list for both; enumerateCelebrationAlternatives narrows them to
+ * express a user's celebration choice.
+ */
+function resolveWith(
+  date: Date,
+  season: Season,
+  seasonalKey: SeasonalDayKey | null,
+  electableSaints: CalendarSaint[],
+  policySaints: CalendarSaint[],
+): Celebration {
   const weekday = getWeekday(date);
   const ctx: RankingContext = { date, season, weekday, seasonalKey };
   const frame = buildSeasonalFrame(ctx);
@@ -410,12 +458,35 @@ export function resolveCelebrationFromParts(
     candidates.push(buildSeasonalFeast(seasonalKey, weekday));
   }
 
-  const bestSaint = pickBestSaint(saintsToday, ctx);
+  const bestSaint = pickBestSaint(electableSaints, ctx);
   if (bestSaint) candidates.push(bestSaint);
 
-  const winner = pickBestCandidate(candidates);
+  let winner = pickBestCandidate(candidates);
 
-  const suppressedMemoria = pickBestSuppressedMemoria(saintsToday, winner, ctx);
+  // §5.5 (GILH 237–239): a memoria may win the ranking but still not be
+  // celebrated as a full office on a suppression date — the ferial (or
+  // seasonal) office takes its place and the memoria survives only as the
+  // optional addendum.  Demote AFTER ranking so the obligatory-over-optional
+  // ordering picked the correct commemoration, and the suppression rule lives
+  // in one place (memoriaSuppressedByDate / applyMemoriaPolicy) rather than in
+  // the candidate ranks.  A memoria that merely loses to a higher-ranked day
+  // is still handled below by pickBestSuppressedMemoria.
+  let suppressedMemoria: CalendarSaint | null;
+  if (
+    winner.kind === "saint" &&
+    isMemoriaRank(winner.dayClass) &&
+    memoriaSuppressedByDate(ctx)
+  ) {
+    suppressedMemoria = winner.saint ?? null;
+    winner = pickBestCandidate(
+      candidates.filter(
+        (c) => !(c.kind === "saint" && isMemoriaRank(c.dayClass)),
+      ),
+    );
+  } else {
+    suppressedMemoria = pickBestSuppressedMemoria(policySaints, winner, ctx);
+  }
+
   const memoriaFlags =
     winner.kind === "saint" && isMemoriaRank(winner.dayClass)
       ? {
@@ -463,6 +534,118 @@ export function resolveCelebrationFromParts(
     ...memoriaFlags,
     isTriduum,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Celebration alternatives — the day-level "which office?" choice
+// ---------------------------------------------------------------------------
+
+/** Saint id (proper_of_saints entry) backing the Saturday memoria of the BVM. */
+export const BVM_SATURDAY_SAINT_ID = "bvm_saturday";
+
+export interface CelebrationAlternative {
+  /** "feria" | "saint:<saintId>" | "bvm_saturday" */
+  choiceId: string;
+  celebration: Celebration;
+  /** Best-effort display label; the options enumerator may localize further. */
+  label: string;
+  isDefault: boolean;
+}
+
+function bvmSaturdayCelebration(seasonalKey: SeasonalDayKey | null): Celebration {
+  const commons: CommonType[] = ["bvm"];
+  return {
+    type: "optional_memoria",
+    source: "saint",
+    saintId: BVM_SATURDAY_SAINT_ID,
+    applicableCommons: commons,
+    ...(seasonalKey !== null ? { seasonalKey } : {}),
+    memoriaFullySuppressed: false,
+    memoriaReducedToOptional: false,
+    allowMemoriaAddendum: false,
+    isTriduum: false,
+  };
+}
+
+/**
+ * All celebrations that may legitimately be observed on this date (§5.4–5.6):
+ * the feria, each electable memoria (in privileged seasons: the ferial office
+ * with the memoria addendum, GILH 239), and the Saturday BVM memoria.
+ * Exactly one entry has isDefault — it reproduces resolveCelebrationFromParts.
+ * Days with no real choice return a single default-only entry.
+ */
+export function enumerateCelebrationAlternatives(
+  date: Date,
+  season: Season,
+  seasonalKey: SeasonalDayKey | null,
+  saintsToday: CalendarSaint[],
+): CelebrationAlternative[] {
+  const weekday = getWeekday(date);
+  const ctx: RankingContext = { date, season, weekday, seasonalKey };
+  const def = resolveWith(date, season, seasonalKey, saintsToday, saintsToday);
+
+  // Ranks above memoria fix the office of the day; a winning obligatory
+  // memoria (ordinary day) is likewise binding (GILH 221 bars celebrating
+  // another optional memoria alongside).
+  const closed: DayClass[] = [
+    "triduum", "solemnity", "feast_of_lord_on_sunday",
+    "sunday", "feast", "obligatory_memoria",
+  ];
+  const single = (): CelebrationAlternative[] => [{
+    choiceId:
+      def.source === "saint" && def.saintId ? `saint:${def.saintId}` : "feria",
+    celebration: def,
+    label: def.saintId ?? "Feria",
+    isDefault: true,
+  }];
+  if (closed.includes(def.type) || def.memoriaFullySuppressed) return single();
+
+  const memoriaSaints = saintsToday.filter((s) =>
+    isMemoriaRank(buildSaintCandidate(s, ctx).dayClass),
+  );
+  const nonMemoria = saintsToday.filter((s) => !memoriaSaints.includes(s));
+
+  const feria = resolveWith(date, season, seasonalKey, nonMemoria, nonMemoria);
+
+  const alternatives: CelebrationAlternative[] = [
+    { choiceId: "feria", celebration: feria, label: "Feria", isDefault: false },
+    ...memoriaSaints.map((s) => ({
+      choiceId: `saint:${s.saintId}`,
+      // In partial-suppression seasons the saint is demoted, so this yields
+      // the ferial office carrying the addendum flags for exactly this saint;
+      // on ordinary days it yields the saint's optional-memoria office.
+      celebration: resolveWith(date, season, seasonalKey, [...nonMemoria, s], [s]),
+      label: s.name ?? s.saintId,
+      isDefault: false,
+    })),
+    ...(weekday === "Saturday" &&
+    season === "ordinary_time" &&
+    feria.type === "ordinary_ferial"
+      ? [{
+          choiceId: BVM_SATURDAY_SAINT_ID,
+          celebration: bvmSaturdayCelebration(seasonalKey),
+          label: "Sancta Maria in sabbato",
+          isDefault: false,
+        }]
+      : []),
+  ];
+
+  // The default alternative mirrors what unchosen resolution produces: the
+  // winning saint, the ferial office commemorating the best suppressed
+  // memoria, or the plain feria.
+  const defaultChoiceId =
+    (def.source === "saint" && def.saintId) ||
+    (def.allowMemoriaAddendum && def.saintId)
+      ? `saint:${def.saintId}`
+      : "feria";
+  for (const alt of alternatives) {
+    if (alt.choiceId === defaultChoiceId) alt.isDefault = true;
+  }
+  if (!alternatives.some((a) => a.isDefault)) {
+    const feriaAlt = alternatives[0];
+    if (feriaAlt) feriaAlt.isDefault = true;
+  }
+  return alternatives;
 }
 
 /** True when today's Second Vespers outranks a Class I.3 saint's First Vespers. */

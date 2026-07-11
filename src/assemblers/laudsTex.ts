@@ -14,11 +14,13 @@ import type { LiturgicalFlags } from "../types/hours.js";
 import type {
   Antiphon, Hymn, PsalmAssignment, ShortResponsory,
 } from "../types/texts.js";
-import type { Assembler } from "./types.js";
+import type { Assembler, ResolveOptions } from "./types.js";
 import {
   resolveAntiphon, resolveConcludingPrayer, resolveHymn, resolveIntercessions,
   resolvePsalmAssignment, resolveShortReading, resolveShortResponsory,
 } from "./types.js";
+import type { DayChoices } from "../types/options.js";
+import { slotPath } from "../options/slotTable.js";
 import {
   texAntiphon,
   texConcludingPrayer,
@@ -46,73 +48,77 @@ export class LaudsTexAssembler implements Assembler<string> {
   private scoreCounter = 0;
   private fileContentsBlocks: string[] = [];
 
-  assembleDay(_day: AbstractDay, _repo: DataRepository): string {
+  assembleDay(_day: AbstractDay, _repo: DataRepository, _choices?: DayChoices): string {
     return this.notImplemented("assembleDay");
   }
 
-  assembleOfficeOfReadings(_hour: AbstractOfficeOfReadings, _repo: DataRepository): string {
+  assembleOfficeOfReadings(_hour: AbstractOfficeOfReadings, _repo: DataRepository, _choices?: DayChoices): string {
     return this.notImplemented("assembleOfficeOfReadings");
   }
 
-  assembleDaytimePrayer(_hour: AbstractDaytimePrayer, _repo: DataRepository): string {
+  assembleDaytimePrayer(_hour: AbstractDaytimePrayer, _repo: DataRepository, _choices?: DayChoices): string {
     return this.notImplemented("assembleDaytimePrayer");
   }
 
-  assembleVespers(_hour: AbstractVespers, _repo: DataRepository): string {
+  assembleVespers(_hour: AbstractVespers, _repo: DataRepository, _choices?: DayChoices): string {
     return this.notImplemented("assembleVespers");
   }
 
-  assembleCompline(_hour: AbstractCompline, _repo: DataRepository): string {
+  assembleCompline(_hour: AbstractCompline, _repo: DataRepository, _choices?: DayChoices): string {
     return this.notImplemented("assembleCompline");
   }
 
-  assembleLauds(hour: AbstractLauds, repo: DataRepository): string {
+  assembleLauds(hour: AbstractLauds, repo: DataRepository, choices?: DayChoices): string {
     this.scoreCounter = 0;
     this.fileContentsBlocks = [];
 
     const { flags } = hour;
+    const opt = (slot: string): ResolveOptions => ({
+      ...(choices ? { choices } : {}),
+      optionPath: slotPath("lauds", slot),
+    });
     const body: string[] = [];
 
     body.push(texHourHeading(repo, "lauds"));
 
     if (!hour.suppressIntroVerse) body.push(texIntroductoryVerse(repo, flags));
 
-    const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay);
+    const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
     if (hymn) body.push(this.texHymnBlock(hymn));
 
-    for (const slot of hour.psalmSlots) {
-      const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay);
+    for (const [i, slot] of hour.psalmSlots.entries()) {
+      const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
         body.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
 
-    const reading = resolveShortReading(hour.shortReadingRef, repo);
+    const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
     if (reading) body.push(texShortReading(reading));
 
     if (hour.shortResponsoryRef) {
-      const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay);
+      const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay, opt("shortResponsory"));
       if (resp) body.push(this.texShortResponsoryBlock(repo, resp));
     }
 
     body.push(texSectionHeading(repo, "benedictus"));
-    const benAntiphon = resolveAntiphon(hour.benedictusAntiphonRef, repo, hour.liturgicalDay);
+    const benAntiphon = resolveAntiphon(hour.benedictusAntiphonRef, repo, hour.liturgicalDay, opt("benedictusAntiphon"));
     if (benAntiphon) body.push(this.texAntiphonBlock(repo, benAntiphon, flags, true));
     body.push(texGospelCanticle(repo, "benedictus"));
     if (benAntiphon) body.push(this.texAntiphonBlock(repo, benAntiphon, flags, false));
 
-    const intercessions = resolveIntercessions(hour.intercessionsRef, repo);
+    const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
     if (intercessions) body.push(texIntercessions(repo, intercessions));
 
     body.push(texLordsPrayerSection(repo));
 
-    const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo);
+    const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
     if (prayer) body.push(texConcludingPrayer(repo, prayer.text, "lauds"));
 
     if (hour.memoriaAddendum) {
-      const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay);
-      const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo);
+      const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay, opt("memoriaAddendum.antiphon"));
+      const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
       if (addAntiphon) body.push(this.texAntiphonBlock(repo, addAntiphon, flags, true));
       if (addPrayer) body.push(escapeTexPlain(addPrayer.text));
     }
