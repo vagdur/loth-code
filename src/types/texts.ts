@@ -245,6 +245,16 @@ export interface OrdoLabels {
     teDeumSaid: string;
     firstVespersForSunday: string;
     allFromSunday: string;
+    allFromFeria: string;
+    allFromPropriet: string;
+    allFromCommune: string;
+    allFromPsalter: string;
+    dayCommune?: string;
+    except: string;
+    ifMemoriaCelebrated: string;
+    memoriaAddendum: string;
+    readingsFrom: string;
+    restFrom: string;
     psalmodyOption: string;
     otSunday: string;
     complineForWeekday: string;

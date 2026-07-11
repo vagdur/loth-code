@@ -99,29 +99,78 @@ describe("summarizeOrdoDay (stockholm)", () => {
   test("2026-07-02 ordinary-time ferial uses readable Swedish title without rank", () => {
     const summary = summarizeOrdoDay(utcDate(2026, 7, 2), ctx, repo);
     expect(summary.headline).toBe("2 juli. Torsdag i tolfte veckan under året.");
+    expect(summary.defaultBody).toBe("Allt från ferian.");
+    expect(summary.hours).toHaveLength(0);
   });
 
-  test("2026-07-11 St Benedict feast with Swedish headline and hour summaries", () => {
+  test("2025-12-02 Advent ferial collapses to single default line", () => {
+    const summary = summarizeOrdoDay(utcDate(2025, 12, 2), ctx, repo);
+    expect(summary.headline).toBe("2 december. Tisdag i första veckan i advent.");
+    expect(summary.defaultBody).toBe("Allt från ferian.");
+    expect(summary.hours).toHaveLength(0);
+  });
+
+  test("2025-11-30 first Advent Sunday collapses to single default line", () => {
+    const summary = summarizeOrdoDay(utcDate(2025, 11, 30), ctx, repo);
+    expect(summary.headline).toBe("30 november. Första söndagen i Advent.");
+    expect(summary.defaultBody).toBe("Allt från söndagen.");
+  });
+
+  test("2025-12-07 second Advent Sunday keeps commune in lone first vespers hour", () => {
+    const summary = summarizeOrdoDay(utcDate(2025, 12, 7), ctx, repo);
+    expect(summary.headline).toBe("7 december. Andra söndagen i Advent.");
+    expect(summary.defaultBody).toBe("Allt från söndagen.");
+    expect(summary.communeLine).toBeUndefined();
+    const firstVespers = summary.hours.find((h) => h.key === "firstVespers");
+    expect(firstVespers).toBeDefined();
+    expect(firstVespers!.prose).toContain("[bvm variant 1]");
+  });
+
+  test("2025-12-06 optional memoria shows ferial baseline and memoria block", () => {
+    const summary = summarizeOrdoDay(utcDate(2025, 12, 6), ctx, repo);
+    expect(summary.celebrationOptions).toContain("Alternativ:");
+    expect(summary.defaultBody).toBe("Allt från ferian.");
+    expect(summary.memoriaIfCelebrated?.length).toBeGreaterThan(0);
+    expect(summary.memoriaIfCelebrated!.some((h) => h.prose.includes("commune"))).toBe(true);
+  });
+
+  test("2025-12-03 obligatory memoria uses except pattern not dual all-from", () => {
+    const summary = summarizeOrdoDay(utcDate(2025, 12, 3), ctx, repo);
+    expect(summary.headline).toContain("Francisco Xavier");
+    const vespers = summary.hours.find((h) => h.key === "vespers");
+    expect(vespers).toBeDefined();
+    expect(vespers!.prose).toContain("utom");
+    expect(vespers!.prose).toContain("psaltaret");
+    expect(vespers!.prose).not.toMatch(/Allt från commune.*Allt från psaltaret/);
+    const allProse = summary.hours.map((h) => h.prose).join(" ");
+    expect(allProse).not.toMatch(/\([^)]*Från commune/);
+  });
+
+  test("2026-07-11 St Benedict feast with compact hour summaries", () => {
     const summary = summarizeOrdoDay(utcDate(2026, 7, 11), ctx, repo);
 
     expect(summary.headline).toBe(
       "11 juli. S:t Benedictus av Nursia, abbot, Europas skyddspatron. Fest.",
     );
+    expect(summary.communeLine).toBe("Från commune: [doctors variant 1]");
 
     const lauds = summary.hours.find((h) => h.key === "lauds");
     expect(lauds).toBeDefined();
-    expect(lauds!.prose).toContain("från propriet");
-    expect(lauds!.prose).toContain("antifon till Benedictus");
+    expect(lauds!.prose).toContain("utom");
     expect(lauds!.prose).toContain("commune");
+    expect(lauds!.prose).not.toContain("[doctors variant 1]");
 
     const compline = summary.hours.find((h) => h.key === "compline");
     expect(compline!.prose).toBe("Kompletorium för lördagen.");
 
     const oor = summary.hours.find((h) => h.key === "officeOfReadings");
     expect(oor!.prose).toContain("Te Deum");
+    expect(oor!.prose).toContain("commune");
+    expect(oor!.prose).not.toContain("[doctors variant 1]");
 
     const firstVespers = summary.hours.find((h) => h.key === "firstVespers");
     expect(firstVespers).toBeDefined();
+    expect(firstVespers!.prose).toContain("utom");
 
     const melodyOptions = summary.hours.some((h) => h.prose.includes("melodi"));
     expect(melodyOptions).toBe(false);
