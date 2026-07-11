@@ -10,7 +10,10 @@ import type { DataRepository } from "../data/repository.js";
 import type { AssemblyContext, DayClass, LiturgicalDay } from "../types/calendar.js";
 import type { DayOption } from "../types/options.js";
 import type { HourKey } from "../options/slotTable.js";
+import { formatFerialTitle } from "./ferialTitle.js";
+import { lookupSeasonalName } from "./seasonalNames.js";
 import { getOrdoLabels } from "./labels.js";
+import { formatSundayTitle } from "./sundayTitle.js";
 import {
   summarizeCompline, summarizeDaytime, summarizeInvitatory,
   summarizeLauds, summarizeOfficeOfReadings, summarizeVespers,
@@ -51,7 +54,6 @@ function formatDateSv(date: Date, months: string[]): string {
 function celebrationName(
   day: LiturgicalDay,
   calendarId: string,
-  otSundayTemplate: string,
   seasonalNames?: Record<string, string>,
 ): string {
   const { celebration: c } = day;
@@ -61,16 +63,15 @@ function celebrationName(
     return saint?.name ?? c.saintId;
   }
   if (c.seasonalKey) {
-    if (seasonalNames?.[c.seasonalKey]) return seasonalNames[c.seasonalKey]!;
-    return seasonalTitle(c.seasonalKey, otSundayTemplate);
+    const named = lookupSeasonalName(c.seasonalKey, seasonalNames);
+    if (named) return named;
+    return c.seasonalKey;
   }
   return "Feria";
 }
 
-function seasonalTitle(key: string, otSundayTemplate: string): string {
-  const otSun = /^ot_w(\d+)_sun$/.exec(key);
-  if (otSun) return otSundayTemplate.replace("{n}", otSun[1]!);
-  return key;
+function isFerial(type: DayClass): boolean {
+  return type === "privileged_ferial" || type === "ordinary_ferial";
 }
 
 function rankLabel(type: DayClass, ranks: import("../types/texts.js").OrdoLabels["ranks"]): string {
@@ -126,15 +127,16 @@ export function summarizeOrdoDay(
   const day = resolveDay(date, context.calendarId, effectiveChoices);
   const abstractDay = buildDay(day, context, effectiveChoices);
 
-  const celebName = celebrationName(
-    day,
-    context.calendarId,
-    labels.prose.otSunday,
-    labels.seasonalNames,
-  );
-  const displayName = celebName;
-
-  const headline = `${formatDateSv(date, labels.months)}. ${displayName}. ${rankLabel(day.celebration.type, labels.ranks)}.`;
+  const dateLabel = formatDateSv(date, labels.months);
+  const headline = isFerial(day.celebration.type)
+    ? `${dateLabel}. ${formatFerialTitle(day.celebration.seasonalKey, labels, date, context.calendarId)}.`
+    : day.celebration.type === "sunday"
+      ? `${dateLabel}. ${formatSundayTitle(day.celebration.seasonalKey, labels, date, context.calendarId)}.`
+      : `${dateLabel}. ${celebrationName(
+        day,
+        context.calendarId,
+        labels.seasonalNames,
+      )}. ${rankLabel(day.celebration.type, labels.ranks)}.`;
 
   const hours: OrdoHourSummary[] = [];
 

@@ -248,6 +248,22 @@ export interface OrdoLabels {
     psalmodyOption: string;
     otSunday: string;
     complineForWeekday: string;
+    /** e.g. "{weekday} i {week} veckan i advent" */
+    ferialInAdvent?: string;
+    ferialInLent?: string;
+    ferialInEaster?: string;
+    ferialInOt?: string;
+    ferialInEasterOctave?: string;
+    ferialInHolyWeek?: string;
+    /** e.g. "{day} dagen i juloktaven" (day = andra, tredje, …) */
+    ferialInChristmasOctave?: string;
+    ferialInChristmas?: string;
+    ferialInEpiphany?: string;
+    /** e.g. "{week} söndagen i Advent" */
+    sundayInAdvent?: string;
+    sundayInLent?: string;
+    sundayInEaster?: string;
+    sundayAfterChristmas?: string;
   };
   weekdays: Record<string, string>;
   /** Definite form for compline labels, e.g. "måndagen". */
