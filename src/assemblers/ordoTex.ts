@@ -13,9 +13,38 @@ export function wrapOrdoDocument(title: string, body: string): string {
 \\begin{document}
 \\ordoTitle{${escapeTexPlain(title)}}
 
+\\tableofcontents
+\\newpage
+
 ${body}
 \\end{document}
 `;
+}
+
+function monthSectionKey(date: Date): string {
+  return `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
+}
+
+function formatMonthSection(date: Date, months: string[]): string {
+  const month = months[date.getUTCMonth()] ?? "";
+  const title = month.charAt(0).toUpperCase() + month.slice(1);
+  return `${title} ${date.getUTCFullYear()}`;
+}
+
+function assembleOrdoBody(summaries: OrdoDaySummary[], months: string[]): string {
+  const parts: string[] = [];
+  let currentKey: string | null = null;
+
+  for (const day of summaries) {
+    const key = monthSectionKey(day.date);
+    if (key !== currentKey) {
+      parts.push(`\\section{${escapeTexPlain(formatMonthSection(day.date, months))}}`);
+      currentKey = key;
+    }
+    parts.push(assembleOrdoDayTex(day));
+  }
+
+  return parts.join("\n\n");
 }
 
 function formatHourBlocks(hours: OrdoHourSummary[]): string {
@@ -65,6 +94,6 @@ export function assembleOrdoDocument(
   const docTitle =
     title ??
     (labels.documentTitle ?? "Ordo").replace("{year}", "2025/2026");
-  const body = summaries.map(assembleOrdoDayTex).join("\n\n");
+  const body = assembleOrdoBody(summaries, labels.months);
   return wrapOrdoDocument(docTitle, body);
 }

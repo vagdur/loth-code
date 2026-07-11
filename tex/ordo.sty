@@ -2,7 +2,10 @@
 \ProvidesPackage{ordo}[2026/07/11 LoTH Ordo layout]
 
 \RequirePackage[margin=2cm]{geometry}
-% LuaLaTeX renders UTF-8 (Swedish) natively; avoid polyglossia/babel version pins.
+\RequirePackage[swedish]{babel}
+\RequirePackage[hidelinks]{hyperref}
+
+\setcounter{secnumdepth}{-1}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.4em}
