@@ -3,6 +3,7 @@
  */
 
 import type { OrdoLabels } from "../types/texts.js";
+import type { PsalterWeek, Weekday } from "../types/psalter.js";
 import type { DescribedSource } from "./sourceLabels.js";
 import { sourceGroupOrder } from "./sourceLabels.js";
 
@@ -40,30 +41,76 @@ export function communeName(phrase: string, labels: OrdoLabels): string | null {
   return phrase.slice(prefix.length, -1);
 }
 
-function phraseForProse(
-  phrase: string,
+interface ProseContext {
+  dayCommuneVariant?: string;
+  feriaPsalter?: { week: PsalterWeek; day: Weekday };
+  psalterBaseline?: "feria" | "sunday";
+}
+
+function proseContextFromOpts(opts?: CompactHourOptions): ProseContext {
+  const ctx: ProseContext = {
+    psalterBaseline: opts?.psalterBaseline ?? "feria",
+  };
+  if (opts?.dayCommuneVariant) ctx.dayCommuneVariant = opts.dayCommuneVariant;
+  if (opts?.feriaPsalter) ctx.feriaPsalter = opts.feriaPsalter;
+  return ctx;
+}
+
+function isCurrentPsalter(groupKey: string, ctx: ProseContext): boolean {
+  if (!ctx.feriaPsalter) return false;
+  const { week, day } = ctx.feriaPsalter;
+  return groupKey === `psalter:${week}:${day}`;
+}
+
+function psalterBaselinePhrase(
   labels: OrdoLabels,
-  dayCommuneVariant?: string,
+  baseline: "feria" | "sunday",
 ): string {
-  if (!dayCommuneVariant) return phrase;
+  return baseline === "sunday"
+    ? (labels.weekdaysDefinite.Sunday ?? "söndagen")
+    : labels.sources.feria;
+}
+
+function psalterBaselineClause(
+  labels: OrdoLabels,
+  baseline: "feria" | "sunday",
+): string {
+  return baseline === "sunday"
+    ? labels.prose.allFromSunday
+    : labels.prose.allFromFeria;
+}
+
+function phraseForProse(
+  described: DescribedSource,
+  labels: OrdoLabels,
+  ctx: ProseContext,
+): string {
+  const { phrase, groupKey } = described;
+  if (isCurrentPsalter(groupKey, ctx)) {
+    return psalterBaselinePhrase(labels, ctx.psalterBaseline ?? "feria");
+  }
+  if (!ctx.dayCommuneVariant) return phrase;
   const commune = communeName(phrase, labels);
-  if (commune === dayCommuneVariant) return labels.sources.communePrefix;
+  if (commune === ctx.dayCommuneVariant) return labels.sources.communePrefix;
   return phrase;
 }
 
 function allFromClause(
   described: DescribedSource,
   labels: OrdoLabels,
-  dayCommuneVariant?: string,
+  ctx: ProseContext,
 ): string {
-  const { phrase } = described;
+  const { phrase, groupKey } = described;
   if (phrase === labels.sources.propriet) return labels.prose.allFromPropriet;
   const commune = communeName(phrase, labels);
   if (commune) {
-    if (dayCommuneVariant && commune === dayCommuneVariant) {
+    if (ctx.dayCommuneVariant && commune === ctx.dayCommuneVariant) {
       return `Allt från ${labels.sources.communePrefix}.`;
     }
     return labels.prose.allFromCommune.replace("{name}", commune);
+  }
+  if (isCurrentPsalter(groupKey, ctx)) {
+    return psalterBaselineClause(labels, ctx.psalterBaseline ?? "feria");
   }
   if (phrase.startsWith(`${labels.sources.psalterPrefix} `)) {
     return labels.prose.allFromPsalter.replace("{source}", phrase);
@@ -79,17 +126,15 @@ function readingsRestClauses(
   readingEntries: SlotEntry[],
   otherEntries: SlotEntry[],
   labels: OrdoLabels,
-  dayCommuneVariant?: string,
+  ctx: ProseContext,
 ): string {
-  const readingPhrase = phraseForProse(
-    readingEntries[0]!.described.phrase, labels, dayCommuneVariant,
-  );
+  const readingPhrase = phraseForProse(readingEntries[0]!.described, labels, ctx);
   const otherGroups = groupEntries(otherEntries);
   const otherKey = [...otherGroups.keys()].sort(
     (a, b) => sourceGroupOrder(a) - sourceGroupOrder(b),
   )[0]!;
   const otherPhrase = phraseForProse(
-    otherGroups.get(otherKey)![0]!.described.phrase, labels, dayCommuneVariant,
+    otherGroups.get(otherKey)![0]!.described, labels, ctx,
   );
   return `${labels.prose.readingsFrom} ${readingPhrase}. ${labels.prose.restFrom} ${otherPhrase}.`;
 }
@@ -149,28 +194,26 @@ function exceptFromGroups(
   groups: Map<string, SlotEntry[]>,
   sortedKeys: string[],
   labels: OrdoLabels,
-  dayCommuneVariant?: string,
+  ctx: ProseContext,
 ): string {
   const dominantKey = dominantGroupKey(groups, sortedKeys);
   const others = new Map(
     sortedKeys.filter((k) => k !== dominantKey).map((k) => [k, groups.get(k)!]),
   );
-  return exceptClause(groups.get(dominantKey)![0]!.described, others, labels, dayCommuneVariant);
+  return exceptClause(groups.get(dominantKey)![0]!.described, others, labels, ctx);
 }
 
 function exceptClause(
   dominant: DescribedSource,
   others: Map<string, SlotEntry[]>,
   labels: OrdoLabels,
-  dayCommuneVariant?: string,
+  ctx: ProseContext,
 ): string {
-  const dominantClause = allFromClause(dominant, labels, dayCommuneVariant).replace(/\.$/, "");
+  const dominantClause = allFromClause(dominant, labels, ctx).replace(/\.$/, "");
   const exceptParts: string[] = [];
   for (const [, groupEntries] of others) {
     const parts = [...new Set(groupEntries.map((e) => e.partLabel))];
-    const phrase = phraseForProse(
-      groupEntries[0]!.described.phrase, labels, dayCommuneVariant,
-    );
+    const phrase = phraseForProse(groupEntries[0]!.described, labels, ctx);
     exceptParts.push(
       `${formatPartList(parts, labels.prose.and)} ${labels.prose.from} ${phrase}`,
     );
@@ -188,7 +231,7 @@ function twoPsalterExceptClause(
   groups: Map<string, SlotEntry[]>,
   sortedKeys: [string, string],
   labels: OrdoLabels,
-  dayCommuneVariant?: string,
+  ctx: ProseContext,
 ): string {
   const [k1, k2] = sortedKeys;
   const count1 = groups.get(k1)!.length;
@@ -197,8 +240,8 @@ function twoPsalterExceptClause(
   const dominant = groups.get(dominantKey)![0]!.described;
   const other = groups.get(otherKey)!;
   const parts = [...new Set(other.map((e) => e.partLabel))];
-  const dominantClause = allFromClause(dominant, labels, dayCommuneVariant).replace(/\.$/, "");
-  const otherPhrase = phraseForProse(other[0]!.described.phrase, labels, dayCommuneVariant);
+  const dominantClause = allFromClause(dominant, labels, ctx).replace(/\.$/, "");
+  const otherPhrase = phraseForProse(other[0]!.described, labels, ctx);
   return `${dominantClause} ${labels.prose.except} ${formatPartList(parts, labels.prose.and)} ${labels.prose.from} ${otherPhrase}.`;
 }
 
@@ -209,6 +252,10 @@ export interface CompactHourOptions {
   hourKey?: string;
   /** When set, commune variant name is omitted from hour prose (shown at day level). */
   dayCommuneVariant?: string;
+  /** Psalter week/day for the calendar date — current psalter sources collapse to feria. */
+  feriaPsalter?: { week: PsalterWeek; day: Weekday };
+  /** Baseline label when collapsing the current psalter (feria vs Sunday). */
+  psalterBaseline?: "feria" | "sunday";
 }
 
 /** Unique commune variant when one variant appears in two or more hours, else null. */
@@ -257,11 +304,11 @@ export function compactHourProse(
 
   let prose: string;
 
-  const dayCommuneVariant = opts?.dayCommuneVariant;
+  const ctx = proseContextFromOpts(opts);
 
   if (sortedKeys.length === 1) {
     prose = allFromClause(
-      groups.get(sortedKeys[0]!)![0]!.described, labels, dayCommuneVariant,
+      groups.get(sortedKeys[0]!)![0]!.described, labels, ctx,
     );
   } else if (
     sortedKeys.length === 2 &&
@@ -271,14 +318,14 @@ export function compactHourProse(
       groups,
       [sortedKeys[0]!, sortedKeys[1]!],
       labels,
-      dayCommuneVariant,
+      ctx,
     );
   } else if (opts?.hourKey === "officeOfReadings" && canUseReadingsRest(filtered)) {
     const readingEntries = filtered.filter((e) => isReadingSlot(e.slotKey));
     const otherEntries = filtered.filter((e) => !isReadingSlot(e.slotKey));
-    prose = readingsRestClauses(readingEntries, otherEntries, labels, dayCommuneVariant);
+    prose = readingsRestClauses(readingEntries, otherEntries, labels, ctx);
   } else {
-    prose = exceptFromGroups(groups, sortedKeys, labels, dayCommuneVariant);
+    prose = exceptFromGroups(groups, sortedKeys, labels, ctx);
   }
 
   if (opts?.suffix) {

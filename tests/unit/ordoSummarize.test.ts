@@ -99,6 +99,7 @@ describe("summarizeOrdoDay (stockholm)", () => {
   test("2026-07-02 ordinary-time ferial uses readable Swedish title without rank", () => {
     const summary = summarizeOrdoDay(utcDate(2026, 7, 2), ctx, repo);
     expect(summary.headline).toBe("2 juli. Torsdag i tolfte veckan under året.");
+    expect(summary.psalterWeekLine).toBe("Psaltarens vecka I");
     expect(summary.defaultBody).toBe("Allt från ferian.");
     expect(summary.hours).toHaveLength(0);
   });
@@ -113,6 +114,7 @@ describe("summarizeOrdoDay (stockholm)", () => {
   test("2025-11-30 first Advent Sunday collapses to single default line", () => {
     const summary = summarizeOrdoDay(utcDate(2025, 11, 30), ctx, repo);
     expect(summary.headline).toBe("30 november. Första söndagen i Advent.");
+    expect(summary.psalterWeekLine).toBe("Psaltarens vecka I");
     expect(summary.defaultBody).toBe("Allt från söndagen.");
   });
 
@@ -138,7 +140,7 @@ describe("summarizeOrdoDay (stockholm)", () => {
     const vespers = summary.hours.find((h) => h.key === "vespers");
     expect(vespers).toBeDefined();
     expect(vespers!.prose).toContain("utom");
-    expect(vespers!.prose).toContain("psaltaret");
+    expect(vespers!.prose).toContain("ferian");
     expect(vespers!.prose).not.toMatch(/Allt från commune.*Allt från psaltaret/);
     const allProse = summary.hours.map((h) => h.prose).join(" ");
     expect(allProse).not.toMatch(/\([^)]*Från commune/);
@@ -150,6 +152,7 @@ describe("summarizeOrdoDay (stockholm)", () => {
     expect(summary.headline).toBe(
       "11 juli. S:t Benedictus av Nursia, abbot, Europas skyddspatron. Fest.",
     );
+    expect(summary.psalterWeekLine).toBe("Psaltarens vecka II");
     expect(summary.communeLine).toBe("Från commune: kyrkolärare");
 
     const lauds = summary.hours.find((h) => h.key === "lauds");

@@ -241,6 +241,11 @@ function buildCompactHour(
     ...(suffix ? { suffix } : {}),
     hourKey: spec.hourKey,
     ...(dayCommuneVariant ? { dayCommuneVariant } : {}),
+    feriaPsalter: {
+      week: liturgicalDay.psalterWeek,
+      day: liturgicalDay.psalterDay,
+    },
+    psalterBaseline: liturgicalDay.celebration.type === "sunday" ? "sunday" : "feria",
   });
   if (!prose) return null;
 

@@ -258,6 +258,8 @@ export interface OrdoLabels {
     psalmodyOption: string;
     otSunday: string;
     complineForWeekday: string;
+    /** e.g. "Psaltarets vecka {week}" ({week} = I–IV) */
+    psalterWeek?: string;
     /** e.g. "{weekday} i {week} veckan i advent" */
     ferialInAdvent?: string;
     ferialInLent?: string;

@@ -51,7 +51,7 @@ export function assembleOrdoDayTex(day: OrdoDaySummary): string {
   }
 
   const body = bodyParts.join("\n");
-  return `\\ordoDay{${escapeTexPlain(day.headline)}}{${body}}`;
+  return `\\ordoDay{${escapeTexPlain(day.headline)}}{${escapeTexPlain(day.psalterWeekLine)}}{${body}}`;
 }
 
 export function assembleOrdoDocument(

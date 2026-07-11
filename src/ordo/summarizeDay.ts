@@ -14,6 +14,7 @@ import { compactOrdoDayBody } from "./compactDay.js";
 import { formatFerialTitle } from "./ferialTitle.js";
 import { lookupSeasonalName } from "./seasonalNames.js";
 import { getOrdoLabels } from "./labels.js";
+import { formatPsalterWeekLine } from "./psalterWeekLabel.js";
 import { formatSundayTitle } from "./sundayTitle.js";
 
 export interface OrdoHourSummary {
@@ -25,6 +26,8 @@ export interface OrdoHourSummary {
 export interface OrdoDaySummary {
   date: Date;
   headline: string;
+  /** Psalter cycle week for this day, e.g. "Psaltarets vecka II". */
+  psalterWeekLine: string;
   celebrationOptions?: string;
   /** Commune line shown once under the headline when a saint common applies. */
   communeLine?: string;
@@ -128,6 +131,7 @@ export function summarizeOrdoDay(
   return {
     date,
     headline,
+    psalterWeekLine: formatPsalterWeekLine(day.psalterWeek, labels),
     ...(celebrationOptions ? { celebrationOptions } : {}),
     ...(compacted.communeLine ? { communeLine: compacted.communeLine } : {}),
     ...(compacted.defaultBody ? { defaultBody: compacted.defaultBody } : {}),

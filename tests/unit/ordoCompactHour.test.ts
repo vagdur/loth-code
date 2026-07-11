@@ -54,7 +54,13 @@ const labels = {
     otSunday: "{n}:e söndagen under året",
     complineForWeekday: "Kompletorium för {day}.",
   },
+  weekdaysDefinite: {
+    Sunday: "söndagen",
+  },
 } as OrdoLabels;
+
+const feriaPsalter = { week: 1 as const, day: "Wednesday" as const };
+const hourOpts = { feriaPsalter, psalterBaseline: "feria" as const };
 
 function entry(slotKey: string, partLabel: string, groupKey: string, phrase: string): SlotEntry {
   return {
@@ -89,9 +95,9 @@ describe("compactHourProse", () => {
       entry("psalmSlots[1]", "antifoner", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
       entry("shortResponsory", "responsorium", "psalter:1:Wednesday", "psaltaret vecka 1 onsdag"),
       entry("magnificatAntiphon", "antifon till Magnificat", "common:pastors:0", "commune ([pastors variant 1])"),
-    ], labels);
+    ], labels, hourOpts);
     expect(prose).toContain("utom");
-    expect(prose).toContain("psaltaret vecka 1 onsdag");
+    expect(prose).toContain("Allt från ferian");
     expect(prose).not.toMatch(/Allt från commune.*Allt från psaltaret/);
   });
 
@@ -102,9 +108,10 @@ describe("compactHourProse", () => {
       entry("shortReading", "kort läsning", "common:doctors:0", "commune ([doctors variant 1])"),
       entry("concludingPrayer", "kollekt", "common:doctors:0", "commune ([doctors variant 1])"),
       entry("shortResponsory", "responsorium", "psalter:2:Saturday", "psaltaret vecka 2 lördag"),
-    ], labels);
+    ], labels, { feriaPsalter: { week: 2, day: "Saturday" } });
     expect(prose).toContain("utom");
     expect(prose).toContain("commune");
+    expect(prose).toContain("från ferian");
   });
 
   test("invitatory omits psalm 94 when antiphon has another source", () => {
