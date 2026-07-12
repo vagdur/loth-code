@@ -229,12 +229,10 @@ export function texPsalmToneScoreLine(basename: string): string {
 
 export function wrapLothDocument(
   repo: DataRepository,
-  fileContentsBlocks: string,
   body: string,
 ): string {
-  const blocks = fileContentsBlocks ? `${fileContentsBlocks}\n\n` : "";
   const rubrics = emitLothRubrics(repo);
-  return `${blocks}\\documentclass[11pt]{article}
+  return `\\documentclass[11pt]{article}
 \\usepackage{loth}
 \\begin{document}
 ${rubrics}

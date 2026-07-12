@@ -1,8 +1,9 @@
 /**
  * TexAssembler — LaTeX + GregorioTeX output for every liturgical hour.
  *
- * Emits semantic markup (see tex/loth.sty). GABC is embedded via `filecontents`
- * so a single `.tex` file is self-contained; copy loth.sty beside it to compile.
+ * Emits semantic markup (see tex/loth.sty). GABC scores are written as sibling
+ * `.gabc` files next to the `.tex` when exporting a bundle; GregorioTeX compiles
+ * them incrementally when their content is unchanged.
  *
  * This mirrors PlainTextAssembler slot-for-slot (the reference implementation);
  * both must produce the same liturgical content, formatted differently.
@@ -89,15 +90,20 @@ function withGabcHeader(gabc: string, name: string): string {
 export class TexAssembler implements Assembler<string> {
   private scoreCounter = 0;
   private scorePrefix = "loth";
-  private fileContentsBlocks: string[] = [];
+  private gabcFiles = new Map<string, string>();
 
   private reset(): void {
     this.scoreCounter = 0;
-    this.fileContentsBlocks = [];
+    this.gabcFiles = new Map();
+  }
+
+  /** GABC score files keyed by filename (e.g. `lauds-score-1.gabc`). */
+  getGabcFiles(): ReadonlyMap<string, string> {
+    return this.gabcFiles;
   }
 
   private wrap(repo: DataRepository, body: string): string {
-    return wrapLothDocument(repo, this.fileContentsBlocks.join("\n\n"), body);
+    return wrapLothDocument(repo, body);
   }
 
   // -------------------------------------------------------------------------
@@ -395,7 +401,7 @@ export class TexAssembler implements Assembler<string> {
     return body.join("\n\n");
   }
 
-  /** Register GABC via `filecontents`, return score macro line or empty. */
+  /** Register a GABC score file, return score macro line or empty. */
   private emitScore(
     gabc: string | undefined,
     kind: "antiphon" | "psalmTone" = "antiphon",
@@ -405,9 +411,7 @@ export class TexAssembler implements Assembler<string> {
 
     const base = `${this.scorePrefix}-score-${++this.scoreCounter}`;
     const filename = `${base}.gabc`;
-    this.fileContentsBlocks.push(
-      `\\begin{filecontents}[overwrite,noheader]{${filename}}\n${withGabcHeader(trimmed, base)}\n\\end{filecontents}`,
-    );
+    this.gabcFiles.set(filename, withGabcHeader(trimmed, base));
     return kind === "psalmTone" ? texPsalmToneScoreLine(base) : texScoreLine(base);
   }
 

@@ -6,9 +6,25 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFi
 import os from "os";
 import path from "path";
 import { copyLothSty, copyOrdoSty, runLualatex, writeTexFile } from "../../src/tools/compileTex.js";
+import {
+  fixtureGregorioCacheDir,
+  prepareGregorioCompile,
+  refreshGregorioCache,
+  writeFixtureGabcFiles,
+} from "./gregorioCache.js";
 import { parseLualatexLog, partitionHboxWarnings } from "./parseLualatexLog.js";
+import { fixturesDir } from "./paths.js";
 
 export type TexPackage = "loth" | "ordo";
+
+export type CompileTexOptions = {
+  /** Persistent job directory; defaults to a temp dir. */
+  jobDir?: string;
+  /** Directory containing sibling `.gabc` golden files (fixture compiles). */
+  gabcSourceDir?: string;
+  /** Persist Gregorio `.gtex` cache here between compiles. */
+  gregorioCacheDir?: string;
+};
 
 export function detectTexPackage(tex: string): TexPackage {
   return /\\usepackage\{ordo\}/.test(tex) ? "ordo" : "loth";
@@ -24,17 +40,38 @@ export async function copyTexPackageSty(jobDir: string, pkg: TexPackage): Promis
 }
 
 /**
- * Write `tex`, copy the matching `.sty`, run LuaLaTeX twice, and assert a non-empty PDF.
+ * Write `tex`, copy the matching `.sty`, run LuaLaTeX, and assert a non-empty PDF.
  */
 export async function compileTexJob(
   jobDir: string,
   jobName: string,
   tex: string,
   pkg: TexPackage,
+  options?: CompileTexOptions,
 ): Promise<{ pdfPath: string; logPath: string }> {
-  await writeTexFile(path.join(jobDir, `${jobName}.tex`), tex);
+  let compileTex = tex;
+  let gregorioCacheHit = false;
+  let gregorioScores: string[] = [];
+
+  if (pkg === "loth" && needsGregorioScores(tex)) {
+    const cacheDir = options?.gregorioCacheDir
+      ?? fixtureGregorioCacheDir(jobName, fixturesDir);
+    const prepared = prepareGregorioCompile(jobDir, tex, {
+      cacheDir,
+      gabcSourceDir: options?.gabcSourceDir,
+    });
+    compileTex = prepared.tex;
+    gregorioCacheHit = prepared.cacheHit;
+    gregorioScores = prepared.scores;
+  }
+
+  await writeTexFile(path.join(jobDir, `${jobName}.tex`), compileTex);
   await copyTexPackageSty(jobDir, pkg);
-  await runLualatex(jobDir, jobName, { stdio: "ignore" });
+
+  await runLualatex(jobDir, jobName, {
+    stdio: "ignore",
+    passes: gregorioCacheHit ? 1 : 2,
+  });
 
   const logPath = path.join(jobDir, `${jobName}.log`);
   assertLualatexLogOk(logPath, jobName);
@@ -43,6 +80,12 @@ export async function compileTexJob(
   const st = statSync(pdfPath);
   if (st.size <= 0) {
     throw new Error(`lualatex produced an empty PDF for ${jobName}`);
+  }
+
+  if (gregorioScores.length > 0) {
+    const cacheDir = options?.gregorioCacheDir
+      ?? fixtureGregorioCacheDir(jobName, fixturesDir);
+    refreshGregorioCache(jobDir, cacheDir, gregorioScores);
   }
 
   return { pdfPath, logPath };
@@ -78,31 +121,54 @@ export function updateFixturePdf(fixtureTexPath: string, pdfPath: string): void 
 }
 
 /**
- * Write a golden `.tex` fixture and compile its PDF (when the toolchain allows).
- * Score-bearing documents are skipped when Gregorio auto-compile is unavailable.
+ * Write a golden `.tex` + sibling `.gabc` fixtures and compile PDF when possible.
  */
 export async function writeFixtureTexAndPdf(
   fixtureTexPath: string,
   tex: string,
+  gabcFiles: ReadonlyMap<string, string>,
   pkg: TexPackage,
   gregorioWorks: () => Promise<boolean>,
 ): Promise<void> {
-  mkdirSync(path.dirname(fixtureTexPath), { recursive: true });
+  const targetDir = path.dirname(fixtureTexPath);
+  mkdirSync(targetDir, { recursive: true });
   writeFileSync(fixtureTexPath, tex, "utf-8");
+  writeFixtureGabcFiles(gabcFiles, targetDir);
 
   if (needsGregorioScores(tex) && !(await gregorioWorks())) {
     console.warn(`Skipping PDF update for ${path.basename(fixtureTexPath)}: Gregorio unavailable`);
     return;
   }
 
-  const tempDir = mkdtempSync(path.join(os.tmpdir(), "loth-fixture-update-"));
+  const jobName = path.basename(fixtureTexPath, ".tex");
+  const jobDir = fixtureGregorioCacheDir(jobName, targetDir);
+  mkdirSync(jobDir, { recursive: true });
+
   try {
-    const jobName = path.basename(fixtureTexPath, ".tex");
-    const { pdfPath } = await compileTexJob(tempDir, jobName, tex, pkg);
+    const { pdfPath } = await compileTexJob(jobDir, jobName, tex, pkg, {
+      jobDir,
+      gabcSourceDir: targetDir,
+      gregorioCacheDir: jobDir,
+    });
     updateFixturePdf(fixtureTexPath, pdfPath);
+  } catch (err) {
+    throw err;
+  }
+}
+
+/** Compile in a disposable directory (e.g. one-off smoke tests). */
+export async function compileTexJobEphemeral(
+  jobName: string,
+  tex: string,
+  pkg: TexPackage,
+  options?: Omit<CompileTexOptions, "jobDir">,
+): Promise<{ pdfPath: string; logPath: string }> {
+  const jobDir = mkdtempSync(path.join(os.tmpdir(), "loth-lualatex-"));
+  try {
+    return await compileTexJob(jobDir, jobName, tex, pkg, { ...options, jobDir });
   } finally {
     try {
-      rmSync(tempDir, { recursive: true, force: true });
+      rmSync(jobDir, { recursive: true, force: true });
     } catch {
       // Windows can briefly lock aux files after lualatex exits.
     }

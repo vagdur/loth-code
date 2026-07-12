@@ -37,20 +37,21 @@ export async function copyOrdoSty(jobDir: string): Promise<void> {
 export type LualatexStdio = "inherit" | "pipe" | "ignore";
 
 /**
- * Run `lualatex` twice in `jobDir` on `jobName.tex` (Gregorio often needs a second pass).
+ * Run `lualatex` in `jobDir` on `jobName.tex`.
  *
- * `--shell-escape` is required so GregorioTeX can auto-compile embedded GABC
- * scores (`\gregorioscore` → gregorio) on the fly; without it, any document
- * that emits a score fails to find its `.gtex`.
+ * `--shell-escape` is required so GregorioTeX can auto-compile GABC scores
+ * (`\gregorioscore` → gregorio) on the fly; without it, any document that
+ * emits a score fails to find its `.gtex`.
  */
 export async function runLualatex(
   jobDir: string,
   jobName: string,
-  options?: { stdio?: LualatexStdio },
+  options?: { stdio?: LualatexStdio; passes?: number },
 ): Promise<void> {
   const stdio = options?.stdio ?? "inherit";
+  const passes = options?.passes ?? 2;
   const texFile = `${jobName}.tex`;
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < passes; i++) {
     await spawnAsync("lualatex", ["-interaction=nonstopmode", "--shell-escape", texFile], {
       cwd: jobDir,
       stdio,

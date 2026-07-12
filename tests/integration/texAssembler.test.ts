@@ -1,10 +1,10 @@
 /**
  * Golden .tex snapshots for every hour + the full-day document, in each locale.
- * `en` is dummy data (no melodies); `sv` is real data that embeds GABC scores.
- * Regenerate goldens (`.tex` + `.pdf`): `npm run test:fixtures:update` (sets UPDATE_FIXTURES=1).
+ * `en` is dummy data (no melodies); `sv` is real data with sibling `.gabc` scores.
+ * Regenerate goldens (`.tex`, `.gabc`, `.pdf`): `npm run test:fixtures:update`.
  */
 
-import { readFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { expect, test } from "vitest";
 import { TexAssembler } from "../../src/assemblers/texAssembler.js";
@@ -21,42 +21,42 @@ import type { AbstractDay } from "../../src/types/hours.js";
 type Case = {
   name: string;
   jobName: string;
-  render: (day: AbstractDay, repo: DataRepository) => string;
+  render: (assembler: TexAssembler, day: AbstractDay, repo: DataRepository) => string;
 };
 
 const cases: Case[] = [
   {
     name: "Office of Readings",
     jobName: "office-of-readings",
-    render: (day, repo) => new TexAssembler().assembleOfficeOfReadings(day.officeOfReadings, repo),
+    render: (a, day, repo) => a.assembleOfficeOfReadings(day.officeOfReadings, repo),
   },
   {
     name: "Lauds",
     jobName: "lauds",
-    render: (day, repo) => new TexAssembler().assembleLauds(day.lauds, repo),
+    render: (a, day, repo) => a.assembleLauds(day.lauds, repo),
   },
   {
     name: "Daytime Prayer (Sext)",
     jobName: "sext",
-    render: (day, repo) => {
+    render: (a, day, repo) => {
       if (!day.sext) throw new Error("sample day has no Sext");
-      return new TexAssembler().assembleDaytimePrayer(day.sext, repo);
+      return a.assembleDaytimePrayer(day.sext, repo);
     },
   },
   {
     name: "Vespers",
     jobName: "vespers",
-    render: (day, repo) => new TexAssembler().assembleVespers(day.vespers, repo),
+    render: (a, day, repo) => a.assembleVespers(day.vespers, repo),
   },
   {
     name: "Compline",
     jobName: "compline",
-    render: (day, repo) => new TexAssembler().assembleCompline(day.compline, repo),
+    render: (a, day, repo) => a.assembleCompline(day.compline, repo),
   },
   {
     name: "Full day",
     jobName: "day",
-    render: (day, repo) => new TexAssembler().assembleDay(day, repo),
+    render: (a, day, repo) => a.assembleDay(day, repo),
   },
 ];
 
@@ -67,7 +67,9 @@ const matrix = SAMPLE_LOCALES.flatMap((locale) =>
 test.each(matrix)("[$locale] $name TeX matches fixture", async ({ jobName, locale, render }) => {
   const repo = await loadSampleRepo(locale);
   const abs = buildSampleAbstractDay();
-  const tex = normalizeLf(render(abs, repo));
+  const assembler = new TexAssembler();
+  const tex = normalizeLf(render(assembler, abs, repo));
+  const gabcFiles = assembler.getGabcFiles();
   const fixturePath = path.join(fixturesDir, `${jobName}-${locale}-2026-05-10-general.tex`);
 
   if (process.env.UPDATE_FIXTURES === "1") {
@@ -78,11 +80,22 @@ test.each(matrix)("[$locale] $name TeX matches fixture", async ({ jobName, local
           ? `Skipping PDF update for ${path.basename(fixturePath)}:\n${diagnosis}`
           : `Skipping PDF update for ${path.basename(fixturePath)}: Gregorio unavailable`,
       );
+      mkdirSync(fixturesDir, { recursive: true });
+      writeFileSync(fixturePath, tex, "utf-8");
+      for (const [name, content] of gabcFiles) {
+        writeFileSync(path.join(fixturesDir, name), content, "utf-8");
+      }
     } else {
-      await writeFixtureTexAndPdf(fixturePath, tex, "loth", gregorioAutocompileWorks);
+      await writeFixtureTexAndPdf(fixturePath, tex, gabcFiles, "loth", gregorioAutocompileWorks);
     }
   }
 
   const expected = normalizeLf(readFileSync(fixturePath, "utf-8"));
   expect(tex).toBe(expected);
+
+  for (const [name, content] of gabcFiles) {
+    const gabcPath = path.join(fixturesDir, name);
+    expect(existsSync(gabcPath), `missing golden ${name}`).toBe(true);
+    expect(normalizeLf(readFileSync(gabcPath, "utf-8"))).toBe(normalizeLf(content));
+  }
 }, process.env.UPDATE_FIXTURES === "1" ? 180_000 : 5_000);

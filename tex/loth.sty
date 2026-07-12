@@ -3,7 +3,8 @@
 
 \RequirePackage{gregoriotex}
 % GregorioTeX 6.x defaults to \gre@compilegabc=0 (input .gtex only, no shell-escape).
-% LoTH embeds .gabc via filecontents and expects on-the-fly compilation.
+% LoTH keeps GABC in sibling `.gabc` files and compiles incrementally when they
+% are unchanged (`auto` skips stale `.gtex` regeneration).
 \gresetcompilegabc{auto}
 
 % Rubric strings (defaults; override via \LothRubrics* before \begin{document})
