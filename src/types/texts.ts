@@ -3,7 +3,7 @@
  * All fields are the actual liturgical content; no liturgical logic lives here.
  */
 
-import type { MelodyRef } from "./melody.js";
+import type { MelodyParts, MelodyRef } from "./melody.js";
 
 export interface Verse {
   number: number;
@@ -39,6 +39,17 @@ export interface ShortResponsoryMelody {
   responsorySecond?: string;
   versicle?: string;
   gloria?: string;
+}
+
+/**
+ * Hydrated melody of a fixed-part dialogue, recitation tone, or sung prayer
+ * (store kinds `dialogue` / `recitation_tone` / `prayer`). Carries the stored
+ * melody's split parts, or a single `gabc` body for through-sung pieces.
+ */
+export interface DialogueMelody extends MelodyParts {
+  mode?: number;
+  note?: string;
+  gabc?: string;
 }
 
 export interface Psalm {
@@ -168,11 +179,22 @@ export interface IntroductoryVerse {
   opening: string;
   response: string;
   gloria: string;
+  melody?: DialogueMelody;
+  melodyRefs?: MelodyRef[];
 }
 
 export interface InvitatoryVerse {
   opening: string;
   response: string;
+  melody?: DialogueMelody;
+  melodyRefs?: MelodyRef[];
+}
+
+/** A fixed prose text that may carry a melody (Our Father, blessings, acclamations). */
+export interface SungFixedText {
+  text: string;
+  melody?: DialogueMelody;
+  melodyRefs?: MelodyRef[];
 }
 
 export interface GospelCanticleFixed {
@@ -188,6 +210,8 @@ export interface TeDeumFixed {
 export interface DismissalFixed {
   verse: string;
   response: string;
+  melody?: DialogueMelody;
+  melodyRefs?: MelodyRef[];
 }
 
 /** Swedish Ordo PDF/summary presentation strings. */
@@ -354,12 +378,12 @@ export interface FixedTexts {
   magnificat: GospelCanticleFixed;
   nuncDimittis: GospelCanticleFixed;
   teDeum: TeDeumFixed;
-  lordsPrayer: string;
+  lordsPrayer: SungFixedText;
   /** "Into your hands..." — structured so it can carry melody refs and
    *  the conditioned Advent/Lent and Eastertide variants. */
   complineResponsory: ShortResponsory;
-  complineBlessing: string;
-  oorAcclamation: string;
+  complineBlessing: SungFixedText;
+  oorAcclamation: SungFixedText;
   dismissalWithMinister: DismissalFixed;
   dismissalWithoutMinister: DismissalFixed;
   examinationOfConscience: string;

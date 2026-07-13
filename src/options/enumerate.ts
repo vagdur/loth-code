@@ -23,7 +23,7 @@ import type { AssemblyContext } from "../types/calendar.js";
 import type { SlotSourceDirect } from "../types/hours.js";
 import type { DayChoices, DayOption, OptionChoice } from "../types/options.js";
 import { PSALMODY_COMPLEMENTARY, PSALMODY_CURRENT } from "../types/options.js";
-import { daySlots, slotPath } from "./slotTable.js";
+import { daySlots, slotPath, type HourKey } from "./slotTable.js";
 
 export interface DayOptionsResult {
   options: DayOption[];
@@ -155,6 +155,43 @@ export function enumerateDayOptions(
     options.push(
       ...collectMelodyOptions(complineResp, repo, day, slotPath("compline", "responsory")),
     );
+  }
+
+  // Fixed parts (introduction, Our Father, dismissal, ...) also carry melody
+  // refs outside the slot table; paths must mirror TexAssembler's blocks.
+  const fixed = repo.getFixedTexts();
+  if (fixed) {
+    const collect = (value: unknown, path: string) =>
+      options.push(...collectMelodyOptions(value, repo, day, path));
+
+    const vespersKey: HourKey = abstractDay.vespers.isFirstVespers
+      ? "firstVespers"
+      : "vespers";
+    const daytimeKeys = (["terce", "sext", "none"] as const).filter(
+      (k) => abstractDay[k],
+    );
+
+    const introHours: HourKey[] = [
+      ...(abstractDay.officeOfReadings.isFirstHour ? [] : ["officeOfReadings" as const]),
+      ...(abstractDay.lauds.suppressIntroVerse ? [] : ["lauds" as const]),
+      ...daytimeKeys,
+      vespersKey,
+      "compline",
+    ];
+    for (const hourKey of introHours) {
+      collect(fixed.introductoryVerse, slotPath(hourKey, "introVerse"));
+    }
+    if (abstractDay.officeOfReadings.isFirstHour) {
+      collect(fixed.invitatoryVerse, slotPath("invitatory", "verse"));
+    }
+    for (const hourKey of ["lauds", vespersKey] as const) {
+      collect(fixed.lordsPrayer, slotPath(hourKey, "lordsPrayer"));
+      collect(fixed.dismissalWithoutMinister, slotPath(hourKey, "dismissal"));
+    }
+    for (const hourKey of ["officeOfReadings", ...daytimeKeys] as const) {
+      collect(fixed.oorAcclamation, slotPath(hourKey, "acclamation"));
+    }
+    collect(fixed.complineBlessing, slotPath("compline", "blessing"));
   }
 
   const effectiveChoices: Record<string, string> = {};

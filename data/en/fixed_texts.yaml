@@ -30,17 +30,20 @@ te_deum:
   text: "[Te Deum laudamus — full text]"
   optional_final_part: "[Lord, save your people…]"
 
-lords_prayer: "[Our Father — full text]"
+lords_prayer:
+  text: "[Our Father — full text]"
 
 compline_responsory:
   text: "[Into your hands, Lord, I commend my spirit]"
   versicle: "[You have redeemed us, Lord God of truth]"
 
-compline_blessing: "[℣. The Lord grant us a quiet night and a perfect end. ℟. Amen.]"
+compline_blessing:
+  text: "[℣. The Lord grant us a quiet night and a perfect end. ℟. Amen.]"
 
-oor_acclamation: |
-  [℣. Let us praise the Lord.
-  ℟. Thanks be to God.]
+oor_acclamation:
+  text: |
+    [℣. Let us praise the Lord.
+    ℟. Thanks be to God.]
 
 dismissal_with_minister:
   verse: "[The Lord be with you.]"

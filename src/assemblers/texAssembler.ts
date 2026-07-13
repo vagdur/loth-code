@@ -16,8 +16,9 @@ import type {
 } from "../types/hours.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type {
-  Antiphon, Hymn, PsalmAssignment, ShortResponsory,
+  Antiphon, DialogueMelody, Hymn, PsalmAssignment, ShortResponsory,
 } from "../types/texts.js";
+import type { LiturgicalDay } from "../types/calendar.js";
 import type { Assembler, ResolveOptions } from "./types.js";
 import {
   resolveAntiphon, resolveAntiphonList, resolveBiblicalReading,
@@ -97,6 +98,16 @@ export class TexAssembler implements Assembler<string> {
     this.gabcFiles = new Map();
   }
 
+  /**
+   * Score names restart per hour (`<prefix>-score-1`, ...) so a full-day
+   * assembly emits byte-identical score files to the standalone hour —
+   * both may be written into one directory (e.g. the tex fixtures).
+   */
+  private startHourScores(prefix: string): void {
+    this.scorePrefix = prefix;
+    this.scoreCounter = 0;
+  }
+
   /** GABC score files keyed by filename (e.g. `lauds-score-1.gabc`). */
   getGabcFiles(): ReadonlyMap<string, string> {
     return this.gabcFiles;
@@ -155,12 +166,16 @@ export class TexAssembler implements Assembler<string> {
   // -------------------------------------------------------------------------
 
   private officeOfReadingsBody(hour: AbstractOfficeOfReadings, repo: DataRepository, choices?: DayChoices): string {
-    this.scorePrefix = "oor";
+    this.startHourScores("oor");
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, "officeOfReadings", slot);
     const body: string[] = [texHourHeading(repo, "officeOfReadings")];
 
-    body.push(hour.isFirstHour ? texInvitatoryVerse(repo) : texIntroductoryVerse(repo, flags));
+    body.push(
+      hour.isFirstHour
+        ? this.texInvitatoryVerseBlock(repo, hour.liturgicalDay, choices)
+        : this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "officeOfReadings"),
+    );
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
     if (hymn) body.push(this.texHymnBlock(hymn));
@@ -209,17 +224,19 @@ export class TexAssembler implements Assembler<string> {
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
     if (prayer) body.push(texConcludingPrayer(repo, prayer.text, "officeOfReadings"));
 
-    body.push(texOorAcclamation(repo));
+    body.push(this.texOorAcclamationBlock(repo, hour.liturgicalDay, choices, "officeOfReadings"));
     return body.join("\n\n");
   }
 
   private laudsBody(hour: AbstractLauds, repo: DataRepository, choices?: DayChoices): string {
-    this.scorePrefix = "lauds";
+    this.startHourScores("lauds");
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, "lauds", slot);
     const body: string[] = [texHourHeading(repo, "lauds")];
 
-    if (!hour.suppressIntroVerse) body.push(texIntroductoryVerse(repo, flags));
+    if (!hour.suppressIntroVerse) {
+      body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "lauds"));
+    }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
     if (hymn) body.push(this.texHymnBlock(hymn));
@@ -249,7 +266,7 @@ export class TexAssembler implements Assembler<string> {
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
     if (intercessions) body.push(texIntercessions(repo, intercessions));
 
-    body.push(texLordsPrayerSection(repo));
+    body.push(this.texLordsPrayerBlock(repo, hour.liturgicalDay, choices, "lauds"));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
     if (prayer) body.push(texConcludingPrayer(repo, prayer.text, "lauds"));
@@ -261,18 +278,18 @@ export class TexAssembler implements Assembler<string> {
       if (addPrayer) body.push(escapeTexPlain(addPrayer.text));
     }
 
-    body.push(texDismissal(repo));
+    body.push(this.texDismissalBlock(repo, hour.liturgicalDay, choices, "lauds"));
     return body.join("\n\n");
   }
 
   private daytimePrayerBody(hour: AbstractDaytimePrayer, repo: DataRepository, choices?: DayChoices): string {
     const hourKey = hour.kind;
-    this.scorePrefix = hourKey;
+    this.startHourScores(hourKey);
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
     const body: string[] = [texHourHeading(repo, hourKey)];
 
-    body.push(texIntroductoryVerse(repo, flags));
+    body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
     if (hymn) body.push(this.texHymnBlock(hymn));
@@ -290,18 +307,18 @@ export class TexAssembler implements Assembler<string> {
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
     if (prayer) body.push(texConcludingPrayer(repo, prayer.text, hourKey));
 
-    body.push(texOorAcclamation(repo));
+    body.push(this.texOorAcclamationBlock(repo, hour.liturgicalDay, choices, hourKey));
     return body.join("\n\n");
   }
 
   private vespersBody(hour: AbstractVespers, repo: DataRepository, choices?: DayChoices): string {
     const hourKey: HourKey = hour.isFirstVespers ? "firstVespers" : "vespers";
-    this.scorePrefix = hourKey;
+    this.startHourScores(hourKey);
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
     const body: string[] = [texHourHeading(repo, hourKey)];
 
-    body.push(texIntroductoryVerse(repo, flags));
+    body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
     if (hymn) body.push(this.texHymnBlock(hymn));
@@ -331,7 +348,7 @@ export class TexAssembler implements Assembler<string> {
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
     if (intercessions) body.push(texIntercessions(repo, intercessions));
 
-    body.push(texLordsPrayerSection(repo));
+    body.push(this.texLordsPrayerBlock(repo, hour.liturgicalDay, choices, hourKey));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
     if (prayer) body.push(texConcludingPrayer(repo, prayer.text, hourKey));
@@ -343,17 +360,17 @@ export class TexAssembler implements Assembler<string> {
       if (addPrayer) body.push(escapeTexPlain(addPrayer.text));
     }
 
-    body.push(texDismissal(repo));
+    body.push(this.texDismissalBlock(repo, hour.liturgicalDay, choices, hourKey));
     return body.join("\n\n");
   }
 
   private complineBody(hour: AbstractCompline, repo: DataRepository, choices?: DayChoices): string {
-    this.scorePrefix = "compline";
+    this.startHourScores("compline");
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, "compline", slot);
     const body: string[] = [texHourHeading(repo, "compline")];
 
-    body.push(texIntroductoryVerse(repo, flags));
+    body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "compline"));
     body.push(texExaminationOfConscience(repo));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
@@ -390,7 +407,7 @@ export class TexAssembler implements Assembler<string> {
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
     if (prayer) body.push(texConcludingPrayer(repo, prayer.text, "compline"));
 
-    body.push(texComplineBlessing(repo));
+    body.push(this.texComplineBlessingBlock(repo, hour.liturgicalDay, choices));
 
     const marianAntiphon = resolveAntiphon(hour.marianAntiphonRef, repo, hour.liturgicalDay, opt("marianAntiphon"));
     if (marianAntiphon) {
@@ -399,6 +416,121 @@ export class TexAssembler implements Assembler<string> {
     }
 
     return body.join("\n\n");
+  }
+
+  /**
+   * Hydrate a fixed-text slot's melody refs and emit its score lines
+   * (rubric + one score per listed part, in liturgical order), followed
+   * by the slot's text markup.
+   */
+  private texFixedPartBlock<T extends { melody?: DialogueMelody }>(
+    fixed: T | undefined,
+    repo: DataRepository,
+    day: LiturgicalDay,
+    choices: DayChoices | undefined,
+    path: string,
+    parts: (keyof DialogueMelody)[],
+    text: string,
+  ): string {
+    if (!fixed) return text;
+    const hydrated = hydrateMelodies(fixed, repo, day, {
+      ...(choices ? { choices } : {}),
+      path,
+    });
+    const melody = hydrated.melody;
+    if (!melody) return text;
+    const chunks: string[] = [];
+    const rubric = texMelodyRubric(melody);
+    if (rubric) chunks.push(rubric);
+    for (const key of parts) {
+      const gabc = melody[key];
+      if (typeof gabc !== "string") continue;
+      const line = this.emitScore(gabc);
+      if (line) chunks.push(line);
+    }
+    chunks.push(text);
+    return chunks.join("\n\n");
+  }
+
+  private texIntroVerseBlock(
+    repo: DataRepository,
+    day: LiturgicalDay,
+    flags: LiturgicalFlags,
+    choices: DayChoices | undefined,
+    hourKey: HourKey,
+  ): string {
+    // The concluding Halleluja is omitted in Lent, score included.
+    const parts: (keyof DialogueMelody)[] = flags.alleluiaInIntroVerse
+      ? ["versicle", "response", "gloria", "alleluia"]
+      : ["versicle", "response", "gloria"];
+    return this.texFixedPartBlock(
+      repo.getFixedTexts()?.introductoryVerse, repo, day, choices,
+      slotPath(hourKey, "introVerse"), parts,
+      texIntroductoryVerse(repo, flags),
+    );
+  }
+
+  private texInvitatoryVerseBlock(
+    repo: DataRepository,
+    day: LiturgicalDay,
+    choices: DayChoices | undefined,
+  ): string {
+    return this.texFixedPartBlock(
+      repo.getFixedTexts()?.invitatoryVerse, repo, day, choices,
+      slotPath("invitatory", "verse"), ["versicle", "response"],
+      texInvitatoryVerse(repo),
+    );
+  }
+
+  private texLordsPrayerBlock(
+    repo: DataRepository,
+    day: LiturgicalDay,
+    choices: DayChoices | undefined,
+    hourKey: HourKey,
+  ): string {
+    return this.texFixedPartBlock(
+      repo.getFixedTexts()?.lordsPrayer, repo, day, choices,
+      slotPath(hourKey, "lordsPrayer"), ["gabc"],
+      texLordsPrayerSection(repo),
+    );
+  }
+
+  private texOorAcclamationBlock(
+    repo: DataRepository,
+    day: LiturgicalDay,
+    choices: DayChoices | undefined,
+    hourKey: HourKey,
+  ): string {
+    return this.texFixedPartBlock(
+      repo.getFixedTexts()?.oorAcclamation, repo, day, choices,
+      slotPath(hourKey, "acclamation"), ["versicle", "response"],
+      texOorAcclamation(repo),
+    );
+  }
+
+  private texComplineBlessingBlock(
+    repo: DataRepository,
+    day: LiturgicalDay,
+    choices: DayChoices | undefined,
+  ): string {
+    return this.texFixedPartBlock(
+      repo.getFixedTexts()?.complineBlessing, repo, day, choices,
+      slotPath("compline", "blessing"), ["versicle", "response"],
+      texComplineBlessing(repo),
+    );
+  }
+
+  private texDismissalBlock(
+    repo: DataRepository,
+    day: LiturgicalDay,
+    choices: DayChoices | undefined,
+    hourKey: HourKey,
+  ): string {
+    return this.texFixedPartBlock(
+      repo.getFixedTexts()?.dismissalWithoutMinister, repo, day, choices,
+      slotPath(hourKey, "dismissal"), ["blessing", "amen"],
+      texDismissal(repo),
+    );
   }
 
   /** Register a GABC score file, return score macro line or empty. */
