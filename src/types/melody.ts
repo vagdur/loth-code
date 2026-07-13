@@ -55,6 +55,12 @@ export type MelodyKind =
   | "versicle"
   | "psalm_tone"
   | "canticle"
+  /** Sung versicle/response exchange (introductions, blessings, dismissals). */
+  | "dialogue"
+  /** Wordless melodic formula (reading tone, versicle tone, collect cadences). */
+  | "recitation_tone"
+  /** Through-sung prose prayer (Our Father). */
+  | "prayer"
   | "other";
 
 /**
@@ -63,6 +69,9 @@ export type MelodyKind =
  *   antiphon         → { antiphon, psalmTone, antiphonPaschal? }
  *   gospel_antiphon  → { antiphon, psalmTone, firstVerse }
  *   short_responsory → { responsory, responsorySecond, versicle, gloria }
+ *   dialogue         → { versicle, response, gloria?, alleluia?, ... } — see below
+ *   recitation_tone  → cadence formulas ({ flexa, metrum, punctum } or
+ *                      { cadence1..3 }); single-formula tones use plain `gabc`
  */
 export interface MelodyParts {
   antiphon?: string;
@@ -75,6 +84,55 @@ export interface MelodyParts {
   responsorySecond?: string;
   versicle?: string;
   gloria?: string;
+
+  // dialogue — introductory verse and similar V./R. exchanges
+  /** Response line (℟.) answering `versicle`. */
+  response?: string;
+  /** Concluding Halleluja of the introductory verse (omitted in Lent). */
+  alleluia?: string;
+
+  // recitation_tone — reading-tone cadences (Lektionston)
+  flexa?: string;
+  metrum?: string;
+  punctum?: string;
+
+  // dialogue (intercessions) — intention tone and acclamations
+  /** Intention tone with falling cadence (both leden falling). */
+  toneFalling?: string;
+  /** Intention tone with rising cadence. */
+  toneRising?: string;
+  /** Alternative acclamation melody ("eller:"). */
+  responseAlt?: string;
+  responseAlt2?: string;
+
+  // recitation_tone (collects) — numbered cadences of the prayer tone
+  cadence1?: string;
+  cadence2?: string;
+  cadence3?: string;
+  // dialogue (collects) — sung conclusions incl. R. Amen
+  /** "Genom din Son…" — Lauds/Vespers/Office of Readings conclusion. */
+  conclusionMajor?: string;
+  /** "Genom Jesus Kristus, vår Herre." — conclusion of the other hours. */
+  conclusionMinor?: string;
+  /** "Du som lever och råder…" — alternative minor-hours conclusion. */
+  conclusionMinorAlt?: string;
+
+  // dialogue (blessings and dismissals)
+  /** "Herren vare med er." */
+  salutation?: string;
+  /** "Och med din ande." */
+  salutationResponse?: string;
+  /** The blessing formula itself. */
+  blessing?: string;
+  /** "Amen." answering the blessing. */
+  amen?: string;
+  /** Dismissal versicle ("Gå i Herrens frid."). */
+  dismissal?: string;
+  /** Dismissal response ("Gud, vi tackar dig."). */
+  dismissalResponse?: string;
+  /** Paschal dismissal with double Halleluja (Easter day/octave, Pentecost). */
+  dismissalPaschal?: string;
+  dismissalResponsePaschal?: string;
 }
 
 /** Provenance of a stored melody in the raw extraction tree. */
