@@ -1,6 +1,8 @@
 # LaTeX / Gregorio PDF output
 
-The [`TexAssembler`](../src/assemblers/texAssembler.ts) builds a UTF-8 `.tex` file for **every liturgical hour** — Office of Readings, Lauds, Daytime Prayer (Terce/Sext/None), Vespers, and Compline — plus a full-day document (`assembleDay`) that lays out all the day's hours in one PDF, separated by `\clearpage`. It uses **semantic markup** (roles such as `\antiphon`, `\versicle`, `\response`). Visual formatting lives in [`tex/loth.sty`](../tex/loth.sty), not in the generated `.tex`. It mirrors [`PlainTextAssembler`](../src/assemblers/plainText.ts) slot-for-slot (the reference implementation).
+The [`TexAssembler`](../src/assemblers/texAssembler.ts) builds a UTF-8 `.tex` file for **every liturgical hour** — Office of Readings, Lauds, Daytime Prayer (Terce/Sext/None), Vespers, and Compline — plus a full-day document (`assembleDay`) that lays out all the day's hours in one PDF, separated by `\clearpage`. It uses **semantic markup** (roles such as `\antiphon`, `\versicle`, `\response`). Visual formatting lives in [`tex/loth.sty`](../tex/loth.sty), not in the generated `.tex`. It mirrors [`PlainTextAssembler`](../src/assemblers/plainText.ts) slot-for-slot for liturgical structure and unscored text (the reference implementation).
+
+When a slot carries GABC scores, sung lyrics render via Gregorio only; redundant plain macros for that slot are omitted so lyrics are not duplicated in the PDF.
 
 GABC from the data model (`Melody.gabc`, `Antiphon.psalmTone`, canticle melodies) is embedded with the LaTeX `filecontents` environment so Gregorio can read sibling `.gabc` files when you run **LuaLaTeX**.
 

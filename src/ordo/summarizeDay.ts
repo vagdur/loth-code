@@ -3,19 +3,16 @@
  */
 
 import { resolveDay } from "../calendar/index.js";
-import { getSanctoralRegistry } from "../calendar/saints.js";
 import { buildDay } from "../hours/index.js";
 import { enumerateDayOptions } from "../options/enumerate.js";
 import type { DataRepository } from "../data/repository.js";
-import type { AssemblyContext, DayClass, LiturgicalDay } from "../types/calendar.js";
+import type { AssemblyContext } from "../types/calendar.js";
 import type { DayOption } from "../types/options.js";
 import type { HourKey } from "../options/slotTable.js";
 import { compactOrdoDayBody, type OrdoMemoriaBlock } from "./compactDay.js";
-import { formatFerialTitle } from "./ferialTitle.js";
-import { lookupSeasonalName } from "./seasonalNames.js";
+import { formatOrdoDayHeadline } from "./headline.js";
 import { getOrdoLabels } from "./labels.js";
 import { formatPsalterWeekLine } from "./psalterWeekLabel.js";
-import { formatSundayTitle } from "./sundayTitle.js";
 
 export interface OrdoHourSummary {
   key: HourKey | "daytime" | "firstVespers";
@@ -38,52 +35,6 @@ export interface OrdoDaySummary {
   memoriaBlocks?: OrdoMemoriaBlock[];
 }
 
-const RANK_KEYS: Record<DayClass, keyof import("../types/texts.js").OrdoLabels["ranks"]> = {
-  triduum: "triduum",
-  sunday: "sunday",
-  solemnity: "solemnity",
-  feast_of_lord_on_sunday: "feastOfLordOnSunday",
-  feast: "feast",
-  obligatory_memoria: "obligatoryMemoria",
-  optional_memoria: "optionalMemoria",
-  privileged_ferial: "privilegedFerial",
-  ordinary_ferial: "ordinaryFerial",
-};
-
-function formatDateSv(date: Date, months: string[]): string {
-  const day = date.getUTCDate();
-  const month = months[date.getUTCMonth()] ?? "";
-  return `${day} ${month}`;
-}
-
-function celebrationName(
-  day: LiturgicalDay,
-  calendarId: string,
-  seasonalNames?: Record<string, string>,
-): string {
-  const { celebration: c } = day;
-  if (c.source === "saint" && c.saintId) {
-    const saints = getSanctoralRegistry().getSaints(calendarId);
-    const saint = saints.find((s) => s.saintId === c.saintId);
-    return saint?.name ?? c.saintId;
-  }
-  if (c.seasonalKey) {
-    const named = lookupSeasonalName(c.seasonalKey, seasonalNames);
-    if (named) return named;
-    return c.seasonalKey;
-  }
-  return "Feria";
-}
-
-function isFerial(type: DayClass): boolean {
-  return type === "privileged_ferial" || type === "ordinary_ferial";
-}
-
-function rankLabel(type: DayClass, ranks: import("../types/texts.js").OrdoLabels["ranks"]): string {
-  const key = RANK_KEYS[type];
-  return ranks[key] ?? type;
-}
-
 function formatCelebrationOptions(
   options: DayOption[],
   alternativesLabel: string,
@@ -104,16 +55,7 @@ export function summarizeOrdoDay(
   const day = resolveDay(date, context.calendarId, effectiveChoices);
   const abstractDay = buildDay(day, context, effectiveChoices);
 
-  const dateLabel = formatDateSv(date, labels.months);
-  const headline = isFerial(day.celebration.type)
-    ? `${dateLabel}. ${formatFerialTitle(day.celebration.seasonalKey, labels, date, context.calendarId)}.`
-    : day.celebration.type === "sunday"
-      ? `${dateLabel}. ${formatSundayTitle(day.celebration.seasonalKey, labels, date, context.calendarId)}.`
-      : `${dateLabel}. ${celebrationName(
-        day,
-        context.calendarId,
-        labels.seasonalNames,
-      )}. ${rankLabel(day.celebration.type, labels.ranks)}.`;
+  const headline = formatOrdoDayHeadline(day, labels, context.calendarId);
 
   const celebrationOptions = formatCelebrationOptions(options, labels.prose.alternatives);
   const compacted = compactOrdoDayBody(

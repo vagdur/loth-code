@@ -5,8 +5,9 @@
  * `.gabc` files next to the `.tex` when exporting a bundle; GregorioTeX compiles
  * them incrementally when their content is unchanged.
  *
- * This mirrors PlainTextAssembler slot-for-slot (the reference implementation);
- * both must produce the same liturgical content, formatted differently.
+ * This mirrors PlainTextAssembler slot-for-slot (the reference implementation)
+ * for liturgical structure and unscored text. When a slot carries GABC scores,
+ * the sung lyrics render via Gregorio only — redundant plain macros are omitted.
  */
 
 import type { DataRepository } from "../data/repository.js";
@@ -169,7 +170,7 @@ export class TexAssembler implements Assembler<string> {
     this.startHourScores("oor");
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, "officeOfReadings", slot);
-    const body: string[] = [texHourHeading(repo, "officeOfReadings")];
+    const body: string[] = [texHourHeading(repo, "officeOfReadings", hour.liturgicalDay)];
 
     body.push(
       hour.isFirstHour
@@ -232,7 +233,7 @@ export class TexAssembler implements Assembler<string> {
     this.startHourScores("lauds");
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, "lauds", slot);
-    const body: string[] = [texHourHeading(repo, "lauds")];
+    const body: string[] = [texHourHeading(repo, "lauds", hour.liturgicalDay)];
 
     if (!hour.suppressIntroVerse) {
       body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "lauds"));
@@ -287,7 +288,7 @@ export class TexAssembler implements Assembler<string> {
     this.startHourScores(hourKey);
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
-    const body: string[] = [texHourHeading(repo, hourKey)];
+    const body: string[] = [texHourHeading(repo, hourKey, hour.liturgicalDay)];
 
     body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
 
@@ -316,7 +317,7 @@ export class TexAssembler implements Assembler<string> {
     this.startHourScores(hourKey);
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
-    const body: string[] = [texHourHeading(repo, hourKey)];
+    const body: string[] = [texHourHeading(repo, hourKey, hour.liturgicalDay)];
 
     body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
 
@@ -368,7 +369,7 @@ export class TexAssembler implements Assembler<string> {
     this.startHourScores("compline");
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, "compline", slot);
-    const body: string[] = [texHourHeading(repo, "compline")];
+    const body: string[] = [texHourHeading(repo, "compline", hour.liturgicalDay)];
 
     body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "compline"));
     body.push(texExaminationOfConscience(repo));
@@ -420,8 +421,8 @@ export class TexAssembler implements Assembler<string> {
 
   /**
    * Hydrate a fixed-text slot's melody refs and emit its score lines
-   * (rubric + one score per listed part, in liturgical order), followed
-   * by the slot's text markup.
+   * (rubric + one score per listed part, in liturgical order). Plain text
+   * markup is omitted when any score was emitted — GABC lyrics are authoritative.
    */
   private texFixedPartBlock<T extends { melody?: DialogueMelody }>(
     fixed: T | undefined,
@@ -442,13 +443,17 @@ export class TexAssembler implements Assembler<string> {
     const chunks: string[] = [];
     const rubric = texMelodyRubric(melody);
     if (rubric) chunks.push(rubric);
+    let scored = false;
     for (const key of parts) {
       const gabc = melody[key];
       if (typeof gabc !== "string") continue;
       const line = this.emitScore(gabc);
-      if (line) chunks.push(line);
+      if (line) {
+        chunks.push(line);
+        scored = true;
+      }
     }
-    chunks.push(text);
+    if (!scored) chunks.push(text);
     return chunks.join("\n\n");
   }
 
@@ -606,11 +611,15 @@ export class TexAssembler implements Assembler<string> {
     const chunks: string[] = [];
     const rubric = texMelodyRubric(a.melody);
     if (rubric) chunks.push(rubric);
+    let scored = false;
     if (a.melody?.gabc) {
       const line = this.emitScore(a.melody.gabc);
-      if (line) chunks.push(line);
+      if (line) {
+        chunks.push(line);
+        scored = true;
+      }
     }
-    chunks.push(texAntiphon(repo, a, flags));
+    if (!scored) chunks.push(texAntiphon(repo, a, flags));
     if (includePsalmTone && a.psalmTone?.trim()) {
       const toneLine = this.emitScore(a.psalmTone, "psalmTone");
       if (toneLine) chunks.push(texPsalmToneBlock(toneLine));
@@ -622,11 +631,15 @@ export class TexAssembler implements Assembler<string> {
     const chunks: string[] = [];
     const rubric = texMelodyRubric(hymn.melody);
     if (rubric) chunks.push(rubric);
+    let scored = false;
     if (hymn.melody?.gabc) {
       const line = this.emitScore(hymn.melody.gabc);
-      if (line) chunks.push(line);
+      if (line) {
+        chunks.push(line);
+        scored = true;
+      }
     }
-    chunks.push(texHymn(hymn));
+    if (!scored) chunks.push(texHymn(hymn));
     return chunks.join("\n\n");
   }
 
@@ -655,6 +668,7 @@ export class TexAssembler implements Assembler<string> {
     const chunks: string[] = [];
     const rubric = texMelodyRubric(r.melody);
     if (rubric) chunks.push(rubric);
+    let scored = false;
     for (const gabc of [
       r.melody?.responsory,
       r.melody?.responsorySecond,
@@ -662,9 +676,12 @@ export class TexAssembler implements Assembler<string> {
       r.melody?.gloria,
     ]) {
       const line = this.emitScore(gabc);
-      if (line) chunks.push(line);
+      if (line) {
+        chunks.push(line);
+        scored = true;
+      }
     }
-    chunks.push(texShortResponsory(repo, r));
+    if (!scored) chunks.push(texShortResponsory(repo, r));
     return chunks.join("\n\n");
   }
 }

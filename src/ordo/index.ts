@@ -5,6 +5,7 @@ export {
 export { compactOrdoDayBody, type OrdoMemoriaBlock } from "./compactDay.js";
 export { complineWeekday, summarizeComplineLabel } from "./complineLabel.js";
 export { formatFerialTitle } from "./ferialTitle.js";
+export { formatOrdoDayHeadline } from "./headline.js";
 export { lookupSeasonalName } from "./seasonalNames.js";
 export { formatSundayTitle } from "./sundayTitle.js";
 export { ordoContext } from "./context.js";

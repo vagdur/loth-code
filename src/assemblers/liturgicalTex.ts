@@ -3,6 +3,8 @@
  */
 
 import type { DataRepository } from "../data/repository.js";
+import { formatOrdoDayHeadline } from "../ordo/headline.js";
+import type { LiturgicalDay } from "../types/calendar.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type {
   Antiphon, Hymn, Intercessions, LongResponsory, ShortResponsory, Versicle,
@@ -42,8 +44,18 @@ export function emitLothRubrics(repo: DataRepository): string {
   ].join("\n");
 }
 
-export function texHourHeading(repo: DataRepository, key: HourLabelKey): string {
-  return `\\hourHeading{${escapeTexPlain(getLabels(repo).hours[key])}}`;
+export function texHourHeading(
+  repo: DataRepository,
+  key: HourLabelKey,
+  liturgicalDay?: LiturgicalDay,
+  calendarId = "general",
+): string {
+  const hour = getLabels(repo).hours[key];
+  const ordoLabels = repo.getAssemblerLabels().ordo;
+  const title = liturgicalDay && ordoLabels
+    ? `${hour} - ${formatOrdoDayHeadline(liturgicalDay, ordoLabels, calendarId)}`
+    : hour;
+  return `\\hourHeading{${escapeTexPlain(title)}}`;
 }
 
 export function texSectionHeading(repo: DataRepository, key: SectionLabelKey): string {
