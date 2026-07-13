@@ -59,7 +59,7 @@ export function formatTeDeumPlain(repo: DataRepository): string {
 }
 
 export function formatLordsPrayerPlain(repo: DataRepository): string {
-  const text = repo.getFixedTexts()?.lordsPrayer ?? FALLBACK.lordsPrayer;
+  const text = repo.getFixedTexts()?.lordsPrayer?.text ?? FALLBACK.lordsPrayer;
   return `${formatOurFatherHeadingPlain(repo)}\n\n${text}`;
 }
 
@@ -73,11 +73,11 @@ export function formatComplineResponsoryFallbackPlain(): string {
 }
 
 export function formatComplineBlessingPlain(repo: DataRepository): string {
-  return repo.getFixedTexts()?.complineBlessing?.trim() ?? FALLBACK.complineBless;
+  return repo.getFixedTexts()?.complineBlessing?.text?.trim() ?? FALLBACK.complineBless;
 }
 
 export function formatOorAcclamationPlain(repo: DataRepository): string {
-  return repo.getFixedTexts()?.oorAcclamation?.trim() ?? FALLBACK.oorAcclaim;
+  return repo.getFixedTexts()?.oorAcclamation?.text?.trim() ?? FALLBACK.oorAcclaim;
 }
 
 export function formatDismissalPlain(repo: DataRepository): string {

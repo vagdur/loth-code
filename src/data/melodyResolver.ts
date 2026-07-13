@@ -14,7 +14,7 @@ import type {
   MelodyCondition, MelodyRef, StoredMelody,
 } from "../types/melody.js";
 import type { DayChoices, DayOption, OptionChoice } from "../types/options.js";
-import type { Melody, ShortResponsoryMelody } from "../types/texts.js";
+import type { DialogueMelody, Melody, ShortResponsoryMelody } from "../types/texts.js";
 import { gabcToText } from "../tools/gabcText.js";
 import type { DataRepository } from "./repository.js";
 
@@ -125,6 +125,18 @@ function toInlineMelody(
   return melody;
 }
 
+/** Fixed-part dialogue / recitation tone / sung prayer: carry all parts. */
+function toDialogueMelody(
+  stored: StoredMelody,
+  ref: MelodyRef,
+): DialogueMelody {
+  const melody: DialogueMelody = { ...(stored.parts ?? {}) };
+  if (stored.mode !== undefined) melody.mode = stored.mode;
+  if (ref.note) melody.note = ref.note;
+  if (stored.gabc) melody.gabc = stored.gabc;
+  return melody;
+}
+
 function toShortResponsoryMelody(
   stored: StoredMelody,
   ref: MelodyRef,
@@ -163,6 +175,12 @@ function hydrateCarrier(
   const out: MelodyRefCarrier = { ...carrier };
   if (stored.kind === "short_responsory") {
     out.melody = toShortResponsoryMelody(stored, ref);
+  } else if (
+    stored.kind === "dialogue" ||
+    stored.kind === "recitation_tone" ||
+    stored.kind === "prayer"
+  ) {
+    out.melody = toDialogueMelody(stored, ref);
   } else {
     out.melody = toInlineMelody(stored, ref, day);
     if (stored.parts?.psalmTone) out.psalmTone = stored.parts.psalmTone;

@@ -30,6 +30,15 @@ const CONDITION_KEYS = new Set(["seasons", "day_classes", "sunday_cycles", "week
 const PART_KEYS = new Set([
   "antiphon", "antiphon_paschal", "psalm_tone", "first_verse",
   "responsory", "responsory_second", "versicle", "gloria",
+  // dialogue / recitation_tone / prayer (see MelodyParts in src/types/melody.ts)
+  "response", "alleluia",
+  "flexa", "metrum", "punctum",
+  "tone_falling", "tone_rising", "response_alt", "response_alt_2",
+  "cadence_1", "cadence_2", "cadence_3",
+  "conclusion_major", "conclusion_minor", "conclusion_minor_alt",
+  "salutation", "salutation_response", "blessing", "amen",
+  "dismissal", "dismissal_response",
+  "dismissal_paschal", "dismissal_response_paschal",
 ]);
 
 async function loadDistModule(relPath) {
