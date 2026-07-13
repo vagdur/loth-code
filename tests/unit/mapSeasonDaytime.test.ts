@@ -24,7 +24,7 @@ describe("mapSeasonDaytime", () => {
     expect(mapSeasonDaytime("M1-V", [])).toBeNull();
   });
 
-  test("Advent: per-hour antiphon + one shared hymn → daytime_advent", () => {
+  test("Advent: per-hour antiphon → daytime_advent; stacked shared hymn skipped", () => {
     const res = slots("Adv-UD", [
       mel("h", "Hymn"),
       mel("t", "Ters antifon"),
@@ -33,13 +33,16 @@ describe("mapSeasonDaytime", () => {
     ])!;
     const flat = res.actions.flatMap((a) => a.targets.map((t) => `${a.occurrenceId}:${t.slot}`));
     expect(flat).toEqual([
-      "h:terce.hymn", "h:sext.hymn", "h:none.hymn",
       "t:terce.antiphons[0]",
       "s:sext.antiphons[0]",
       "n:none.antiphons[0]",
     ]);
     expect(res.actions.every((a) => a.targets.every((t) => t.file === "proper_of_seasons/daytime_advent.yaml"))).toBe(true);
-    expect(res.unmapped).toHaveLength(0);
+    // The shared hymn is a stacked Ters/Sext/Non score; the per-hour split of
+    // Hymner-under-dagen covers those slots, so it stays unmapped.
+    expect(res.unmapped).toHaveLength(1);
+    expect(res.unmapped[0].mel.id).toBe("h");
+    expect(res.unmapped[0].reason).toMatch(/Hymner-under-dagen/);
   });
 
   test("Lent: (Hymn, Antifon) pairs advance the hour → daytime_lent", () => {
