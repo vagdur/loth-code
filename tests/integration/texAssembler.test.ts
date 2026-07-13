@@ -1,5 +1,6 @@
 /**
- * Golden .tex snapshots for every hour + the full-day document, in each locale.
+ * Golden .tex snapshots for every hour + the full-day document, in each locale
+ * and each TexAssembler output mode (`hybrid`, `plain`, `scored`).
  * `en` is dummy data (no melodies); `sv` is real data with sibling `.gabc` scores.
  * Regenerate goldens (`.tex`, `.gabc`, `.pdf`): `npm run test:fixtures:update`.
  */
@@ -7,7 +8,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { expect, test } from "vitest";
-import { TexAssembler } from "../../src/assemblers/texAssembler.js";
+import { TexAssembler, type TexOutputMode } from "../../src/assemblers/texAssembler.js";
 import {
   buildSampleAbstractDay, loadSampleRepo, SAMPLE_LOCALES,
 } from "../helpers/buildSampleDay.js";
@@ -60,17 +61,30 @@ const cases: Case[] = [
   },
 ];
 
+const OUTPUT_MODES: ReadonlyArray<{ mode: TexOutputMode; suffix: string }> = [
+  { mode: "hybrid", suffix: "" },
+  { mode: "plain", suffix: "-plain" },
+  { mode: "scored", suffix: "-scored" },
+];
+
 const matrix = SAMPLE_LOCALES.flatMap((locale) =>
-  cases.map((c) => ({ ...c, locale })),
+  cases.flatMap((c) =>
+    OUTPUT_MODES.map((output) => ({ ...c, locale, ...output })),
+  ),
 );
 
-test.each(matrix)("[$locale] $name TeX matches fixture", async ({ jobName, locale, render }) => {
+test.each(matrix)("[$locale/$mode] $name TeX matches fixture", async ({
+  jobName, locale, mode, suffix, render,
+}) => {
   const repo = await loadSampleRepo(locale);
   const abs = buildSampleAbstractDay();
-  const assembler = new TexAssembler();
+  const assembler = new TexAssembler({ outputMode: mode });
   const tex = normalizeLf(render(assembler, abs, repo));
   const gabcFiles = assembler.getGabcFiles();
-  const fixturePath = path.join(fixturesDir, `${jobName}-${locale}-2026-05-10-general.tex`);
+  const fixturePath = path.join(
+    fixturesDir,
+    `${jobName}-${locale}-2026-05-10-general${suffix}.tex`,
+  );
 
   if (process.env.UPDATE_FIXTURES === "1") {
     if (needsGregorioScores(tex) && !(await gregorioAutocompileWorks())) {
@@ -93,9 +107,13 @@ test.each(matrix)("[$locale] $name TeX matches fixture", async ({ jobName, local
   const expected = normalizeLf(readFileSync(fixturePath, "utf-8"));
   expect(tex).toBe(expected);
 
-  for (const [name, content] of gabcFiles) {
-    const gabcPath = path.join(fixturesDir, name);
-    expect(existsSync(gabcPath), `missing golden ${name}`).toBe(true);
-    expect(normalizeLf(readFileSync(gabcPath, "utf-8"))).toBe(normalizeLf(content));
+  if (mode !== "plain") {
+    for (const [name, content] of gabcFiles) {
+      const gabcPath = path.join(fixturesDir, name);
+      expect(existsSync(gabcPath), `missing golden ${name}`).toBe(true);
+      expect(normalizeLf(readFileSync(gabcPath, "utf-8"))).toBe(normalizeLf(content));
+    }
+  } else {
+    expect(gabcFiles.size).toBe(0);
   }
-}, process.env.UPDATE_FIXTURES === "1" ? 180_000 : 5_000);
+}, process.env.UPDATE_FIXTURES === "1" ? 600_000 : 5_000);

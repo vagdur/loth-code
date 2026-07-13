@@ -8,6 +8,11 @@
  * This mirrors PlainTextAssembler slot-for-slot (the reference implementation)
  * for liturgical structure and unscored text. When a slot carries GABC scores,
  * the sung lyrics render via Gregorio only — redundant plain macros are omitted.
+ *
+ * Output modes (constructor `outputMode`):
+ *  - `hybrid` (default): scores when available, plain macros as fallback
+ *  - `plain`: always plain macros, never emit GABC
+ *  - `scored`: scores only; omit unscored prose; antiphons once per psalm slot
  */
 
 import type { DataRepository } from "../data/repository.js";
@@ -17,8 +22,9 @@ import type {
 } from "../types/hours.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type {
-  Antiphon, DialogueMelody, Hymn, PsalmAssignment, ShortResponsory,
+  Antiphon, DialogueMelody, GospelCanticleKind, Hymn, PsalmAssignment, ShortResponsory,
 } from "../types/texts.js";
+import type { SectionLabelKey } from "./labels.js";
 import type { LiturgicalDay } from "../types/calendar.js";
 import type { Assembler, ResolveOptions } from "./types.js";
 import {
@@ -89,10 +95,21 @@ function withGabcHeader(gabc: string, name: string): string {
   return `name:${name};\n%%\n${gabc}`;
 }
 
+export type TexOutputMode = "hybrid" | "plain" | "scored";
+
+export interface TexAssemblerOptions {
+  outputMode?: TexOutputMode;
+}
+
 export class TexAssembler implements Assembler<string> {
+  private readonly outputMode: TexOutputMode;
   private scoreCounter = 0;
   private scorePrefix = "loth";
   private gabcFiles = new Map<string, string>();
+
+  constructor(options?: TexAssemblerOptions) {
+    this.outputMode = options?.outputMode ?? "hybrid";
+  }
 
   private reset(): void {
     this.scoreCounter = 0;
@@ -103,9 +120,11 @@ export class TexAssembler implements Assembler<string> {
    * Score names restart per hour (`<prefix>-score-1`, ...) so a full-day
    * assembly emits byte-identical score files to the standalone hour —
    * both may be written into one directory (e.g. the tex fixtures).
+   * Scored-only mode uses `<prefix>-scored-score-1` so golden `.gabc`
+   * files do not collide with hybrid fixtures in the same directory.
    */
   private startHourScores(prefix: string): void {
-    this.scorePrefix = prefix;
+    this.scorePrefix = this.isScoredOnly() ? `${prefix}-scored` : prefix;
     this.scoreCounter = 0;
   }
 
@@ -116,6 +135,22 @@ export class TexAssembler implements Assembler<string> {
 
   private wrap(repo: DataRepository, body: string): string {
     return wrapLothDocument(repo, body);
+  }
+
+  private shouldEmitScores(): boolean {
+    return this.outputMode !== "plain";
+  }
+
+  private isScoredOnly(): boolean {
+    return this.outputMode === "scored";
+  }
+
+  private includePlainProse(): boolean {
+    return !this.isScoredOnly();
+  }
+
+  private joinBody(body: string[]): string {
+    return body.filter((s) => s.trim()).join("\n\n");
   }
 
   // -------------------------------------------------------------------------
@@ -190,17 +225,17 @@ export class TexAssembler implements Assembler<string> {
     }
 
     const versicle = resolveVersicle(hour.versicleRef, repo, hour.liturgicalDay, opt("versicle"));
-    if (versicle) body.push(texVersicle(repo, versicle));
+    if (versicle && this.includePlainProse()) body.push(texVersicle(repo, versicle));
 
     const biblical = resolveBiblicalReading(hour.biblicalReadingRef, repo, undefined, opt("biblicalReading"));
-    if (biblical) {
+    if (biblical && this.includePlainProse()) {
       body.push(texSectionHeading(repo, "firstReading"));
       body.push(texReading(biblical.reference, biblical.text));
       body.push(texLongResponsory(repo, biblical.responsory));
     }
 
     const patristic = resolvePatristicReading(hour.patristicReadingRef, repo, undefined, opt("patristicReading"));
-    if (patristic) {
+    if (patristic && this.includePlainProse()) {
       body.push(texSectionHeading(repo, "secondReading"));
       body.push(texReading(`${patristic.author}, ${patristic.work}`, patristic.text));
       body.push(texLongResponsory(repo, patristic.responsory));
@@ -208,25 +243,25 @@ export class TexAssembler implements Assembler<string> {
 
     if (hour.memoriaAddendum) {
       const hagRead = resolveHagiographicalReading(hour.memoriaAddendum.hagiographicalReadingRef, repo, undefined, opt("memoriaAddendum.hagiographicalReading"));
-      if (hagRead) {
+      if (hagRead && this.includePlainProse()) {
         body.push(texSectionHeading(repo, "saintReading"));
         body.push(texReading(`${hagRead.author}, ${hagRead.work}`, hagRead.text));
         body.push(texLongResponsory(repo, hagRead.responsory));
       }
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
-      if (addPrayer) body.push(escapeTexPlain(addPrayer.text));
+      if (addPrayer && this.includePlainProse()) body.push(escapeTexPlain(addPrayer.text));
     }
 
-    if (flags.teDeum) {
+    if (flags.teDeum && this.includePlainProse()) {
       body.push(texSectionHeading(repo, "teDeum"));
       body.push(texTeDeum(repo));
     }
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) body.push(texConcludingPrayer(repo, prayer.text, "officeOfReadings"));
+    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, "officeOfReadings"));
 
     body.push(this.texOorAcclamationBlock(repo, hour.liturgicalDay, choices, "officeOfReadings"));
-    return body.join("\n\n");
+    return this.joinBody(body);
   }
 
   private laudsBody(hour: AbstractLauds, repo: DataRepository, choices?: DayChoices): string {
@@ -251,36 +286,33 @@ export class TexAssembler implements Assembler<string> {
     }
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading) body.push(texShortReading(reading));
+    if (reading && this.includePlainProse()) body.push(texShortReading(reading));
 
     if (hour.shortResponsoryRef) {
       const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay, opt("shortResponsory"));
       if (resp) body.push(this.texShortResponsoryBlock(repo, resp));
     }
 
-    body.push(texSectionHeading(repo, "benedictus"));
     const benAntiphon = resolveAntiphon(hour.benedictusAntiphonRef, repo, hour.liturgicalDay, opt("benedictusAntiphon"));
-    if (benAntiphon) body.push(this.texAntiphonBlock(repo, benAntiphon, flags, true));
-    body.push(texGospelCanticle(repo, "benedictus"));
-    if (benAntiphon) body.push(this.texAntiphonBlock(repo, benAntiphon, flags, false));
+    body.push(...this.texGospelCanticleSlot(repo, benAntiphon, flags, "benedictus", "benedictus"));
 
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
-    if (intercessions) body.push(texIntercessions(repo, intercessions));
+    if (intercessions && this.includePlainProse()) body.push(texIntercessions(repo, intercessions));
 
     body.push(this.texLordsPrayerBlock(repo, hour.liturgicalDay, choices, "lauds"));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) body.push(texConcludingPrayer(repo, prayer.text, "lauds"));
+    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, "lauds"));
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay, opt("memoriaAddendum.antiphon"));
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
       if (addAntiphon) body.push(this.texAntiphonBlock(repo, addAntiphon, flags, true));
-      if (addPrayer) body.push(escapeTexPlain(addPrayer.text));
+      if (addPrayer && this.includePlainProse()) body.push(escapeTexPlain(addPrayer.text));
     }
 
     body.push(this.texDismissalBlock(repo, hour.liturgicalDay, choices, "lauds"));
-    return body.join("\n\n");
+    return this.joinBody(body);
   }
 
   private daytimePrayerBody(hour: AbstractDaytimePrayer, repo: DataRepository, choices?: DayChoices): string {
@@ -300,16 +332,16 @@ export class TexAssembler implements Assembler<string> {
     }
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading) body.push(texShortReading(reading));
+    if (reading && this.includePlainProse()) body.push(texShortReading(reading));
 
     const versicle = resolveVersicle(hour.versicleRef, repo, hour.liturgicalDay, opt("versicle"));
-    if (versicle) body.push(texVersicle(repo, versicle));
+    if (versicle && this.includePlainProse()) body.push(texVersicle(repo, versicle));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) body.push(texConcludingPrayer(repo, prayer.text, hourKey));
+    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, hourKey));
 
     body.push(this.texOorAcclamationBlock(repo, hour.liturgicalDay, choices, hourKey));
-    return body.join("\n\n");
+    return this.joinBody(body);
   }
 
   private vespersBody(hour: AbstractVespers, repo: DataRepository, choices?: DayChoices): string {
@@ -333,36 +365,33 @@ export class TexAssembler implements Assembler<string> {
     }
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading) body.push(texShortReading(reading));
+    if (reading && this.includePlainProse()) body.push(texShortReading(reading));
 
     if (hour.shortResponsoryRef) {
       const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay, opt("shortResponsory"));
       if (resp) body.push(this.texShortResponsoryBlock(repo, resp));
     }
 
-    body.push(texSectionHeading(repo, "magnificat"));
     const magAntiphon = resolveAntiphon(hour.magnificatAntiphonRef, repo, hour.liturgicalDay, opt("magnificatAntiphon"));
-    if (magAntiphon) body.push(this.texAntiphonBlock(repo, magAntiphon, flags, true));
-    body.push(texGospelCanticle(repo, "magnificat"));
-    if (magAntiphon) body.push(this.texAntiphonBlock(repo, magAntiphon, flags, false));
+    body.push(...this.texGospelCanticleSlot(repo, magAntiphon, flags, "magnificat", "magnificat"));
 
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
-    if (intercessions) body.push(texIntercessions(repo, intercessions));
+    if (intercessions && this.includePlainProse()) body.push(texIntercessions(repo, intercessions));
 
     body.push(this.texLordsPrayerBlock(repo, hour.liturgicalDay, choices, hourKey));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) body.push(texConcludingPrayer(repo, prayer.text, hourKey));
+    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, hourKey));
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay, opt("memoriaAddendum.antiphon"));
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
       if (addAntiphon) body.push(this.texAntiphonBlock(repo, addAntiphon, flags, true));
-      if (addPrayer) body.push(escapeTexPlain(addPrayer.text));
+      if (addPrayer && this.includePlainProse()) body.push(escapeTexPlain(addPrayer.text));
     }
 
     body.push(this.texDismissalBlock(repo, hour.liturgicalDay, choices, hourKey));
-    return body.join("\n\n");
+    return this.joinBody(body);
   }
 
   private complineBody(hour: AbstractCompline, repo: DataRepository, choices?: DayChoices): string {
@@ -372,7 +401,7 @@ export class TexAssembler implements Assembler<string> {
     const body: string[] = [texHourHeading(repo, "compline", hour.liturgicalDay)];
 
     body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "compline"));
-    body.push(texExaminationOfConscience(repo));
+    if (this.includePlainProse()) body.push(texExaminationOfConscience(repo));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
     if (hymn) body.push(this.texHymnBlock(hymn));
@@ -386,7 +415,7 @@ export class TexAssembler implements Assembler<string> {
     }
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading) body.push(texShortReading(reading));
+    if (reading && this.includePlainProse()) body.push(texShortReading(reading));
 
     const complineResp = getComplineResponsory(repo);
     if (complineResp) {
@@ -395,18 +424,15 @@ export class TexAssembler implements Assembler<string> {
         path: slotPath("compline", "responsory"),
       });
       body.push(this.texShortResponsoryBlock(repo, hydrated));
-    } else {
+    } else if (this.includePlainProse()) {
       body.push(escapeTexPlain(formatComplineResponsoryFallbackPlain()));
     }
 
-    body.push(texSectionHeading(repo, "nuncDimittis"));
     const ndAntiphon = resolveAntiphon(hour.nuncDimittisAntiphonRef, repo, hour.liturgicalDay, opt("nuncDimittisAntiphon"));
-    if (ndAntiphon) body.push(this.texAntiphonBlock(repo, ndAntiphon, flags, true));
-    body.push(texGospelCanticle(repo, "nuncDimittis"));
-    if (ndAntiphon) body.push(this.texAntiphonBlock(repo, ndAntiphon, flags, false));
+    body.push(...this.texGospelCanticleSlot(repo, ndAntiphon, flags, "nuncDimittis", "nuncDimittis"));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) body.push(texConcludingPrayer(repo, prayer.text, "compline"));
+    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, "compline"));
 
     body.push(this.texComplineBlessingBlock(repo, hour.liturgicalDay, choices));
 
@@ -416,7 +442,7 @@ export class TexAssembler implements Assembler<string> {
       body.push(this.texAntiphonBlock(repo, marianAntiphon, flags, false));
     }
 
-    return body.join("\n\n");
+    return this.joinBody(body);
   }
 
   /**
@@ -433,13 +459,31 @@ export class TexAssembler implements Assembler<string> {
     parts: (keyof DialogueMelody)[],
     text: string,
   ): string {
-    if (!fixed) return text;
+    if (!fixed) {
+      if (this.isScoredOnly()) return "";
+      return text;
+    }
     const hydrated = hydrateMelodies(fixed, repo, day, {
       ...(choices ? { choices } : {}),
       path,
     });
     const melody = hydrated.melody;
-    if (!melody) return text;
+
+    if (this.outputMode === "plain") {
+      const chunks: string[] = [];
+      if (melody) {
+        const rubric = texMelodyRubric(melody);
+        if (rubric) chunks.push(rubric);
+      }
+      chunks.push(text);
+      return chunks.join("\n\n");
+    }
+
+    if (!melody) {
+      if (this.isScoredOnly()) return "";
+      return text;
+    }
+
     const chunks: string[] = [];
     const rubric = texMelodyRubric(melody);
     if (rubric) chunks.push(rubric);
@@ -453,7 +497,10 @@ export class TexAssembler implements Assembler<string> {
         scored = true;
       }
     }
-    if (!scored) chunks.push(text);
+    if (!scored) {
+      if (this.isScoredOnly()) return "";
+      chunks.push(text);
+    }
     return chunks.join("\n\n");
   }
 
@@ -543,6 +590,7 @@ export class TexAssembler implements Assembler<string> {
     gabc: string | undefined,
     kind: "antiphon" | "psalmTone" = "antiphon",
   ): string {
+    if (!this.shouldEmitScores()) return "";
     const trimmed = gabc?.trim();
     if (!trimmed) return "";
 
@@ -550,6 +598,29 @@ export class TexAssembler implements Assembler<string> {
     const filename = `${base}.gabc`;
     this.gabcFiles.set(filename, withGabcHeader(trimmed, base));
     return kind === "psalmTone" ? texPsalmToneScoreLine(base) : texScoreLine(base);
+  }
+
+  private texGospelCanticleSlot(
+    repo: DataRepository,
+    antiphon: Antiphon | undefined,
+    flags: LiturgicalFlags,
+    sectionKey: SectionLabelKey,
+    canticleKind: GospelCanticleKind,
+  ): string[] {
+    const parts: string[] = [texSectionHeading(repo, sectionKey)];
+
+    if (this.isScoredOnly()) {
+      if (antiphon) {
+        const block = this.texAntiphonBlock(repo, antiphon, flags, true);
+        if (block) parts.push(block);
+      }
+      return parts;
+    }
+
+    if (antiphon) parts.push(this.texAntiphonBlock(repo, antiphon, flags, true));
+    parts.push(texGospelCanticle(repo, canticleKind));
+    if (antiphon) parts.push(this.texAntiphonBlock(repo, antiphon, flags, false));
+    return parts;
   }
 
   /**
@@ -581,6 +652,10 @@ export class TexAssembler implements Assembler<string> {
     // One antiphon wrapping all three psalms.
     if (proper && proper.length === 1) {
       const antiphon = proper[0] as PsalmAssignment["antiphon"];
+      if (this.isScoredOnly()) {
+        const block = this.texAntiphonBlock(repo, antiphon, flags, true);
+        return block ? [block] : [];
+      }
       const parts: string[] = [this.texAntiphonBlock(repo, antiphon, flags, true)];
       for (const a of assignments) {
         const text = psalmText(a);
@@ -599,47 +674,63 @@ export class TexAssembler implements Assembler<string> {
     });
   }
 
-  /**
-   * @param includePsalmTone — opening psalmody antiphon includes tone GABC; closing repeat omits it.
-   */
   private texAntiphonBlock(
     repo: DataRepository,
     a: Antiphon,
     flags: LiturgicalFlags,
     includePsalmTone: boolean,
   ): string {
-    const chunks: string[] = [];
     const rubric = texMelodyRubric(a.melody);
-    if (rubric) chunks.push(rubric);
-    let scored = false;
-    if (a.melody?.gabc) {
-      const line = this.emitScore(a.melody.gabc);
-      if (line) {
-        chunks.push(line);
-        scored = true;
-      }
+
+    let scoreLine = "";
+    if (this.shouldEmitScores() && a.melody?.gabc) {
+      scoreLine = this.emitScore(a.melody.gabc);
     }
-    if (!scored) chunks.push(texAntiphon(repo, a, flags));
-    if (includePsalmTone && a.psalmTone?.trim()) {
-      const toneLine = this.emitScore(a.psalmTone, "psalmTone");
+
+    let toneLine = "";
+    if (this.shouldEmitScores() && includePsalmTone && a.psalmTone?.trim()) {
+      toneLine = this.emitScore(a.psalmTone, "psalmTone");
+    }
+
+    const hasScore = Boolean(scoreLine || toneLine);
+
+    if (this.isScoredOnly()) {
+      if (!hasScore) return "";
+      const chunks: string[] = [];
+      if (rubric) chunks.push(rubric);
+      if (scoreLine) chunks.push(scoreLine);
       if (toneLine) chunks.push(texPsalmToneBlock(toneLine));
+      return chunks.join("\n\n");
     }
+
+    const chunks: string[] = [];
+    if (rubric) chunks.push(rubric);
+    if (scoreLine) chunks.push(scoreLine);
+    else chunks.push(texAntiphon(repo, a, flags));
+    if (toneLine) chunks.push(texPsalmToneBlock(toneLine));
     return chunks.join("\n\n");
   }
 
   private texHymnBlock(hymn: Hymn): string {
-    const chunks: string[] = [];
     const rubric = texMelodyRubric(hymn.melody);
-    if (rubric) chunks.push(rubric);
-    let scored = false;
-    if (hymn.melody?.gabc) {
-      const line = this.emitScore(hymn.melody.gabc);
-      if (line) {
-        chunks.push(line);
-        scored = true;
-      }
+
+    let scoreLine = "";
+    if (this.shouldEmitScores() && hymn.melody?.gabc) {
+      scoreLine = this.emitScore(hymn.melody.gabc);
     }
-    if (!scored) chunks.push(texHymn(hymn));
+
+    if (this.isScoredOnly()) {
+      if (!scoreLine) return "";
+      const chunks: string[] = [];
+      if (rubric) chunks.push(rubric);
+      chunks.push(scoreLine);
+      return chunks.join("\n\n");
+    }
+
+    const chunks: string[] = [];
+    if (rubric) chunks.push(rubric);
+    if (scoreLine) chunks.push(scoreLine);
+    else chunks.push(texHymn(hymn));
     return chunks.join("\n\n");
   }
 
@@ -649,15 +740,21 @@ export class TexAssembler implements Assembler<string> {
     flags: LiturgicalFlags,
     repo: DataRepository,
   ): string {
+    if (this.isScoredOnly()) {
+      return this.texAntiphonBlock(repo, assignment.antiphon, flags, true);
+    }
+
     const open = this.texAntiphonBlock(repo, assignment.antiphon, flags, true);
     if (!psalmText.trim()) return open;
     const canticleMelody: string[] = [];
-    const canticle = repo.getCanticle(assignment.psalmOrCanticleId);
-    if (canticle?.melody?.gabc?.trim()) {
-      const rub = texMelodyRubric(canticle.melody);
-      if (rub) canticleMelody.push(rub);
-      const line = this.emitScore(canticle.melody.gabc);
-      if (line) canticleMelody.push(line);
+    if (this.shouldEmitScores()) {
+      const canticle = repo.getCanticle(assignment.psalmOrCanticleId);
+      if (canticle?.melody?.gabc?.trim()) {
+        const rub = texMelodyRubric(canticle.melody);
+        if (rub) canticleMelody.push(rub);
+        const line = this.emitScore(canticle.melody.gabc);
+        if (line) canticleMelody.push(line);
+      }
     }
     const body = texPsalmText(psalmText);
     const close = this.texAntiphonBlock(repo, assignment.antiphon, flags, false);
@@ -665,23 +762,32 @@ export class TexAssembler implements Assembler<string> {
   }
 
   private texShortResponsoryBlock(repo: DataRepository, r: ShortResponsory): string {
-    const chunks: string[] = [];
     const rubric = texMelodyRubric(r.melody);
-    if (rubric) chunks.push(rubric);
-    let scored = false;
-    for (const gabc of [
-      r.melody?.responsory,
-      r.melody?.responsorySecond,
-      r.melody?.versicle,
-      r.melody?.gloria,
-    ]) {
-      const line = this.emitScore(gabc);
-      if (line) {
-        chunks.push(line);
-        scored = true;
+    const scoreLines: string[] = [];
+    if (this.shouldEmitScores()) {
+      for (const gabc of [
+        r.melody?.responsory,
+        r.melody?.responsorySecond,
+        r.melody?.versicle,
+        r.melody?.gloria,
+      ]) {
+        const line = this.emitScore(gabc);
+        if (line) scoreLines.push(line);
       }
     }
-    if (!scored) chunks.push(texShortResponsory(repo, r));
+
+    if (this.isScoredOnly()) {
+      if (scoreLines.length === 0) return "";
+      const chunks: string[] = [];
+      if (rubric) chunks.push(rubric);
+      chunks.push(...scoreLines);
+      return chunks.join("\n\n");
+    }
+
+    const chunks: string[] = [];
+    if (rubric) chunks.push(rubric);
+    if (scoreLines.length > 0) chunks.push(...scoreLines);
+    else chunks.push(texShortResponsory(repo, r));
     return chunks.join("\n\n");
   }
 }
