@@ -148,6 +148,7 @@ export function psalmAssignmentRef(
   if (allowSaintProper && c.source === "saint" && c.saintId) {
     return chain(
       saintSrc(c.saintId, hourField),
+      ...commonSources(c.applicableCommons, 0, hourField),
       psalterSrc(w, d, hourField),
     );
   }
@@ -185,6 +186,36 @@ export function shortReadingRef(
   if (c.source === "saint" && c.saintId && !c.memoriaFullySuppressed) {
     const make = isMemoria(c) ? adLibChain.bind(null, 1) : chain;
     return make(
+      saintSrc(c.saintId, hourField),
+      ...commonSources(c.applicableCommons, 0, hourField),
+      ...(c.seasonalKey ? [seasonalSrc(c.seasonalKey, hourField)] : []),
+      psalterSrc(w, d, hourField),
+    );
+  }
+  if (c.seasonalKey) {
+    return chain(seasonalSrc(c.seasonalKey, hourField), psalterSrc(w, d, hourField));
+  }
+  return psalterSrc(w, d, hourField);
+}
+
+// ---------------------------------------------------------------------------
+// Short responsory (Lauds / Vespers)
+// ---------------------------------------------------------------------------
+
+export function shortResponsoryRef(
+  ctx: SlotContext,
+  hourField: string,  // e.g. "lauds.shortResponsory"
+): SlotSource {
+  const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
+
+  if (c.source === "saint" && c.saintId) {
+    if (isMemoria(c)) {
+      return chain(
+        saintSrc(c.saintId, hourField),
+        psalterSrc(w, d, hourField),
+      );
+    }
+    return chain(
       saintSrc(c.saintId, hourField),
       ...commonSources(c.applicableCommons, 0, hourField),
       ...(c.seasonalKey ? [seasonalSrc(c.seasonalKey, hourField)] : []),
@@ -455,4 +486,30 @@ export function marianAntiphonRef(season: Season): SlotSource {
 export function seasonDaytimeKeys(season: Season, weekday: Weekday): string[] {
   const wd = weekday.toLowerCase();
   return [`daytime_${season}_${wd}`, `daytime_${season}`];
+}
+
+/**
+ * Daytime proper antiphons on solemnities/feasts: saint → common → seasonal
+ * defaults (office-spec §5.2, §7). Memorias use ferial psalmody antiphons only.
+ */
+export function daytimeProperAntiphonsRef(
+  ctx: SlotContext,
+  hourKind: "terce" | "sext" | "none",
+): SlotSource | undefined {
+  const { celebration: c } = ctx;
+  const field = `${hourKind}.antiphons`;
+  const sources: SlotSourceDirect[] = [];
+
+  if (c.source === "saint" && c.saintId && !isMemoriaCelebration(c)) {
+    sources.push(saintSrc(c.saintId, field));
+    sources.push(...commonSources(c.applicableCommons, 0, field));
+  }
+  if (c.seasonalKey) {
+    sources.push(seasonalSrc(c.seasonalKey, field));
+  }
+  for (const key of seasonDaytimeKeys(ctx.season, ctx.psalterDay)) {
+    sources.push(seasonalSrc(key, field));
+  }
+  if (sources.length === 0) return undefined;
+  return chain(...sources);
 }

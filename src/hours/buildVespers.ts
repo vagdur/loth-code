@@ -8,7 +8,7 @@ import type { AbstractVespers, PsalmSlot, SlotSource, SlotSourceDirect } from ".
 
 import {
   antiphonRef, concludingPrayerRef, hymnRef, intercessionsRef,
-  psalmAssignmentRef, shortReadingRef,
+  psalmAssignmentRef, shortReadingRef, shortResponsoryRef,
 } from "./resolver.js";
 import { makeCtx, makeFlags, psalmSlot } from "./shared.js";
 
@@ -139,16 +139,18 @@ export function buildVespers(
       } satisfies SlotSource)
     : shortReadingRef(ctx, `${vespersField}.shortReading`);
 
-  const shortResponsory: SlotSource = {
-    kind: "fallback_chain",
-    sources: [
-      ...(c.seasonalKey
-        ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${vespersField}.shortResponsory` }]
-        : []),
-      ...(isSundayFirstVespers ? [fvPsalterSrc("shortResponsory")] : []),
-      { kind: "psalter", week: w, day: d, field: "vespers.shortResponsory" },
-    ],
-  };
+  const shortResponsory: SlotSource = isSundayFirstVespers
+    ? {
+        kind: "fallback_chain",
+        sources: [
+          ...(c.seasonalKey
+            ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${vespersField}.shortResponsory` }]
+            : []),
+          fvPsalterSrc("shortResponsory"),
+          { kind: "psalter", week: w, day: d, field: "vespers.shortResponsory" },
+        ],
+      }
+    : shortResponsoryRef(ctx, `${vespersField}.shortResponsory`);
 
   const magnificatAntiphon: SlotSource = isSundayFirstVespers
     ? {

@@ -212,7 +212,7 @@ describe("summarizeOrdoDay (stockholm)", () => {
 
     const oor = summary.hours.find((h) => h.key === "officeOfReadings");
     expect(oor!.prose).toContain("Te Deum");
-    expect(oor!.prose).toContain("communet");
+    expect(oor!.prose).toContain("ferian");
     expect(oor!.prose).not.toContain("kyrkolärare");
 
     const firstVespers = summary.hours.find((h) => h.key === "firstVespers");
@@ -221,6 +221,30 @@ describe("summarizeOrdoDay (stockholm)", () => {
 
     const melodyOptions = summary.hours.some((h) => h.prose.includes("melodi"));
     expect(melodyOptions).toBe(false);
+  });
+
+  test("2025-12-08 Immaculate Conception solemnity uses common daytime antiphons and proper vespers responsory", () => {
+    const summary = summarizeOrdoDay(utcDate(2025, 12, 8), ctx, repo);
+    expect(summary.headline).toBe(
+      "8 december. Jungfru Marias utkorelse och fullkomliga renhet. Högtid.",
+    );
+    expect(summary.communeLine).toBe("Commune: den saliga jungfru Maria");
+
+    const daytime = summary.hours.find((h) => h.key === "daytime");
+    expect(daytime).toBeDefined();
+    expect(daytime!.prose).toContain("Hymn ur årstidens proprium");
+    expect(daytime!.prose).toContain("Antifoner och kort läsning ur communet");
+    expect(daytime!.prose).not.toContain("Antifoner ur årstidens proprium");
+
+    const vespers = summary.hours.find((h) => h.key === "vespers");
+    expect(vespers).toBeDefined();
+    expect(vespers!.prose).not.toContain("Responsorium ur ferian");
+    expect(vespers!.prose).toContain("Kort läsning, förböner, och kollekt ur communet");
+
+    const oor = summary.hours.find((h) => h.key === "officeOfReadings");
+    expect(oor!.prose).toContain("Te Deum");
+    expect(oor!.prose).toContain("Versikel ur ferian");
+    expect(oor!.prose).not.toMatch(/första läsning.*ferian/);
   });
 
   test("liturgical year 2025/2026 spans Advent 2025 through Christ the King 2026", () => {

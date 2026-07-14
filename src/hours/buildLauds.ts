@@ -6,11 +6,11 @@
  */
 
 import type { AssemblyContext, LiturgicalDay } from "../types/calendar.js";
-import type { AbstractLauds, PsalmSlot, SlotSource } from "../types/hours.js";
+import type { AbstractLauds, PsalmSlot } from "../types/hours.js";
 
 import {
   antiphonRef, concludingPrayerRef, hymnRef, intercessionsRef,
-  psalmAssignmentRef, shortReadingRef, SlotContext,
+  psalmAssignmentRef, shortReadingRef, shortResponsoryRef, SlotContext,
 } from "./resolver.js";
 import { makeCtx, makeFlags } from "./shared.js";
 
@@ -69,7 +69,7 @@ export function buildLauds(
   day: LiturgicalDay,
   context: AssemblyContext,
 ): AbstractLauds {
-  const { celebration: c, psalterWeek, psalterDay } = day;
+  const { celebration: c } = day;
   const ctx: SlotContext = makeCtx(day);
 
   const flags = makeFlags(day, false);
@@ -81,27 +81,7 @@ export function buildLauds(
 
   // Short responsory: may be omitted (GILH 49); we always include the ref
   // and leave the decision to the assembler.
-  const shortResponsory: SlotSource = (() => {
-    if (c.source === "saint" && c.saintId) {
-      return {
-        kind: "fallback_chain",
-        sources: [
-          { kind: "saint", id: c.saintId, field: "lauds.shortResponsory" },
-          { kind: "psalter", week: psalterWeek, day: psalterDay, field: "lauds.shortResponsory" },
-        ],
-      };
-    }
-    if (c.seasonalKey) {
-      return {
-        kind: "fallback_chain",
-        sources: [
-          { kind: "seasonal", key: c.seasonalKey, field: "lauds.shortResponsory" },
-          { kind: "psalter", week: psalterWeek, day: psalterDay, field: "lauds.shortResponsory" },
-        ],
-      };
-    }
-    return { kind: "psalter", week: psalterWeek, day: psalterDay, field: "lauds.shortResponsory" };
-  })();
+  const shortResponsory = shortResponsoryRef(ctx, "lauds.shortResponsory");
 
   const benedictusAntiphon = antiphonRef(
     ctx,

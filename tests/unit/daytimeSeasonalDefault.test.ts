@@ -121,4 +121,33 @@ describe("buildDaytimePrayer season-default fallback", () => {
       { kind: "psalter", week: 1, day: "Tuesday", field: "sext.concludingPrayer" },
     ]);
   });
+
+  test("solemnity §5.2 — daytime antiphons prefer common over seasonal", () => {
+    const day: LiturgicalDay = {
+      date: new Date("2025-12-08T00:00:00Z"),
+      season: "advent",
+      psalterWeek: 2,
+      psalterDay: "Monday",
+      readingYear: "I",
+      sundayCycle: "C",
+      ordinaryTimeWeek: 0,
+      celebration: {
+        type: "solemnity",
+        source: "saint",
+        saintId: "immaculate_conception",
+        seasonalKey: "advent_w2_mon",
+        applicableCommons: ["bvm"],
+        memoriaFullySuppressed: false,
+        memoriaReducedToOptional: false,
+        allowMemoriaAddendum: false,
+        isTriduum: false,
+      },
+      evening: { hasFirstVespers: false },
+      saturdayBvmPermitted: false,
+    };
+    const hour = buildDaytimePrayer(day, "sext", true);
+    const kinds = flatten(hour.properAntiphonsRef).map((s) => s.kind);
+    expect(kinds.slice(0, 2)).toEqual(["saint", "common"]);
+    expect(kinds).toContain("seasonal");
+  });
 });

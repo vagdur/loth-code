@@ -17,7 +17,10 @@ import {
   marianAntiphonRef,
   officeOfReadingsHymnRef,
   patristicReadingRef,
+  psalmAssignmentRef,
   shortReadingRef,
+  shortResponsoryRef,
+  daytimeProperAntiphonsRef,
   type SlotContext,
 } from "../../src/hours/resolver.js";
 
@@ -221,6 +224,51 @@ describe("shortReadingRef and antiphonRef and intercessionsRef", () => {
     const ctx = baseCtx(saintSolemnity());
     const src = intercessionsRef(ctx, "vespers.intercessions");
     expect(flattenSources(src).map((s) => s.kind)).toEqual(["saint", "common", "psalter"]);
+  });
+
+  test("shortResponsoryRef: saint solemnity includes common before psalter", () => {
+    const ctx = baseCtx(saintSolemnity());
+    const src = shortResponsoryRef(ctx, "vespers.shortResponsory");
+    expect(flattenSources(src).map((s) => s.kind)).toEqual([
+      "saint", "common", "psalter",
+    ]);
+  });
+
+  test("shortResponsoryRef: memoria uses saint then psalter only", () => {
+    const ctx = baseCtx(obligatoryMemoria());
+    const src = shortResponsoryRef(ctx, "lauds.shortResponsory");
+    expect(flattenSources(src).map((s) => s.kind)).toEqual(["saint", "psalter"]);
+  });
+});
+
+describe("psalmAssignmentRef", () => {
+  test("office-spec §5.2 — solemnity OoR psalms: saint then common then psalter", () => {
+    const ctx = baseCtx(saintSolemnity());
+    const src = psalmAssignmentRef(ctx, "officeOfReadings.psalmAssignments[0]", true);
+    expect(flattenSources(src).map((s) => s.kind)).toEqual(["saint", "common", "psalter"]);
+  });
+});
+
+describe("daytimeProperAntiphonsRef", () => {
+  test("saint solemnity: common before seasonal defaults", () => {
+    const ctx: SlotContext = {
+      ...baseCtx({
+        type: "solemnity",
+        source: "saint",
+        saintId: "immaculate_conception",
+        applicableCommons: ["bvm"],
+        memoriaFullySuppressed: false,
+        memoriaReducedToOptional: false,
+        allowMemoriaAddendum: false,
+        isTriduum: false,
+        seasonalKey: "advent_w2_mon",
+      }),
+      season: "advent",
+    };
+    const src = daytimeProperAntiphonsRef(ctx, "sext");
+    expect(flattenSources(src!).map((s) => s.kind)).toEqual([
+      "saint", "common", "seasonal", "seasonal", "seasonal",
+    ]);
   });
 });
 
