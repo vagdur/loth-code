@@ -151,10 +151,12 @@ describe("summarizeOrdoDay (stockholm)", () => {
     expect(fabian!.communeLine).toContain("eller");
     expect(sebastian!.communeLine).toContain("en martyr");
     expect(sebastian!.communeLine).not.toContain("herdar");
-    // §5.4 — first reading stays on the ferial day; only hymn and 2nd reading from Common.
+    // §5.4 — first reading stays on the ferial day; hymn ad lib; 2nd reading only when proper.
     const fabianOor = fabian!.hours.find((h) => h.key === "officeOfReadings");
     expect(fabianOor).toBeDefined();
-    expect(fabianOor!.prose).toContain("andra läsning");
+    expect(fabianOor!.prose).toContain("Hymn");
+    expect(fabianOor!.prose).toContain("communet eller ferian");
+    expect(fabianOor!.prose).not.toContain("andra läsning");
     expect(fabianOor!.prose).not.toContain("första läsning");
     expect(fabianOor!.prose).not.toContain("första läsning från communet");
     expect(fabian!.hours.find((h) => h.key === "daytime")).toBeUndefined();

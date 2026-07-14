@@ -92,7 +92,7 @@ The invitatory antiphon varies by liturgical day (proper or seasonal).
 6. **Second Reading** — patristic / ecclesiastical writer / hagiographical, with its responsory.
    - Normally from the Proper of Season (67).
    - On solemnities and feasts: a proper hagiographical reading; if none, from the Common.
-   - On memorias: a hagiographical reading (proper or Common); if absent, the patristic reading of the current ferial day.
+   - On memorias: a proper hagiographical reading replaces the patristic reading of the current ferial day; if no proper is assigned, the ferial patristic reading is retained. When a hagiographical reading is used, its responsory may be proper or from the Common. Cf. dubium, *Notitiae* 12 (1976), 46.
    - May alternatively be drawn from the Optional Lectionary (161).
 7. ***Te Deum***:
    - **Said** on Sundays (outside Lent), the octaves of Easter and Christmas, solemnities, and feasts.
@@ -205,7 +205,7 @@ In the **Office of Readings, Lauds, and Vespers**:
 | Invitatory antiphon, hymn, short reading, antiphons at *Benedictus* / *Magnificat*, intercessions | If proper, from the Office of the saint; otherwise from the Common or the current ferial day |
 | Concluding prayer | From the Office of the saint |
 | OoR 1st reading + responsory | Scripture reading of the ferial day |
-| OoR 2nd reading | Hagiographical, with responsory (proper or from Common); if no proper hagiographical reading, take the patristic reading of the current ferial day |
+| OoR 2nd reading | Proper hagiographical reading (responsory proper or from Common); if no proper, the patristic reading of the current ferial day — not the Common (*Notitiae* 12 (1976), 46) |
 | ***Te Deum*** | **Not said** |
 
 In **Daytime Prayer and Compline**: nothing is taken from the Office of the saint; everything is from the ferial day.
@@ -341,7 +341,7 @@ On Saturdays in Ordinary Time on which optional memorias are permitted, the opti
 
 - Office of Readings 2nd reading is normally patristic (Fathers, Doctors, ecclesiastical writers).
 - May be taken from the standard Office or the Optional Lectionary (161).
-- On memorias: a hagiographical reading (proper or Common) is used in place of the current patristic reading; if absent, the patristic reading of the ferial day is retained.
+- On memorias: a proper hagiographical reading is used in place of the current patristic reading; if no proper is assigned, the patristic reading of the ferial day is retained (not the Common). When a hagiographical reading is used, its responsory may be proper or from the Common. See dubium, *Notitiae* 12 (1976), 46.
 - A short biographical note precedes hagiographical readings; it is **not read aloud** (168).
 
 ---

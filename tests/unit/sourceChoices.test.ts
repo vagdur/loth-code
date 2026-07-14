@@ -7,7 +7,7 @@ import { describe, expect, test } from "vitest";
 import { resolveSource, sourceChoiceId } from "../../src/assemblers/types.js";
 import type { DataRepository } from "../../src/data/repository.js";
 import {
-  antiphonRef, hymnRef, intercessionsRef, shortReadingRef,
+  antiphonRef, hymnRef, intercessionsRef, officeOfReadingsHymnRef, shortReadingRef,
   type SlotContext,
 } from "../../src/hours/resolver.js";
 import type { Celebration } from "../../src/types/calendar.js";
@@ -43,6 +43,7 @@ function ctxFor(celebration: Celebration): SlotContext {
 describe("§5.4 chains carry adLibFrom on memorias only", () => {
   const adLibSlots = [
     (c: SlotContext) => hymnRef(c, "lauds.hymns"),
+    (c: SlotContext) => officeOfReadingsHymnRef(c, false),
     (c: SlotContext) => shortReadingRef(c, "lauds.shortReading"),
     (c: SlotContext) => intercessionsRef(c, "lauds.intercessions"),
   ];

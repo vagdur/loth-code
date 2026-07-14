@@ -69,5 +69,5 @@ name:a;
       rmSync(jobDir, { recursive: true, force: true });
       rmSync(cacheDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 });

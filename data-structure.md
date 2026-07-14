@@ -802,10 +802,10 @@ For each slot in each Hour, the assembly algorithm applies the following fallbac
 | Slot | Solemnity | Feast | Memoria (ordinary day) | Ferial / Sunday |
 |---|---|---|---|---|
 | **Invitatory antiphon** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Psalter | Seasonal proper → Psalter |
-| **OoR hymn** | Saint proper → Common | Saint proper → Common | Psalter | Psalter (OorHymnSet: night/day) |
+| **OoR hymn** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Psalter (ad lib, §5.4) | Psalter (OorHymnSet: night/day) |
 | **OoR psalmody** | Saint proper → Common | Saint proper → Common | Psalter (ferial) | Psalter |
 | **OoR biblical reading** | Saint proper → Common | Saint proper → Common | Psalter / Seasonal (ferial) | Seasonal proper → Psalter |
-| **OoR patristic/hagiographical reading** | Saint hagiographical proper → Common | Saint hagiographical proper → Common | Saint hagiographical proper → Common → Seasonal patristic | Seasonal proper |
+| **OoR patristic/hagiographical reading** | Saint hagiographical proper → Common | Saint hagiographical proper → Common | Saint hagiographical proper → Seasonal/Psalter patristic (ferial; dubium *Notitiae* 12 (1976), 46) | Seasonal proper |
 | ***Te Deum*** | **Always said** | **Always said** | **Never said** | Said on Sundays (outside Lent); not on ferial |
 | **Lauds / Vespers hymn** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Psalter | Seasonal proper → Psalter |
 | **Lauds psalmody** | Sunday Week I (fixed) | Sunday Week I | Psalter (ferial), unless saint has proper antiphons | Psalter |

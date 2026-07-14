@@ -6,8 +6,8 @@ import type { AssemblyContext, LiturgicalDay } from "../types/calendar.js";
 import type { AbstractOfficeOfReadings, PsalmSlot, SlotSource } from "../types/hours.js";
 
 import {
-  biblicalReadingRef, concludingPrayerRef, patristicReadingRef,
-  psalmAssignmentRef,
+  biblicalReadingRef, concludingPrayerRef, officeOfReadingsHymnRef,
+  patristicReadingRef, psalmAssignmentRef,
 } from "./resolver.js";
 import { makeCtx, makeFlags, psalmSlot } from "./shared.js";
 
@@ -26,34 +26,7 @@ export function buildOfficeOfReadings(
 
   const flags = makeFlags(day, teDeum);
 
-  // Hymn: OoR has two series (night/day) in Ordinary Time.
-  const hymnField = context.oorSaidAtNight
-    ? "officeOfReadings.hymns.night"
-    : "officeOfReadings.hymns.day";
-  const hymnExplicit: SlotSource =
-    c.source === "saint" && c.saintId
-      ? {
-          kind: "fallback_chain",
-          sources: [
-            { kind: "saint", id: c.saintId, field: "officeOfReadings.hymn" },
-            ...(c.applicableCommons.map((t) => ({
-              kind: "common" as const,
-              type: t,
-              variant: 0,
-              field: hymnField,
-            }))),
-            { kind: "psalter", week: w, day: d, field: hymnField },
-          ],
-        }
-      : c.seasonalKey
-      ? {
-          kind: "fallback_chain",
-          sources: [
-            { kind: "seasonal", key: c.seasonalKey, field: "officeOfReadings.hymn" },
-            { kind: "psalter", week: w, day: d, field: hymnField },
-          ],
-        }
-      : { kind: "psalter", week: w, day: d, field: hymnField };
+  const hymnExplicit = officeOfReadingsHymnRef(ctx, context.oorSaidAtNight);
 
   // Psalmody: proper on Triduum / octaves / solemnities / feasts; psalter otherwise.
   const usesProperPsalmody =

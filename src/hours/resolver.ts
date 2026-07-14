@@ -81,6 +81,32 @@ export interface SlotContext {
 // Hymn
 // ---------------------------------------------------------------------------
 
+export function officeOfReadingsHymnRef(
+  ctx: SlotContext,
+  saidAtNight: boolean,
+): SlotSource {
+  const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
+  const hymnField = saidAtNight
+    ? "officeOfReadings.hymns.night"
+    : "officeOfReadings.hymns.day";
+
+  if (c.source === "saint" && c.saintId) {
+    const make = isMemoria(c) ? adLibChain.bind(null, 1) : chain;
+    return make(
+      saintSrc(c.saintId, "officeOfReadings.hymn"),
+      ...commonSources(c.applicableCommons, 0, hymnField),
+      psalterSrc(w, d, hymnField),
+    );
+  }
+  if (c.seasonalKey) {
+    return chain(
+      seasonalSrc(c.seasonalKey, "officeOfReadings.hymn"),
+      psalterSrc(w, d, hymnField),
+    );
+  }
+  return psalterSrc(w, d, hymnField);
+}
+
 export function hymnRef(
   ctx: SlotContext,
   hourField: string,  // e.g. "lauds.hymns"
@@ -335,6 +361,37 @@ export function biblicalReadingRef(
   return ferialBiblicalReadingRef(ctx, readingYear);
 }
 
+/** §5.4 / §12 — patristic reading of the ferial day (Proper of Season or psalter). */
+function ferialPatristicReadingRef(
+  ctx: SlotContext,
+  readingYear: "I" | "II",
+): SlotSource {
+  const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
+  const yrField = readingYear === "I"
+    ? "officeOfReadings.patristicReadingYr1"
+    : "officeOfReadings.patristicReadingYr2";
+  const singleField = "officeOfReadings.patristicReading";
+
+  if (c.seasonalKey) {
+    return chain(
+      seasonalSrc(c.seasonalKey, yrField),
+      seasonalSrc(c.seasonalKey, singleField),
+    );
+  }
+  return psalterSrc(w, d, singleField);
+}
+
+function ferialPatristicTail(
+  ctx: SlotContext,
+  readingYear: "I" | "II",
+): SlotSourceDirect[] {
+  const tail = ferialPatristicReadingRef(ctx, readingYear);
+  if (tail.kind === "fallback_chain") {
+    return (tail as FallbackChain).sources;
+  }
+  return [tail as SlotSourceDirect];
+}
+
 export function patristicReadingRef(
   ctx: SlotContext,
   readingYear: "I" | "II",
@@ -345,18 +402,15 @@ export function patristicReadingRef(
     : "officeOfReadings.patristicReadingYr2";
   const singleField = "officeOfReadings.patristicReading";
 
-  // On memorias: hagiographical reading (proper or Common) takes priority;
-  // if absent, fall back to the ferial day's patristic text.
+  // §5.4 / dubium (Notitiae 12 (1976), 46): proper hagiographical only;
+  // if absent, the ferial patristic reading — not the Common.
   if (
     c.source === "saint" && c.saintId &&
     (c.type === "obligatory_memoria" || c.type === "optional_memoria")
   ) {
     return chain(
       saintSrc(c.saintId, "officeOfReadings.hagiographicalReading"),
-      ...commonSources(c.applicableCommons, 0, "officeOfReadings.hagiographicalReading"),
-      // Fallback: ferial patristic reading from current psalter week.
-      // The seasonal key is null for ordinary ferial, so we fall to the psalter.
-      ...(c.seasonalKey ? [seasonalSrc(c.seasonalKey, singleField)] : []),
+      ...ferialPatristicTail(ctx, readingYear),
     );
   }
 

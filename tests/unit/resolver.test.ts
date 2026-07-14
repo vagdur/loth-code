@@ -15,6 +15,7 @@ import {
   hymnRef,
   intercessionsRef,
   marianAntiphonRef,
+  officeOfReadingsHymnRef,
   patristicReadingRef,
   shortReadingRef,
   type SlotContext,
@@ -272,21 +273,21 @@ describe("biblicalReadingRef", () => {
 });
 
 describe("patristicReadingRef", () => {
-  test("office-spec §5.4 — memoria without seasonalKey: saint, commons only", () => {
+  test("office-spec §5.4 — memoria without seasonalKey: saint then psalter patristic", () => {
     const mem: Celebration = {
       ...obligatoryMemoria(),
       seasonalKey: undefined,
     };
     const ctx = baseCtx(mem);
     const src = patristicReadingRef(ctx, "I");
-    expect(flattenSources(src).map((s) => s.kind)).toEqual(["saint", "common"]);
+    expect(flattenSources(src).map((s) => s.kind)).toEqual(["saint", "psalter"]);
   });
 
-  test("office-spec §5.4 — memoria with seasonalKey adds patristic fallback", () => {
+  test("office-spec §5.4 — memoria with seasonalKey adds seasonal patristic fallback", () => {
     const ctx = baseCtx(obligatoryMemoria());
     const src = patristicReadingRef(ctx, "I");
     const kinds = flattenSources(src).map((s) => s.kind);
-    expect(kinds).toEqual(["saint", "common", "seasonal"]);
+    expect(kinds).toEqual(["saint", "seasonal", "seasonal"]);
   });
 
   test("solemnity: saint hagiographical then commons", () => {
@@ -330,7 +331,13 @@ describe("marianAntiphonRef", () => {
   });
 
   test("Ordinary Time and Lent map to ordinary-time Marian field", () => {
-    expect(marianAntiphonRef("ordinary_time").field).toBe("marianAntiphons.ordinaryTime");
-    expect(marianAntiphonRef("lent").field).toBe("marianAntiphons.ordinaryTime");
+    expect(marianAntiphonRef("ordinary_time")).toEqual({
+      kind: "fixed",
+      field: "marianAntiphons.ordinaryTime",
+    });
+    expect(marianAntiphonRef("lent")).toEqual({
+      kind: "fixed",
+      field: "marianAntiphons.ordinaryTime",
+    });
   });
 });
