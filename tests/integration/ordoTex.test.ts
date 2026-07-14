@@ -1,5 +1,6 @@
 /**
  * Regenerate goldens: `npm run test:fixtures:update` (sets UPDATE_FIXTURES=1).
+ * Refresh reference PDFs: `npm run test:fixtures:compile-pdf`.
  */
 
 import { readFileSync } from "fs";
@@ -16,8 +17,7 @@ import {
   ordoContext,
   summarizeOrdoDay,
 } from "../../src/ordo/index.js";
-import { writeFixtureTexAndPdf } from "../helpers/compileFixtureTex.js";
-import { gregorioAutocompileWorks } from "../helpers/gregorioAutocompile.js";
+import { writeFixtureTex } from "../helpers/compileFixtureTex.js";
 import { normalizeLf } from "../helpers/normalizeLf.js";
 import { dataRoot, fixturesDir } from "../helpers/paths.js";
 
@@ -37,13 +37,7 @@ async function assertOrdoTexFixture(fixtureName: string, tex: string): Promise<v
   const fixturePath = path.join(fixturesDir, fixtureName);
 
   if (process.env.UPDATE_FIXTURES === "1") {
-    await writeFixtureTexAndPdf(
-      fixturePath,
-      tex,
-      new Map(),
-      "ordo",
-      gregorioAutocompileWorks,
-    );
+    writeFixtureTex(fixturePath, tex, new Map());
   }
 
   const expected = normalizeLf(readFileSync(fixturePath, "utf-8"));
@@ -57,7 +51,7 @@ test("Ordo TeX matches fixture for 2026-07-11 Stockholm", async () => {
     assembleOrdoDocument([summary], repo, "Ordo — test — 2026-07-11"),
   );
   await assertOrdoTexFixture(singleDayFixtureName, tex);
-}, process.env.UPDATE_FIXTURES === "1" ? 180_000 : 5_000);
+}, 5_000);
 
 test("Ordo TeX matches fixture for liturgical year 2025/2026 Stockholm", async () => {
   const ctx = ordoContext(calendarId);
@@ -67,4 +61,4 @@ test("Ordo TeX matches fixture for liturgical year 2025/2026 Stockholm", async (
   );
   const tex = normalizeLf(assembleOrdoDocument(summaries, repo));
   await assertOrdoTexFixture(yearFixtureName, tex);
-}, process.env.UPDATE_FIXTURES === "1" ? 300_000 : 10_000);
+}, 10_000);

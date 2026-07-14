@@ -2,18 +2,18 @@
  * Golden .tex snapshots for every hour + the full-day document, in each locale
  * and each TexAssembler output mode (`hybrid`, `plain`, `scored`).
  * `en` is dummy data (no melodies); `sv` is real data with sibling `.gabc` scores.
- * Regenerate goldens (`.tex`, `.gabc`, `.pdf`): `npm run test:fixtures:update`.
+ * Regenerate goldens (`.tex`, `.gabc`): `npm run test:fixtures:update`.
+ * Refresh reference PDFs: `npm run test:fixtures:compile-pdf`.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { expect, test } from "vitest";
 import { TexAssembler, type TexOutputMode } from "../../src/assemblers/texAssembler.js";
 import {
   buildSampleAbstractDay, loadSampleRepo, SAMPLE_LOCALES,
 } from "../helpers/buildSampleDay.js";
-import { needsGregorioScores, writeFixtureTexAndPdf } from "../helpers/compileFixtureTex.js";
-import { gregorioAutocompileDiagnosis, gregorioAutocompileWorks } from "../helpers/gregorioAutocompile.js";
+import { writeFixtureTex } from "../helpers/compileFixtureTex.js";
 import { normalizeLf } from "../helpers/normalizeLf.js";
 import { fixturesDir } from "../helpers/paths.js";
 import type { DataRepository } from "../../src/data/repository.js";
@@ -87,21 +87,7 @@ test.each(matrix)("[$locale/$mode] $name TeX matches fixture", async ({
   );
 
   if (process.env.UPDATE_FIXTURES === "1") {
-    if (needsGregorioScores(tex) && !(await gregorioAutocompileWorks())) {
-      const diagnosis = gregorioAutocompileDiagnosis();
-      console.warn(
-        diagnosis
-          ? `Skipping PDF update for ${path.basename(fixturePath)}:\n${diagnosis}`
-          : `Skipping PDF update for ${path.basename(fixturePath)}: Gregorio unavailable`,
-      );
-      mkdirSync(fixturesDir, { recursive: true });
-      writeFileSync(fixturePath, tex, "utf-8");
-      for (const [name, content] of gabcFiles) {
-        writeFileSync(path.join(fixturesDir, name), content, "utf-8");
-      }
-    } else {
-      await writeFixtureTexAndPdf(fixturePath, tex, gabcFiles, "loth", gregorioAutocompileWorks);
-    }
+    writeFixtureTex(fixturePath, tex, gabcFiles);
   }
 
   const expected = normalizeLf(readFileSync(fixturePath, "utf-8"));
@@ -116,4 +102,4 @@ test.each(matrix)("[$locale/$mode] $name TeX matches fixture", async ({
   } else {
     expect(gabcFiles.size).toBe(0);
   }
-}, process.env.UPDATE_FIXTURES === "1" ? 600_000 : 5_000);
+}, 5_000);

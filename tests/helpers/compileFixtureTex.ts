@@ -120,20 +120,26 @@ export function updateFixturePdf(fixtureTexPath: string, pdfPath: string): void 
   cpSync(pdfPath, pdfFixturePath);
 }
 
-/**
- * Write a golden `.tex` + sibling `.gabc` fixtures and compile PDF when possible.
- */
-export async function writeFixtureTexAndPdf(
+/** Write a golden `.tex` and sibling `.gabc` fixtures (no PDF). */
+export function writeFixtureTex(
   fixtureTexPath: string,
   tex: string,
   gabcFiles: ReadonlyMap<string, string>,
-  pkg: TexPackage,
-  gregorioWorks: () => Promise<boolean>,
-): Promise<void> {
+): void {
   const targetDir = path.dirname(fixtureTexPath);
   mkdirSync(targetDir, { recursive: true });
   writeFileSync(fixtureTexPath, tex, "utf-8");
   writeFixtureGabcFiles(gabcFiles, targetDir);
+}
+
+/** Compile an existing golden `.tex` and refresh its sibling `.pdf` for human review. */
+export async function compileFixturePdf(
+  fixtureTexPath: string,
+  gregorioWorks: () => Promise<boolean>,
+): Promise<void> {
+  const tex = readFileSync(fixtureTexPath, "utf-8");
+  const pkg = detectTexPackage(tex);
+  const targetDir = path.dirname(fixtureTexPath);
 
   if (needsGregorioScores(tex) && !(await gregorioWorks())) {
     console.warn(`Skipping PDF update for ${path.basename(fixtureTexPath)}: Gregorio unavailable`);
@@ -144,16 +150,27 @@ export async function writeFixtureTexAndPdf(
   const jobDir = fixtureGregorioCacheDir(jobName, targetDir);
   mkdirSync(jobDir, { recursive: true });
 
-  try {
-    const { pdfPath } = await compileTexJob(jobDir, jobName, tex, pkg, {
-      jobDir,
-      gabcSourceDir: targetDir,
-      gregorioCacheDir: jobDir,
-    });
-    updateFixturePdf(fixtureTexPath, pdfPath);
-  } catch (err) {
-    throw err;
-  }
+  const { pdfPath } = await compileTexJob(jobDir, jobName, tex, pkg, {
+    jobDir,
+    gabcSourceDir: targetDir,
+    gregorioCacheDir: jobDir,
+  });
+  updateFixturePdf(fixtureTexPath, pdfPath);
+}
+
+/**
+ * Write golden `.tex` + `.gabc` fixtures and compile the sibling `.pdf`.
+ * Prefer `writeFixtureTex` + `compileFixturePdf` when updating sources and PDFs separately.
+ */
+export async function writeFixtureTexAndPdf(
+  fixtureTexPath: string,
+  tex: string,
+  gabcFiles: ReadonlyMap<string, string>,
+  _pkg: TexPackage,
+  gregorioWorks: () => Promise<boolean>,
+): Promise<void> {
+  writeFixtureTex(fixtureTexPath, tex, gabcFiles);
+  await compileFixturePdf(fixtureTexPath, gregorioWorks);
 }
 
 /** Compile in a disposable directory (e.g. one-off smoke tests). */
