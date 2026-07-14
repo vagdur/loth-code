@@ -223,6 +223,7 @@ function buildCompactHour(
   labels: OrdoLabels,
   communeDisplay?: DayCommuneDisplay,
   deltaFromFeria = false,
+  deltaFerialEntries?: SlotEntry[],
 ): OrdoHourSummary | null {
   if (spec.key === "compline") {
     return {
@@ -255,6 +256,9 @@ function buildCompactHour(
       day: liturgicalDay.psalterDay,
     },
     psalterBaseline: liturgicalDay.celebration.type === "sunday" ? "sunday" as const : "feria" as const,
+    ...(deltaFromFeria && deltaFerialEntries?.length
+      ? { deltaFerialEntries }
+      : {}),
   };
   const prose = deltaFromFeria
     ? compactDeltaHourProse(entries, labels, proseOpts)
@@ -356,6 +360,7 @@ function buildDeltaHours(
     if (deltaEntries.length === 0) continue;
     const hour = buildCompactHour(
       spec, liturgicalDay, otherAbstractDay, deltaEntries, labels, communeDisplay, true,
+      ferialEntries,
     );
     if (hour) hours.push(hour);
   }

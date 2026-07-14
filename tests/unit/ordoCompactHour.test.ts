@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { compactHourProse, dayCommuneVariantFromHourEntryLists, type SlotEntry } from "../../src/ordo/compactHour.js";
+import {
+  compactDeltaHourProse, compactHourProse, dayCommuneVariantFromHourEntryLists, type SlotEntry,
+} from "../../src/ordo/compactHour.js";
 import type { OrdoLabels } from "../../src/types/texts.js";
 
 const labels = {
@@ -179,6 +181,83 @@ describe("compactHourProse", () => {
       entry("psalm", "invitatoriumspsalm", "psalm:psalm_94", "psalm 94"),
     ], labels, { hourKey: "invitatory" });
     expect(prose).toBe("Allt från propriet.");
+  });
+});
+
+describe("compactDeltaHourProse", () => {
+  test("memoria invitatory during Advent: common or feria, not common and seasonal", () => {
+    const seasonalAlt = {
+      groupKey: "seasonal:advent_w2_wed",
+      phrase: "årstidens proprium",
+      isProper: true,
+    };
+    const psalterAlt = {
+      groupKey: "psalter:2:Wednesday",
+      phrase: "psaltaret vecka 2 onsdag",
+      isProper: false,
+    };
+    const prose = compactDeltaHourProse(
+      [
+        entry(
+          "antiphon",
+          "invitatoriumsantifon",
+          "common:bvm:0",
+          "communet (den saliga jungfru Maria)",
+          [seasonalAlt, psalterAlt],
+        ),
+      ],
+      labels,
+      {
+        hourKey: "invitatory",
+        feriaPsalter: { week: 2, day: "Wednesday" },
+        dayCommuneVariant: "den saliga jungfru Maria",
+        deltaFerialEntries: [
+          entry(
+            "antiphon",
+            "invitatoriumsantifon",
+            "seasonal:advent_w2_wed",
+            "årstidens proprium",
+          ),
+        ],
+      },
+    );
+    expect(prose).toBe("Invitatoriumsantifon från communet eller ferian.");
+    expect(prose).not.toContain("årstidens proprium");
+    expect(prose).not.toContain(" och ");
+  });
+
+  test("memoria invitatory in ordinary time: common or feria", () => {
+    const psalterAlt = {
+      groupKey: "psalter:1:Wednesday",
+      phrase: "psaltaret vecka 1 onsdag",
+      isProper: false,
+    };
+    const prose = compactDeltaHourProse(
+      [
+        entry(
+          "antiphon",
+          "invitatoriumsantifon",
+          "common:pastors:0",
+          "communet ([pastors variant 1])",
+          [psalterAlt],
+        ),
+      ],
+      labels,
+      {
+        hourKey: "invitatory",
+        feriaPsalter: { week: 1, day: "Wednesday" },
+        dayCommuneVariant: "[pastors variant 1]",
+        deltaFerialEntries: [
+          entry(
+            "antiphon",
+            "invitatoriumsantifon",
+            "psalter:1:Wednesday",
+            "psaltaret vecka 1 onsdag",
+          ),
+        ],
+      },
+    );
+    expect(prose).toBe("Invitatoriumsantifon från communet eller ferian.");
   });
 });
 

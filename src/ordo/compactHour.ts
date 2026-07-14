@@ -414,6 +414,8 @@ export interface CompactHourOptions {
   feriaPsalter?: { week: PsalterWeek; day: Weekday };
   /** Baseline label when collapsing the current psalter (feria vs Sunday). */
   psalterBaseline?: "feria" | "sunday";
+  /** Ferial hour entries when building memoria delta prose. */
+  deltaFerialEntries?: SlotEntry[];
 }
 
 /** Unique commune variant when one variant appears in two or more hours, else null. */
@@ -464,6 +466,49 @@ export function compactHourProse(
   return prose;
 }
 
+function psalterBaselineKey(ctx: ProseContext): string {
+  if (!ctx.feriaPsalter) return "feria-baseline";
+  const { week, day } = ctx.feriaPsalter;
+  return `psalter:${week}:${day}`;
+}
+
+/**
+ * Memoria invitatory antiphon: common or the current ferial day (office-spec §5.4).
+ * Seasonal and psalter tail sources both represent the ferial option.
+ */
+function buildInvitatoryDeltaProse(
+  deltaEntries: SlotEntry[],
+  ferialEntries: SlotEntry[],
+  labels: OrdoLabels,
+  ctx: ProseContext,
+): string {
+  const antiphon = deltaEntries.find((e) => e.slotKey === "antiphon");
+  if (!antiphon) {
+    return buildPositiveClauses(
+      deltaEntries, labels, ctx, psalterBaselineKey(ctx),
+    ).join(" ");
+  }
+
+  const ferialAntiphon = ferialEntries.find((e) => e.slotKey === "antiphon");
+  const ferialBaselineKey = ferialAntiphon?.described.groupKey ?? psalterBaselineKey(ctx);
+  const matchesFerial = (described: DescribedSource): boolean =>
+    described.groupKey === ferialBaselineKey
+    || (ferialBaselineKey.startsWith("seasonal:")
+      && isCurrentPsalter(described.groupKey, ctx));
+
+  const winnerPhrase = phraseForProse(antiphon.described, labels, ctx);
+  if (antiphon.described.groupKey.startsWith("saint:")) {
+    return `${capitalizeFirst(antiphon.partLabel)} ${labels.prose.fromUr} ${winnerPhrase}.`;
+  }
+
+  const hasFerialAlternative = antiphon.alternatives?.some(matchesFerial) ?? false;
+  if (hasFerialAlternative) {
+    return `${capitalizeFirst(antiphon.partLabel)} ${labels.prose.from} ${winnerPhrase} ${labels.prose.or} ${labels.sources.feria}.`;
+  }
+
+  return `${capitalizeFirst(antiphon.partLabel)} ${labels.prose.fromUr} ${winnerPhrase}.`;
+}
+
 /** Prose for memoria delta hours: list only parts that differ from the ferial baseline. */
 export function compactDeltaHourProse(
   deltaEntries: SlotEntry[],
@@ -474,10 +519,13 @@ export function compactDeltaHourProse(
     return opts?.suffix?.trim() ?? "";
   }
   const ctx = proseContextFromOpts(opts);
-  const baselineKey = ctx.feriaPsalter
-    ? `psalter:${ctx.feriaPsalter.week}:${ctx.feriaPsalter.day}`
-    : "feria-baseline";
-  const prose = buildPositiveClauses(deltaEntries, labels, ctx, baselineKey).join(" ");
+  const prose = opts?.hourKey === "invitatory" && opts.deltaFerialEntries
+    ? buildInvitatoryDeltaProse(
+      deltaEntries, opts.deltaFerialEntries, labels, ctx,
+    )
+    : buildPositiveClauses(
+      deltaEntries, labels, ctx, psalterBaselineKey(ctx),
+    ).join(" ");
   if (opts?.suffix) {
     return prose ? `${prose} ${opts.suffix}` : opts.suffix;
   }
