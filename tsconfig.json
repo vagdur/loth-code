@@ -13,5 +13,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // src/browser needs the DOM lib; it is built by tsconfig.browser.json so DOM
+  // globals stay unavailable to the Node-side code here.
+  "exclude": ["src/browser"]
 }

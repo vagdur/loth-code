@@ -5,8 +5,9 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc -p tsconfig.browser.json",
     "dev": "tsc --watch",
+    "serve:hours": "npm run build && node scripts/serve-hours.mjs",
     "pretest": "npm run validate:data",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -37,12 +38,12 @@
     "mark:kln-split-failures:dry-run": "python scripts/mark-kln-split-failures.py --dry-run"
   },
   "dependencies": {
+    "@vagdur/exsurge": "^1.26.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
-    "@vagdur/exsurge": "^1.26.0",
     "cross-env": "^7.0.3",
     "typescript": "^5.5.0",
     "vitest": "^3.1.0"
