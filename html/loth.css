@@ -1,0 +1,191 @@
+/* loth.css — Liturgy of the Hours presentation (semantic markup → layout)
+ *
+ * The counterpart of tex/loth.sty: HtmlAssembler emits role-based class names
+ * only, and everything visual lives here. Hosts are meant to override or
+ * replace this file; the class names are the contract.
+ *
+ * Ships alongside ExsurgeChar.otf — exsurge draws ℣, ℟ and similar glyphs in a
+ * font family named "Exsurge Characters". `copyLothCss` (src/tools/htmlAssets.ts)
+ * copies both files into a target directory.
+ */
+
+@font-face {
+  font-family: "Exsurge Characters";
+  src: url("./ExsurgeChar.otf") format("opentype");
+  font-display: swap;
+}
+
+:root {
+  --loth-text: #1a1a1a;
+  --loth-rubric: #a4243b;
+  --loth-muted: #5a5a5a;
+  --loth-rule: #d8d4cc;
+  --loth-measure: 42rem;
+  --loth-gap: 1rem;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1.25rem 4rem;
+  color: var(--loth-text);
+  background: #fdfcfa;
+  font-family: "Georgia", "Palatino Linotype", serif;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+/* Hours ------------------------------------------------------------------- */
+
+.loth-hour {
+  max-width: var(--loth-measure);
+  margin: 0 auto;
+}
+
+.loth-page-break {
+  max-width: var(--loth-measure);
+  margin: 3rem auto;
+  border: 0;
+  border-top: 1px solid var(--loth-rule);
+}
+
+.loth-hour-heading {
+  margin: 0 0 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.loth-section-heading {
+  margin: 2rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--loth-muted);
+}
+
+.loth-hour > * + * {
+  margin-top: var(--loth-gap);
+}
+
+/* Rubrics and dialogue ---------------------------------------------------- */
+
+/* ℣. ℟. Ant. — the red letters. Falls back gracefully if the font is absent. */
+.loth-rubric {
+  font-family: "Exsurge Characters", "Georgia", serif;
+  color: var(--loth-rubric);
+  font-weight: 600;
+}
+
+.loth-antiphon,
+.loth-versicle,
+.loth-response,
+.loth-dialogue-line,
+.loth-prose,
+.loth-reading-text,
+.loth-hymn-stanza,
+.loth-psalm-verse,
+.loth-intercessions-intro,
+.loth-intercessions-response {
+  margin: 0 0 0.5rem;
+}
+
+.loth-antiphon {
+  font-style: italic;
+}
+
+.loth-melody-rubric {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--loth-muted);
+}
+
+.loth-psalm-tone-label {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--loth-muted);
+}
+
+.loth-let-us-pray {
+  margin: 0 0 0.5rem;
+  font-style: italic;
+  color: var(--loth-rubric);
+}
+
+.loth-dialogue,
+.loth-responsory,
+.loth-intention {
+  margin: 0 0 var(--loth-gap);
+}
+
+.loth-intention {
+  margin-top: 0.75rem;
+}
+
+/* Text blocks ------------------------------------------------------------- */
+
+.loth-reference {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--loth-muted);
+}
+
+.loth-psalm-verse {
+  padding-left: 1.5rem;
+  text-indent: -1.5rem;
+}
+
+.loth-hymn-stanza + .loth-hymn-stanza {
+  margin-top: 0.85rem;
+}
+
+.loth-hymn {
+  font-style: italic;
+}
+
+/* Scores ------------------------------------------------------------------ */
+
+/*
+ * A score mount before `mountScores` runs is an empty div; afterwards it holds
+ * exsurge's <svg>. Give it room either way so the page does not jump, and let
+ * a stubbornly wide score scroll rather than overflow the column.
+ */
+.loth-score {
+  margin: 0.75rem 0 1rem;
+  overflow-x: auto;
+}
+
+.loth-score svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Playback highlights the sounding note itself (ChantPlayer injects scoped CSS
+ * for `.playing` unless you pass `injectStyle: false`), so nothing here. */
+
+.loth-score[data-loth-score-error]::after {
+  content: attr(data-loth-score-error);
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--loth-rubric);
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-size: 0.8rem;
+  color: var(--loth-rubric);
+}
+
+/* Print ------------------------------------------------------------------- */
+
+@media print {
+  body {
+    background: #fff;
+    padding: 0;
+  }
+
+  .loth-page-break {
+    border: 0;
+    break-after: page;
+  }
+}
