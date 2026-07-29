@@ -334,13 +334,25 @@ export function htmlPlainProse(text: string): string {
  * self-contained; `mountScores` in src/browser/lothChant.ts finds these by
  * `[data-loth-score]` and hands each to exsurge.
  */
-export function htmlScoreLine(id: string, gabc: string, extraClass = ""): string {
+export function htmlScoreLine(
+  id: string,
+  gabc: string,
+  extraClass = "",
+  language?: "svenska" | "latin",
+): string {
   const cls = extraClass ? `loth-score ${extraClass}` : "loth-score";
-  return `<div class="${cls}" data-loth-score data-score-id="${escapeHtmlAttr(id)}" data-gabc="${escapeHtmlAttr(gabc)}"></div>`;
+  const langAttr = language
+    ? ` data-language="${escapeHtmlAttr(language)}"`
+    : "";
+  return `<div class="${cls}" data-loth-score data-score-id="${escapeHtmlAttr(id)}" data-gabc="${escapeHtmlAttr(gabc)}"${langAttr}></div>`;
 }
 
-export function htmlPsalmToneScoreLine(id: string, gabc: string): string {
-  return htmlScoreLine(id, gabc, "loth-psalm-tone");
+export function htmlPsalmToneScoreLine(
+  id: string,
+  gabc: string,
+  language?: "svenska" | "latin",
+): string {
+  return htmlScoreLine(id, gabc, "loth-psalm-tone", language);
 }
 
 // ---------------------------------------------------------------------------

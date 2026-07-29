@@ -157,6 +157,8 @@ export interface StoredMelody {
   kind: MelodyKind;
   /** Gregorian mode 1–8, when identifiable. */
   mode?: number;
+  /** Syllabification language for exsurge: Gregorio header values. */
+  language?: "svenska" | "latin";
   /** Full GABC body (hymns and other single-body pieces). */
   gabc?: string;
   /** Split GABC parts (antiphon+tone, responsory sections, ...). */

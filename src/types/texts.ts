@@ -22,6 +22,8 @@ export interface Verse {
 export interface Melody {
   /** Gregorian mode 1–8, when applicable. */
   mode?: number;
+  /** Syllabification language for exsurge (`svenska` | `latin`). */
+  language?: "svenska" | "latin";
   /** GABC notation source. */
   gabc?: string;
   /** Free-form note (edition, "simple tone", "solemn tone", etc.). */
@@ -34,6 +36,7 @@ export interface Melody {
  */
 export interface ShortResponsoryMelody {
   mode?: number;
+  language?: "svenska" | "latin";
   note?: string;
   responsory?: string;
   responsorySecond?: string;
@@ -48,6 +51,7 @@ export interface ShortResponsoryMelody {
  */
 export interface DialogueMelody extends MelodyParts {
   mode?: number;
+  language?: "svenska" | "latin";
   note?: string;
   gabc?: string;
 }

@@ -117,6 +117,7 @@ function toInlineMelody(
 ): Melody {
   const melody: Melody = {};
   if (stored.mode !== undefined) melody.mode = stored.mode;
+  if (stored.language) melody.language = stored.language;
   if (ref.note) melody.note = ref.note;
   // Antiphon-kind melodies may carry a separately notated Eastertide body.
   const paschal = day.season === "eastertide" ? stored.parts?.antiphonPaschal : undefined;
@@ -132,6 +133,7 @@ function toDialogueMelody(
 ): DialogueMelody {
   const melody: DialogueMelody = { ...(stored.parts ?? {}) };
   if (stored.mode !== undefined) melody.mode = stored.mode;
+  if (stored.language) melody.language = stored.language;
   if (ref.note) melody.note = ref.note;
   if (stored.gabc) melody.gabc = stored.gabc;
   return melody;
@@ -143,6 +145,7 @@ function toShortResponsoryMelody(
 ): ShortResponsoryMelody {
   const melody: ShortResponsoryMelody = {};
   if (stored.mode !== undefined) melody.mode = stored.mode;
+  if (stored.language) melody.language = stored.language;
   if (ref.note) melody.note = ref.note;
   const p = stored.parts ?? {};
   if (p.responsory) melody.responsory = p.responsory;

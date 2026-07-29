@@ -42,8 +42,21 @@ export interface MountOptions {
   autoResize?: boolean;
   /** Render the first letter as a drop cap. Default false. */
   useDropCap?: boolean;
+  /**
+   * Page-level fallback when a score mount has no `data-language`.
+   * Gregorio values: `svenska` | `latin`. Defaults to swedish for this corpus.
+   */
+  language?: "svenska" | "latin";
   /** Called when one score fails to lay out; the rest still mount. */
   onError?: (error: Error, element: HTMLElement) => void;
+}
+
+/** Map Gregorio language headers to exsurge syllabification languages. */
+function exsurgeLanguage(
+  code: string | undefined,
+): (typeof exsurge.language)[keyof typeof exsurge.language] {
+  if (code === "latin") return exsurge.language.latin;
+  return exsurge.language.swedish;
 }
 
 /** Per-element bookkeeping, so `unmountScores` can undo exactly what we did. */
@@ -85,6 +98,9 @@ export function mountScore(element: HTMLElement, options?: MountOptions): LothSc
   // One ChantContext per score: parsing mutates ctxt.activeClef and layout is
   // async, so scores must not share one.
   const ctxt = new exsurge.ChantContext();
+  ctxt.defaultLanguage = exsurgeLanguage(
+    element.dataset["language"] ?? options?.language,
+  );
   try {
     exsurge.createPlayableChant(
       ctxt,

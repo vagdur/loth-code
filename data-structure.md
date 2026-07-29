@@ -153,6 +153,7 @@ StoredMelody {
   id:           string         // "kln/<split-path>/<filename-slug>", e.g. "kln/0125-V/02-antifon-1"
   kind:         MelodyKind
   mode?:        int
+  language?:    "svenska" | "latin"  // exsurge syllabification; from raw gabc_metadata
   gabc?:        string         // full GABC body (hymns etc.)
   parts?: {                    // split bodies, by kind:
     antiphon?: string,  psalm_tone?: string,                 // antiphon / gospel_antiphon
