@@ -38,7 +38,7 @@
     "mark:kln-split-failures:dry-run": "python scripts/mark-kln-split-failures.py --dry-run"
   },
   "dependencies": {
-    "@vagdur/exsurge": "^1.27.0",
+    "@vagdur/exsurge": "^1.28.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
