@@ -25,6 +25,7 @@
     "map:melodies:agent-tasks": "node scripts/map-melodies.mjs --apply --emit-agent-tasks",
     "import:melodies": "npm run build && node scripts/import-melody-texts.mjs",
     "report:melody-coverage": "node scripts/report-melody-coverage.mjs",
+    "schedule:melodies": "npm run build && node scripts/compute-melody-schedule.mjs",
     "fetch:kln-melodies": "node scripts/fetch-kln-melodies.mjs",
     "split:kln-melodies": "python scripts/split-kln-pdfs.py",
     "split:kln-melodies:force": "python scripts/split-kln-pdfs.py --force",
