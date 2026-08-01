@@ -152,7 +152,9 @@ describe("getOrdinaryTimeWeek", () => {
   test("OT II 2026: resumes at week 8 on Monday after Pentecost (33-week year)", () => {
     const otII = addDays(pentecost(Y), 1);
     expect(getOrdinaryTimeWeek(otII)).toBe(8);
+    // Monday-anchored: Sunday 12 Jul is still week 14; Ordo Sunday number is 15.
     expect(getOrdinaryTimeWeek(utcDate(2026, 7, 12))).toBe(14);
+    expect(getOrdinaryTimeWeek(utcDate(2026, 7, 2))).toBe(13);
   });
 });
 
@@ -164,9 +166,30 @@ describe("getSundayUnderYearNumber", () => {
   test("2026-07-12 is the 15th Sunday under året per Ordo 2025-2026", () => {
     expect(getSundayUnderYearNumber(utcDate(2026, 7, 12))).toBe(15);
   });
+
+  test("2026-08-02 is the 18th Sunday under året", () => {
+    expect(getSundayUnderYearNumber(utcDate(2026, 8, 2))).toBe(18);
+  });
+
+  test("year-end Sundays: 33rd before Christ the King (always 34th)", () => {
+    expect(getSundayUnderYearNumber(utcDate(2023, 11, 19))).toBe(33);
+    expect(getSundayUnderYearNumber(utcDate(2023, 11, 26))).toBe(34);
+    expect(getSundayUnderYearNumber(utcDate(2026, 11, 15))).toBe(33);
+    expect(getSundayUnderYearNumber(utcDate(2026, 11, 22))).toBe(34);
+    expect(getSundayUnderYearNumber(utcDate(2027, 11, 14))).toBe(33);
+    expect(getSundayUnderYearNumber(utcDate(2027, 11, 21))).toBe(34);
+  });
 });
 
 describe("getSeasonalDayKey", () => {
+  test("OT Sunday seasonal key matches the Sunday ordinal", () => {
+    expect(getSeasonalDayKey(utcDate(2026, 8, 2))).toBe("ot_w18_sun");
+    expect(getSeasonalDayKey(utcDate(2026, 1, 18))).toBe("ot_w2_sun");
+    expect(getSeasonalDayKey(utcDate(2026, 7, 2))).toBe("ot_w13_thu");
+    expect(getSeasonalDayKey(utcDate(2023, 11, 19))).toBe("ot_w33_sun");
+    expect(getSeasonalDayKey(utcDate(2026, 11, 22))).toBe("christ_the_king");
+  });
+
   test("Ash Wednesday", () => {
     expect(getSeasonalDayKey(ashWednesday(Y))).toBe("ash_wednesday");
   });

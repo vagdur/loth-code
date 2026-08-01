@@ -168,8 +168,12 @@ function omitWeekAfterPentecost(year: number, otIStart: Date): boolean {
 
 /**
  * Returns the Ordinary Time week number (1–34), or 0 if not in OT.
- * After Pentecost the numbering continues from where it was interrupted by Lent.
- * In 33-week years the week immediately after Pentecost is skipped (GILH 152).
+ * Weeks are Monday-anchored (otIStart / otIIStart are Mondays): Mon–Sun share
+ * a week number. After Pentecost the numbering continues from where Lent
+ * interrupted it; in 33-week years the week after Pentecost is skipped (GILH 152).
+ *
+ * Sunday gospel antiphons / Ordo Sunday numbers use {@link getSundayUnderYearNumber}
+ * instead — Monday-anchoring leaves OT Sundays one ordinal low in many years.
  */
 export function getOrdinaryTimeWeek(date: Date, calendarId = "general"): number {
   const season = getSeason(date, calendarId);
@@ -193,7 +197,10 @@ export function getOrdinaryTimeWeek(date: Date, calendarId = "general"): number 
     const skipAfterPentecost = omitWeekAfterPentecost(year, otIStart) ? 1 : 0;
     // Skip the Sunday readings of the interrupted week; in 33-week years also
     // skip the week immediately after Pentecost (local_adjustments §7).
-    return lentInterruptedWeek + weeksSincePentecost + 1 + skipAfterPentecost;
+    return Math.min(
+      34,
+      lentInterruptedWeek + weeksSincePentecost + 1 + skipAfterPentecost,
+    );
   } else {
     // Before Lent (OT I)
     return Math.floor(daysBetween(date, otIStart) / 7) + 1;
@@ -202,16 +209,28 @@ export function getOrdinaryTimeWeek(date: Date, calendarId = "general"): number 
 
 /**
  * Ordinal of a Sunday "under året" in Swedish LOH / Ordo reckoning (1–34).
- * Equals the OT week number plus one: the Sunday after Epiphany (Baptism of
- * the Lord) counts as the first Sunday in the yearly sequence even though it
- * is celebrated under its own title.
+ * Baptism of the Lord stands in for the 1st Sunday; Christ the King is always
+ * the 34th. Maps Monday-anchored {@link getOrdinaryTimeWeek} onto that scale so
+ * `ot_wN_sun` propers match the Ordo Sunday number.
  */
 export function getSundayUnderYearNumber(
   date: Date,
   calendarId = "general",
 ): number {
   const otWeek = getOrdinaryTimeWeek(date, calendarId);
-  return otWeek > 0 ? otWeek + 1 : 0;
+  if (otWeek <= 0) return 0;
+
+  const b = getBounds(date, calendarId);
+  if (date < b.otIIStart) {
+    // OT I: Monday-anchored week 1 ends on the 2nd Sunday under året.
+    return otWeek + 1;
+  }
+
+  // OT II: shift so Christ the King lands on 34 (covers years where the
+  // Monday-anchored CTK week is 32–34 depending on Lent/Pentecost spacing).
+  const ctk = christTheKing(b.nextAdventStart.getUTCFullYear());
+  const ctkWeek = getOrdinaryTimeWeek(ctk, calendarId);
+  return otWeek - ctkWeek + 34;
 }
 
 // ---------------------------------------------------------------------------
@@ -368,7 +387,12 @@ export function getSeasonalDayKey(
       ) {
         return "christ_the_king";
       }
-      const otWeek = getOrdinaryTimeWeek(date, calendarId);
+      // Sundays use Ordo Sunday numbers (ot_w18_sun = 18th Sunday); weekdays
+      // keep the Monday-anchored OT week used for ferial propers / OoR.
+      const otWeek =
+        dow === 0
+          ? getSundayUnderYearNumber(date, calendarId)
+          : getOrdinaryTimeWeek(date, calendarId);
       if (otWeek > 0) return `ot_w${otWeek}_${wd}`;
       return null;
     }
