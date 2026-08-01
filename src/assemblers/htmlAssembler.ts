@@ -503,7 +503,7 @@ export class HtmlAssembler implements Assembler<string> {
     for (const key of parts) {
       const gabc = melody[key];
       if (typeof gabc !== "string") continue;
-      const line = this.emitScore(gabc, "antiphon", melody.language);
+      const line = this.emitScore(gabc, "antiphon", melody.language, melody.id);
       if (line) {
         chunks.push(line);
         scored = true;
@@ -602,6 +602,7 @@ export class HtmlAssembler implements Assembler<string> {
     gabc: string | undefined,
     kind: "antiphon" | "psalmTone" = "antiphon",
     language?: "svenska" | "latin",
+    melodyId?: string,
   ): string {
     if (!this.shouldEmitScores()) return "";
     const trimmed = gabc?.trim();
@@ -611,8 +612,8 @@ export class HtmlAssembler implements Assembler<string> {
     const source = withGabcHeader(trimmed, id);
     this.scores.set(id, source);
     return kind === "psalmTone"
-      ? htmlPsalmToneScoreLine(id, source, language)
-      : htmlScoreLine(id, source, "", language);
+      ? htmlPsalmToneScoreLine(id, source, language, melodyId)
+      : htmlScoreLine(id, source, "", language, melodyId);
   }
 
   private htmlGospelCanticleSlot(
@@ -699,12 +700,12 @@ export class HtmlAssembler implements Assembler<string> {
 
     let scoreLine = "";
     if (this.shouldEmitScores() && a.melody?.gabc) {
-      scoreLine = this.emitScore(a.melody.gabc, "antiphon", a.melody.language);
+      scoreLine = this.emitScore(a.melody.gabc, "antiphon", a.melody.language, a.melody.id);
     }
 
     let toneLine = "";
     if (this.shouldEmitScores() && includePsalmTone && a.psalmTone?.trim()) {
-      toneLine = this.emitScore(a.psalmTone, "psalmTone", a.melody?.language);
+      toneLine = this.emitScore(a.psalmTone, "psalmTone", a.melody?.language, a.melody?.id);
     }
 
     const hasScore = Boolean(scoreLine || toneLine);
@@ -731,7 +732,7 @@ export class HtmlAssembler implements Assembler<string> {
 
     let scoreLine = "";
     if (this.shouldEmitScores() && hymn.melody?.gabc) {
-      scoreLine = this.emitScore(hymn.melody.gabc, "antiphon", hymn.melody.language);
+      scoreLine = this.emitScore(hymn.melody.gabc, "antiphon", hymn.melody.language, hymn.melody.id);
     }
 
     if (this.isScoredOnly()) {
@@ -767,7 +768,7 @@ export class HtmlAssembler implements Assembler<string> {
       if (canticle?.melody?.gabc?.trim()) {
         const rub = htmlMelodyRubric(canticle.melody);
         if (rub) canticleMelody.push(rub);
-        const line = this.emitScore(canticle.melody.gabc, "antiphon", canticle.melody.language);
+        const line = this.emitScore(canticle.melody.gabc, "antiphon", canticle.melody.language, canticle.melody.id);
         if (line) canticleMelody.push(line);
       }
     }
@@ -786,7 +787,7 @@ export class HtmlAssembler implements Assembler<string> {
         r.melody?.versicle,
         r.melody?.gloria,
       ]) {
-        const line = this.emitScore(gabc, "antiphon", r.melody?.language);
+        const line = this.emitScore(gabc, "antiphon", r.melody?.language, r.melody?.id);
         if (line) scoreLines.push(line);
       }
     }

@@ -204,7 +204,11 @@ describe("hydrateMelodies", () => {
       melodyRefs: [{ ref: "kln/a/ot-antifon" }],
     };
     const hydrated = hydrateMelodies(antiphon, repo, makeDay());
-    expect(hydrated.melody).toEqual({ mode: 6, gabc: "(c4) Or(f)di(g)na(f)rie.(f)" });
+    expect(hydrated.melody).toEqual({
+      id: "kln/a/ot-antifon",
+      mode: 6,
+      gabc: "(c4) Or(f)di(g)na(f)rie.(f)",
+    });
     expect(hydrated.psalmTone).toBe("(c4) (f) (gR)");
     // Original untouched.
     expect(antiphon.melody).toBeUndefined();
@@ -229,6 +233,7 @@ describe("hydrateMelodies", () => {
     };
     const hydrated = hydrateMelodies(resp, repo, makeDay());
     expect(hydrated.melody).toEqual({
+      id: "kln/a/kort-resp",
       responsory: "(c4) Förs(f)ta.(f)",
       responsorySecond: "(c4) And(f)ra.(f)",
       versicle: "(c4) Vers.(f)",

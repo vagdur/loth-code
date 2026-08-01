@@ -339,20 +339,26 @@ export function htmlScoreLine(
   gabc: string,
   extraClass = "",
   language?: "svenska" | "latin",
+  /** Store melody id (`kln/...`) when the score came from the melody store. */
+  melodyId?: string,
 ): string {
   const cls = extraClass ? `loth-score ${extraClass}` : "loth-score";
   const langAttr = language
     ? ` data-language="${escapeHtmlAttr(language)}"`
     : "";
-  return `<div class="${cls}" data-loth-score data-score-id="${escapeHtmlAttr(id)}" data-gabc="${escapeHtmlAttr(gabc)}"${langAttr}></div>`;
+  const melodyAttr = melodyId
+    ? ` data-melody-id="${escapeHtmlAttr(melodyId)}"`
+    : "";
+  return `<div class="${cls}" data-loth-score data-score-id="${escapeHtmlAttr(id)}" data-gabc="${escapeHtmlAttr(gabc)}"${langAttr}${melodyAttr}></div>`;
 }
 
 export function htmlPsalmToneScoreLine(
   id: string,
   gabc: string,
   language?: "svenska" | "latin",
+  melodyId?: string,
 ): string {
-  return htmlScoreLine(id, gabc, "loth-psalm-tone", language);
+  return htmlScoreLine(id, gabc, "loth-psalm-tone", language, melodyId);
 }
 
 // ---------------------------------------------------------------------------

@@ -20,6 +20,11 @@ export interface Verse {
  * don't have to parse the GABC source.
  */
 export interface Melody {
+  /**
+   * Store id when this melody was hydrated from `melodyRefs`
+   * (e.g. `kln/2023/09/02PAA/01-antifon`). Absent for inline-only melodies.
+   */
+  id?: string;
   /** Gregorian mode 1–8, when applicable. */
   mode?: number;
   /** Syllabification language for exsurge (`svenska` | `latin`). */
@@ -35,6 +40,8 @@ export interface Melody {
  * Each field is a GABC body. Any part may be absent when not notated.
  */
 export interface ShortResponsoryMelody {
+  /** Store id when hydrated from `melodyRefs`. */
+  id?: string;
   mode?: number;
   language?: "svenska" | "latin";
   note?: string;
@@ -50,6 +57,8 @@ export interface ShortResponsoryMelody {
  * melody's split parts, or a single `gabc` body for through-sung pieces.
  */
 export interface DialogueMelody extends MelodyParts {
+  /** Store id when hydrated from `melodyRefs`. */
+  id?: string;
   mode?: number;
   language?: "svenska" | "latin";
   note?: string;

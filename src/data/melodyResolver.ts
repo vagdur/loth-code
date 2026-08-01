@@ -115,7 +115,7 @@ function toInlineMelody(
   ref: MelodyRef,
   day: LiturgicalDay,
 ): Melody {
-  const melody: Melody = {};
+  const melody: Melody = { id: stored.id };
   if (stored.mode !== undefined) melody.mode = stored.mode;
   if (stored.language) melody.language = stored.language;
   if (ref.note) melody.note = ref.note;
@@ -131,7 +131,7 @@ function toDialogueMelody(
   stored: StoredMelody,
   ref: MelodyRef,
 ): DialogueMelody {
-  const melody: DialogueMelody = { ...(stored.parts ?? {}) };
+  const melody: DialogueMelody = { id: stored.id, ...(stored.parts ?? {}) };
   if (stored.mode !== undefined) melody.mode = stored.mode;
   if (stored.language) melody.language = stored.language;
   if (ref.note) melody.note = ref.note;
@@ -143,7 +143,7 @@ function toShortResponsoryMelody(
   stored: StoredMelody,
   ref: MelodyRef,
 ): ShortResponsoryMelody {
-  const melody: ShortResponsoryMelody = {};
+  const melody: ShortResponsoryMelody = { id: stored.id };
   if (stored.mode !== undefined) melody.mode = stored.mode;
   if (stored.language) melody.language = stored.language;
   if (ref.note) melody.note = ref.note;
