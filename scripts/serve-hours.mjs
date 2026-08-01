@@ -22,7 +22,7 @@ import { SanctoralCalendarRegistry } from "../dist/calendar/sanctoralRegistry.js
 import { initSanctoralRegistry } from "../dist/calendar/saints.js";
 import { defaultContext, resolveDay, utcDate } from "../dist/calendar/index.js";
 import { DataRepository } from "../dist/data/repository.js";
-import { buildDay } from "../dist/hours/index.js";
+import { buildDay, eveningVespers } from "../dist/hours/index.js";
 import { HtmlAssembler } from "../dist/assemblers/htmlAssembler.js";
 import { exsurgeDir, exsurgeFontPath } from "../dist/tools/htmlAssets.js";
 
@@ -105,7 +105,7 @@ function renderHour(assembler, day, repo, hour) {
       if (!h) return `<p class="loth-prose">No ${hour} on this day.</p>`;
       return assembler.assembleDaytimePrayer(h, repo);
     }
-    case "vespers": return assembler.assembleVespers(day.vespers, repo);
+    case "vespers": return assembler.assembleVespers(eveningVespers(day), repo);
     case "compline": return assembler.assembleCompline(day.compline, repo);
     default: return `<p class="loth-prose">Unknown hour "${hour}".</p>`;
   }

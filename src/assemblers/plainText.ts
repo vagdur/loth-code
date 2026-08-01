@@ -6,6 +6,7 @@
  */
 
 import type { DataRepository } from "../data/repository.js";
+import { eveningVespers } from "../hours/index.js";
 import type {
   AbstractCompline, AbstractDay, AbstractDaytimePrayer,
   AbstractLauds, AbstractOfficeOfReadings, AbstractVespers,
@@ -68,7 +69,7 @@ export class PlainTextAssembler implements Assembler<string> {
     if (day.terce) parts.push(this.assembleDaytimePrayer(day.terce, repo, choices));
     if (day.sext)  parts.push(this.assembleDaytimePrayer(day.sext, repo, choices));
     if (day.none)  parts.push(this.assembleDaytimePrayer(day.none, repo, choices));
-    parts.push(this.assembleVespers(day.vespers, repo, choices));
+    parts.push(this.assembleVespers(eveningVespers(day), repo, choices));
     parts.push(this.assembleCompline(day.compline, repo, choices));
     return parts.join("\n\n" + "═".repeat(60) + "\n\n");
   }

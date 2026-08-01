@@ -16,6 +16,7 @@
 import * as exsurge from "@vagdur/exsurge";
 import { expect, test } from "vitest";
 import { HtmlAssembler, type HtmlOutputMode } from "../../src/assemblers/htmlAssembler.js";
+import { eveningVespers } from "../../src/hours/index.js";
 import {
   buildSampleAbstractDay, loadSampleRepo, SAMPLE_LOCALES,
 } from "../helpers/buildSampleDay.js";
@@ -28,7 +29,7 @@ const HOURS: ReadonlyArray<{
 }> = [
   { name: "Office of Readings", render: (a, d, r) => a.assembleOfficeOfReadings(d.officeOfReadings, r) },
   { name: "Lauds", render: (a, d, r) => a.assembleLauds(d.lauds, r) },
-  { name: "Vespers", render: (a, d, r) => a.assembleVespers(d.vespers, r) },
+  { name: "Vespers", render: (a, d, r) => a.assembleVespers(eveningVespers(d), r) },
   { name: "Compline", render: (a, d, r) => a.assembleCompline(d.compline, r) },
   { name: "Full day", render: (a, d, r) => a.assembleDay(d, r) },
 ];

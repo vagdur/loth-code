@@ -10,6 +10,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { expect, test } from "vitest";
 import { HtmlAssembler, type HtmlOutputMode } from "../../src/assemblers/htmlAssembler.js";
+import { eveningVespers } from "../../src/hours/index.js";
 import {
   buildSampleAbstractDay, loadSampleRepo, SAMPLE_LOCALES,
 } from "../helpers/buildSampleDay.js";
@@ -46,7 +47,7 @@ const cases: Case[] = [
   {
     name: "Vespers",
     jobName: "vespers",
-    render: (a, day, repo) => a.assembleVespers(day.vespers, repo),
+    render: (a, day, repo) => a.assembleVespers(eveningVespers(day), repo),
   },
   {
     name: "Compline",

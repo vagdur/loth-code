@@ -7,7 +7,7 @@
  */
 
 import type { AssemblyContext, LiturgicalDay } from "../types/calendar.js";
-import type { AbstractDay } from "../types/hours.js";
+import type { AbstractDay, AbstractVespers } from "../types/hours.js";
 import type { DayChoices } from "../types/options.js";
 import { PSALMODY_COMPLEMENTARY, PSALMODY_CURRENT } from "../types/options.js";
 
@@ -30,6 +30,19 @@ export function defaultCurrentDaytimeHour(
   return daytimeHoursSaid.length <= 1
     ? (daytimeHoursSaid[0] ?? "sext")
     : "sext";
+}
+
+/**
+ * The Vespers prayed this evening.
+ *
+ * When `day.firstVespers` is present, calendar resolution has already decided
+ * that First Vespers of tomorrow outranks today's Vespers (office-spec §4 /
+ * GILH n. 61) — e.g. Saturday before Sunday, even if the day is a memoria.
+ * Callers assembling "vespers" for the evening should use this, not
+ * `day.vespers` alone.
+ */
+export function eveningVespers(day: AbstractDay): AbstractVespers {
+  return day.firstVespers ?? day.vespers;
 }
 
 export function buildDay(

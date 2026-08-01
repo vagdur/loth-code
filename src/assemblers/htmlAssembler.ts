@@ -18,6 +18,7 @@
  */
 
 import type { DataRepository } from "../data/repository.js";
+import { eveningVespers } from "../hours/index.js";
 import type {
   AbstractCompline, AbstractDay, AbstractDaytimePrayer,
   AbstractLauds, AbstractOfficeOfReadings, AbstractVespers,
@@ -173,9 +174,10 @@ export class HtmlAssembler implements Assembler<string> {
     if (day.terce) bodies.push(htmlHourFragment("terce", this.daytimePrayerBody(day.terce, repo, choices)));
     if (day.sext)  bodies.push(htmlHourFragment("sext", this.daytimePrayerBody(day.sext, repo, choices)));
     if (day.none)  bodies.push(htmlHourFragment("none", this.daytimePrayerBody(day.none, repo, choices)));
+    const vespers = eveningVespers(day);
     bodies.push(htmlHourFragment(
-      day.vespers.isFirstVespers ? "firstVespers" : "vespers",
-      this.vespersBody(day.vespers, repo, choices),
+      vespers.isFirstVespers ? "firstVespers" : "vespers",
+      this.vespersBody(vespers, repo, choices),
     ));
     bodies.push(htmlHourFragment("compline", this.complineBody(day.compline, repo, choices)));
     return this.wrap(repo, bodies.join('\n<hr class="loth-page-break">\n'));

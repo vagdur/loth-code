@@ -204,8 +204,11 @@ export interface AbstractDay {
   sext?:  AbstractDaytimePrayer;
   none?:  AbstractDaytimePrayer;
   /**
-   * firstVespers: the Vespers of THIS evening that belong to tomorrow's celebration.
-   * vespers: the Vespers of THIS day's celebration (second Vespers if solemnity).
+   * firstVespers: Vespers of THIS evening belonging to tomorrow's celebration,
+   * present only when that First Vespers outranks today's Vespers (GILH n. 61).
+   * When set, it is the evening office to pray (see eveningVespers()).
+   * vespers: Vespers of THIS day's celebration (always built; second Vespers
+   * if solemnity). Suppressed for prayer when firstVespers is present.
    */
   firstVespers?: AbstractVespers;
   vespers: AbstractVespers;
