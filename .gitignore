@@ -30,3 +30,17 @@ tests/fixtures/.compile-cache/
 # `npm run map:melodies:agent-tasks`. proposals.yaml / calendar_proposals.yaml
 # (the review ledgers) ARE tracked.
 data/sv/melody_mapping/agent_tasks/
+
+# Artifacts from TeX compiler:
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.fls
+*.fdb_latexmk
+*.fls
+*.fdb_latexmk
+*.fls
+*.fdb_latexmk
+*.toc
+*.out
