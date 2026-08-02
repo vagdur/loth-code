@@ -205,12 +205,17 @@ describe("shortReadingRef and antiphonRef and intercessionsRef", () => {
     });
   });
 
-  test("antiphonRef: memoria canticle antiphon ends at common (no psalter)", () => {
+  // GILH 119 / 235 b): on a memoria without a proper antiphon, the canticle
+  // antiphon may be taken from the Common *or* from the current ferial day.
+  test("antiphonRef: memoria canticle antiphon reaches the ferial day", () => {
     const ctx = baseCtx(obligatoryMemoria());
     const src = antiphonRef(ctx, "lauds.benedictusAntiphon", "lauds.benedictusAntiphonPsalter");
     const kinds = flattenSources(src).map((s) => s.kind);
-    expect(kinds).toEqual(["saint", "common"]);
-    expect(flattenSources(src).some((s) => s.kind === "psalter")).toBe(false);
+    expect(kinds).toEqual(["saint", "common", "seasonal", "psalter"]);
+    expect(flattenSources(src).at(-1)).toMatchObject({
+      kind: "psalter",
+      field: "lauds.benedictusAntiphonPsalter",
+    });
   });
 
   test("antiphonRef: memoria invitatory still falls back to psalter", () => {

@@ -163,14 +163,19 @@ describe("summarizeOrdoDay (stockholm)", () => {
     expect(sebastian!.hours.find((h) => h.key === "daytime")).toBeUndefined();
   });
 
-  test("2026-01-20 Fabianus lauds shows fixed canticle antiphon and optional hymn parts", () => {
+  // GILH 119 / 235 b): the Benedictus antiphon is ad libitum from the Common or
+  // the ferial day, exactly like the hymn, short reading and intercessions, so it
+  // is listed together with them rather than fixed to the Common.
+  test("2026-01-20 Fabianus lauds lists the canticle antiphon among the optional parts", () => {
     const summary = summarizeOrdoDay(utcDate(2026, 1, 20), ctx, repo);
     const fabian = summary.memoriaBlocks!.find((b) => b.heading.includes("Fabianus"));
     expect(fabian).toBeDefined();
     const lauds = fabian!.hours.find((h) => h.key === "lauds");
     expect(lauds).toBeDefined();
-    expect(lauds!.prose).toContain("Antifon till Benedictus ur communet");
-    expect(lauds!.prose).toContain("Hymn, kort läsning, och förböner från communet eller ferian");
+    expect(lauds!.prose).toContain(
+      "Hymn, kort läsning, antifon till Benedictus, och förböner från communet eller ferian",
+    );
+    expect(lauds!.prose).not.toContain("Antifon till Benedictus ur communet");
     expect(lauds!.prose).not.toContain("utom");
   });
 

@@ -57,15 +57,19 @@ describe("§5.4 chains carry adLibFrom on memorias only", () => {
     }
   });
 
-  test("memoria canticle antiphon is strict proper → common only", () => {
+  // GILH 119: on memorias without a proper antiphon, the Benedictus/Magnificat
+  // antiphon may be said either from the Common or from the current ferial day.
+  // GILH 235 b) says the same for the whole §5.4 cluster.
+  test("memoria canticle antiphon offers the ferial day alongside the Common", () => {
     const src = antiphonRef(
       ctxFor(memoria()),
       "lauds.benedictusAntiphon",
       "lauds.benedictusAntiphon",
     ) as FallbackChain;
     expect(src.kind).toBe("fallback_chain");
-    expect(src.adLibFrom).toBeUndefined();
-    expect(src.sources.map((s) => s.kind)).toEqual(["saint", "common", "common"]);
+    expect(src.adLibFrom).toBe(1);
+    expect(src.sources[0]!.kind).toBe("saint");
+    expect(src.sources.map((s) => s.kind)).toContain("psalter");
   });
 
   test("feast chains stay strict", () => {
