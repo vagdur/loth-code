@@ -3,7 +3,7 @@ import path from "path";
 import { beforeAll, describe, expect, test } from "vitest";
 import yaml from "js-yaml";
 import { utcDate } from "../../src/calendar/computus.js";
-import { SanctoralCalendarRegistry } from "../../src/calendar/sanctoralRegistry.js";
+import { loadSanctoralRegistry } from "../../src/calendar/sanctoralRegistryNode.js";
 import {
   getSaintsOnDate,
   initSanctoralRegistry,
@@ -23,7 +23,7 @@ describe("Ordo calendar coverage", () => {
   });
 
   test("expected manifest matches merged stockholm registry", async () => {
-    const registry = await SanctoralCalendarRegistry.load(dataRoot, "sv");
+    const registry = await loadSanctoralRegistry(dataRoot, "sv");
     const general = registry.getMergedEntries("general");
     const stockholm = registry.getMergedEntries("stockholm");
     const generalById = new Map(general.map((e) => [e.id, e]));
@@ -49,7 +49,7 @@ describe("SanctoralCalendarRegistry", () => {
   let registry: SanctoralCalendarRegistry;
 
   beforeAll(async () => {
-    registry = await SanctoralCalendarRegistry.load(dataRoot, defaultLocale);
+    registry = await loadSanctoralRegistry(dataRoot, defaultLocale);
     initSanctoralRegistry(registry);
   });
 

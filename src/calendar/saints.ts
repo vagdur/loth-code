@@ -18,6 +18,40 @@ export function initSanctoralRegistry(r: SanctoralCalendarRegistry): void {
   registry = r;
 }
 
+/**
+ * Run `fn` with `r` installed as the ambient registry, then restore whatever
+ * was there before.
+ *
+ * A long-lived host that serves more than one locale cannot use
+ * `initSanctoralRegistry`: registries are per-locale, so a second request
+ * setting the global would change the calendar out from under a render already
+ * in progress.  Every path from `resolveDay` through the assemblers is
+ * synchronous, so scoping the assignment around a synchronous callback is
+ * enough to make that impossible — hence the guard below, which turns the
+ * "must be synchronous" precondition into an error rather than a comment.
+ *
+ * Save/restore rather than clear, so nesting two locales in one request works.
+ */
+export function withSanctoralRegistry<T>(
+  r: SanctoralCalendarRegistry,
+  fn: () => T,
+): T {
+  const prev = registry;
+  registry = r;
+  try {
+    const out = fn();
+    if (out instanceof Promise) {
+      throw new Error(
+        "withSanctoralRegistry callback must be synchronous; the registry is " +
+          "restored before the promise settles",
+      );
+    }
+    return out;
+  } finally {
+    registry = prev;
+  }
+}
+
 export function getSanctoralRegistry(): SanctoralCalendarRegistry {
   if (!registry) {
     throw new Error(

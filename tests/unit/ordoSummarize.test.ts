@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, test } from "vitest";
-import { SanctoralCalendarRegistry } from "../../src/calendar/sanctoralRegistry.js";
+import { loadSanctoralRegistry } from "../../src/calendar/sanctoralRegistryNode.js";
 import { initSanctoralRegistry } from "../../src/calendar/saints.js";
 import { utcDate } from "../../src/calendar/computus.js";
-import { DataRepository } from "../../src/data/repository.js";
+import { loadRepository } from "../../src/data/repositoryNode.js";
 import { liturgicalYearRange, ordoContext, summarizeOrdoDay } from "../../src/ordo/index.js";
 import { dataRoot } from "../helpers/paths.js";
 
@@ -10,9 +10,9 @@ let repo: DataRepository;
 const ctx = ordoContext("stockholm");
 
 beforeAll(async () => {
-  const registry = await SanctoralCalendarRegistry.load(dataRoot, "sv");
+  const registry = await loadSanctoralRegistry(dataRoot, "sv");
   initSanctoralRegistry(registry);
-  repo = await DataRepository.load(dataRoot, "sv");
+  repo = await loadRepository(dataRoot, "sv");
 });
 
 describe("summarizeOrdoDay (stockholm)", () => {

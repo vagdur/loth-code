@@ -1,14 +1,61 @@
 {
-  "name": "loth",
-  "version": "0.1.0",
+  "name": "@vagdur/loth",
+  "version": "0.2.0",
   "description": "Liturgy of the Hours assembler",
+  "license": "MIT",
+  "author": "Vilhelm Agdur",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vagdur/LoTH.git"
+  },
+  "keywords": [
+    "liturgy-of-the-hours",
+    "divine-office",
+    "breviary",
+    "gregorian-chant",
+    "gabc"
+  ],
   "type": "module",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "./dist/browser/lothChant.js",
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "default": "./dist/node.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/lothChant.d.ts",
+      "default": "./dist/browser/lothChant.js"
+    },
+    "./loth.css": "./html/loth.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/",
+    "html/loth.css",
+    "html/ExsurgeChar.otf",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
+    "prepack": "npm run build && npm run check:worker-safe && node scripts/stage-package-assets.mjs",
+    "prepublishOnly": "node scripts/assert-no-data-in-tarball.mjs",
     "build": "tsc && tsc -p tsconfig.browser.json",
     "dev": "tsc --watch",
     "serve:hours": "npm run build && node scripts/serve-hours.mjs",
-    "pretest": "npm run validate:data",
+    "check:worker-safe": "esbuild dist/index.js --bundle --platform=browser --format=esm --external:@vagdur/exsurge --outfile=node_modules/.cache/loth/worker-safe-check.js",
+    "pretest": "npm run validate:data && npm run check:worker-safe",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:fixtures:update": "cross-env UPDATE_FIXTURES=1 vitest run tests/integration",
@@ -46,6 +93,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
     "cross-env": "^7.0.3",
+    "esbuild": "^0.28.1",
     "typescript": "^5.5.0",
     "vitest": "^3.1.0"
   }

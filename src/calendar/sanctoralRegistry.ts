@@ -1,19 +1,18 @@
 /**
- * Loads universal and particular sanctoral calendars from YAML and merges them.
+ * Universal and particular sanctoral calendars, merged.
+ *
+ * Reading them off disk lives in `./sanctoralRegistryNode.js`; this module
+ * stays free of Node APIs so it can run on a Cloudflare Worker.  The merge
+ * helpers below are exported for that loader's use.
  */
-
-import fs from "fs/promises";
-import path from "path";
-import yaml from "js-yaml";
 
 import { utcDate } from "./computus.js";
 import { applyTransferRule } from "./transferRules.js";
+import type { RegistryBundle } from "../types/bundle.js";
 import type {
   CalendarSaint,
   ParticularCalendarOverlay,
-  SanctoralCalendarEntriesFile,
   SanctoralCalendarEntry,
-  SanctoralCalendarIndex,
 } from "../types/sanctoralCalendar.js";
 import type {
   SeasonalObservanceOverride,
@@ -22,29 +21,10 @@ import type {
 import {
   ASCENSION_OBSERVANCE_VALUES,
   CORPUS_CHRISTI_OBSERVANCE_VALUES,
-  DEFAULT_SEASONAL_OBSERVANCE,
   EPIPHANY_OBSERVANCE_VALUES,
 } from "../types/seasonalObservance.js";
 
-function camelCaseKeys(obj: unknown): unknown {
-  if (Array.isArray(obj)) return obj.map(camelCaseKeys);
-  if (obj !== null && typeof obj === "object") {
-    return Object.fromEntries(
-      Object.entries(obj as Record<string, unknown>).map(([k, v]) => [
-        k.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase()),
-        camelCaseKeys(v),
-      ]),
-    );
-  }
-  return obj;
-}
-
-async function loadYaml<T>(filePath: string): Promise<T> {
-  const content = await fs.readFile(filePath, "utf-8");
-  return camelCaseKeys(yaml.load(content)) as T;
-}
-
-function mergeEntries(
+export function mergeEntries(
   base: SanctoralCalendarEntry[],
   overlay?: ParticularCalendarOverlay,
 ): SanctoralCalendarEntry[] {
@@ -95,7 +75,7 @@ function assertEnumValue<T extends string>(
   return value as T;
 }
 
-function mergeSeasonalObservance(
+export function mergeSeasonalObservance(
   base: SeasonalObservancePolicy,
   overlay?: SeasonalObservanceOverride,
   calendarId = "general",
@@ -182,54 +162,25 @@ export class SanctoralCalendarRegistry {
     }
   }
 
-  static async load(dataRoot: string, locale = "en"): Promise<SanctoralCalendarRegistry> {
-    const calendarsDir = path.join(dataRoot, locale, "calendars");
-    const index = await loadYaml<SanctoralCalendarIndex>(
-      path.join(calendarsDir, "index.yaml"),
+  /**
+   * The only way to construct a registry.  `loadSanctoralRegistry` in
+   * ./sanctoralRegistryNode.js reads the calendar YAML and comes through here
+   * too, so Node and Worker hosts share one assembly path.
+   */
+  static fromBundle(b: RegistryBundle): SanctoralCalendarRegistry {
+    return new SanctoralCalendarRegistry(
+      new Map(b.merged),
+      new Map(b.seasonalObservance),
     );
+  }
 
-    const generalMeta = index.calendars.general;
-    if (!generalMeta?.entries) {
-      throw new Error("Sanctoral calendar index missing general.entries");
-    }
-
-    const generalFile = await loadYaml<SanctoralCalendarEntriesFile>(
-      path.join(calendarsDir, generalMeta.entries),
-    );
-    const generalEntries = generalFile.entries;
-
-    const merged = new Map<string, SanctoralCalendarEntry[]>();
-    merged.set("general", generalEntries);
-
-    const seasonalObservance = new Map<string, SeasonalObservancePolicy>();
-    seasonalObservance.set("general", { ...DEFAULT_SEASONAL_OBSERVANCE });
-
-    for (const [calendarId, meta] of Object.entries(index.calendars)) {
-      if (calendarId === "general") continue;
-      if (meta.layer !== "particular" || !meta.overlay) continue;
-
-      const baseId = meta.extends ?? "general";
-      const base = merged.get(baseId);
-      if (!base) {
-        throw new Error(
-          `Particular calendar "${calendarId}" extends unknown calendar "${baseId}"`,
-        );
-      }
-
-      const overlay = await loadYaml<ParticularCalendarOverlay>(
-        path.join(calendarsDir, meta.overlay),
-      );
-      merged.set(calendarId, mergeEntries(base, overlay));
-
-      const basePolicy =
-        seasonalObservance.get(baseId) ?? DEFAULT_SEASONAL_OBSERVANCE;
-      seasonalObservance.set(
-        calendarId,
-        mergeSeasonalObservance(basePolicy, overlay.seasonalObservance, calendarId),
-      );
-    }
-
-    return new SanctoralCalendarRegistry(merged, seasonalObservance);
+  /** The inverse of `fromBundle`, for the publish step. */
+  toBundle(): RegistryBundle {
+    return {
+      v: 1,
+      merged: [...this.mergedEntries],
+      seasonalObservance: [...this.seasonalObservanceByCalendar],
+    };
   }
 
   hasCalendar(calendarId: string): boolean {

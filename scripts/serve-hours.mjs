@@ -22,10 +22,10 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { SanctoralCalendarRegistry } from "../dist/calendar/sanctoralRegistry.js";
+import { loadSanctoralRegistry } from "../dist/calendar/sanctoralRegistryNode.js";
 import { initSanctoralRegistry } from "../dist/calendar/saints.js";
 import { defaultContext, resolveDay, utcDate } from "../dist/calendar/index.js";
-import { DataRepository } from "../dist/data/repository.js";
+import { loadRepository } from "../dist/data/repositoryNode.js";
 import { buildDay, eveningVespers } from "../dist/hours/index.js";
 import { HtmlAssembler } from "../dist/assemblers/htmlAssembler.js";
 import { exsurgeDir, exsurgeFontPath } from "../dist/tools/htmlAssets.js";
@@ -85,7 +85,7 @@ const repos = new Map();
 async function repoFor(locale) {
   let repo = repos.get(locale);
   if (!repo) {
-    repo = await DataRepository.load(dataRoot, locale);
+    repo = await loadRepository(dataRoot, locale);
     repos.set(locale, repo);
   }
   return repo;
@@ -352,7 +352,7 @@ const server = createServer(async (req, res) => {
   }
 });
 
-const registry = await SanctoralCalendarRegistry.load(dataRoot, defaultLocale);
+const registry = await loadSanctoralRegistry(dataRoot, defaultLocale);
 initSanctoralRegistry(registry);
 
 const melodyValidateMap = await loadMelodyValidateMap();

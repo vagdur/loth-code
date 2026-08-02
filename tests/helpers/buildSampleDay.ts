@@ -1,5 +1,5 @@
 import { resolveDay, defaultContext } from "../../src/calendar/index.js";
-import { DataRepository } from "../../src/data/repository.js";
+import { loadRepository } from "../../src/data/repositoryNode.js";
 import { buildDay } from "../../src/hours/index.js";
 import { dataRoot, defaultLocale } from "./paths.js";
 
@@ -18,7 +18,7 @@ export type SampleLocale = (typeof SAMPLE_LOCALES)[number];
 export async function loadSampleRepo(
   locale: string = defaultLocale,
 ): Promise<DataRepository> {
-  return DataRepository.load(dataRoot, locale);
+  return loadRepository(dataRoot, locale);
 }
 
 export function buildSampleAbstractDay() {
