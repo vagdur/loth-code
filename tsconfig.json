@@ -5,6 +5,12 @@
     "moduleResolution": "NodeNext",
     "rootDir": "src",
     "outDir": "dist",
+    // The package's `exports` map points every entry's `types` at a .d.ts in
+    // dist/. Without these, consumers get an implicit-any for the whole
+    // package and TypeScript reports the module as untyped.
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
