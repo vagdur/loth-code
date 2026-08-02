@@ -2,6 +2,19 @@
   "name": "@vagdur/loth",
   "version": "0.2.0",
   "description": "Liturgy of the Hours assembler",
+  "license": "MIT",
+  "author": "Vilhelm Agdur",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vagdur/LoTH.git"
+  },
+  "keywords": [
+    "liturgy-of-the-hours",
+    "divine-office",
+    "breviary",
+    "gregorian-chant",
+    "gabc"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
