@@ -14,7 +14,7 @@ import type { DataRepository } from "../../src/data/repository.js";
 import type { LiturgicalFlags, SlotSource } from "../../src/types/hours.js";
 import { ensureSparseSlot } from "../../scripts/map-melodies.mjs";
 import { resolveDay } from "../../src/calendar/index.js";
-import { DataRepository } from "../../src/data/repository.js";
+import { loadRepository } from "../../src/data/repositoryNode.js";
 import { dataRoot } from "../helpers/paths.js";
 import { ensureSanctoralCalendar } from "../helpers/initSanctoralCalendar.js";
 
@@ -56,7 +56,7 @@ describe("psalm_unassigned", () => {
   beforeAll(() => ensureSanctoralCalendar());
 
   test("resolvePsalmText returns empty string for sentinel", async () => {
-    const repo = await DataRepository.load(dataRoot, "en");
+    const repo = await loadRepository(dataRoot, "en");
     expect(resolvePsalmText(PSALM_UNASSIGNED, repo)).toBe("");
   });
 
@@ -106,7 +106,7 @@ describe("psalm_unassigned", () => {
   });
 
   test("presentation feast 2V resolves saint psalmody when proper slots exist", async () => {
-    const repo = await DataRepository.load(dataRoot, "sv");
+    const repo = await loadRepository(dataRoot, "sv");
     const saint = repo.resolve({
       kind: "saint",
       id: "presentation_of_the_lord",

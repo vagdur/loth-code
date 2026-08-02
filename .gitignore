@@ -1,6 +1,10 @@
 node_modules
 dist
 
+# Staged into the npm tarball by scripts/stage-package-assets.mjs; the real
+# copy lives in @vagdur/exsurge.
+html/ExsurgeChar.otf
+
 # Environment variables - contains API keys
 .env
 

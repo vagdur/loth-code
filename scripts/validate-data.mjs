@@ -237,17 +237,18 @@ async function validateDaytimeAntiphons(localeDir, locale, errors) {
 
 async function main() {
   const errors = [];
-  const { DataRepository } = await loadDistModule("data/repository.js");
+  const { loadRepository } = await loadDistModule("data/repositoryNode.js");
   const { buildDay } = await loadDistModule("hours/index.js");
-  const { resolveDay, defaultContext, SanctoralCalendarRegistry } = await loadDistModule("calendar/index.js");
+  const { resolveDay, defaultContext } = await loadDistModule("calendar/index.js");
+  const { loadSanctoralRegistry } = await loadDistModule("calendar/sanctoralRegistryNode.js");
   const { initSanctoralRegistry } = await loadDistModule("calendar/saints.js");
   const { PlainTextAssembler } = await loadDistModule("assemblers/plainText.js");
   const { resolvePsalmText } = await loadDistModule("assemblers/liturgicalText.js");
 
-  const registry = await SanctoralCalendarRegistry.load(dataRoot, defaultLocale);
+  const registry = await loadSanctoralRegistry(dataRoot, defaultLocale);
   initSanctoralRegistry(registry);
 
-  const repo = await DataRepository.load(dataRoot, defaultLocale);
+  const repo = await loadRepository(dataRoot, defaultLocale);
 
   if (!repo.getFixedTexts()) {
     errors.push("fixed_texts.yaml did not load");

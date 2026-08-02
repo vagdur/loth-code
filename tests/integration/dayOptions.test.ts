@@ -8,10 +8,10 @@ import { beforeAll, describe, expect, test } from "vitest";
 import { PlainTextAssembler } from "../../src/assemblers/plainText.js";
 import { resolveSource } from "../../src/assemblers/types.js";
 import { resolveDay } from "../../src/calendar/index.js";
-import { SanctoralCalendarRegistry } from "../../src/calendar/sanctoralRegistry.js";
+import { loadSanctoralRegistry } from "../../src/calendar/sanctoralRegistryNode.js";
 import { initSanctoralRegistry } from "../../src/calendar/saints.js";
 import { utcDate } from "../../src/calendar/computus.js";
-import { DataRepository } from "../../src/data/repository.js";
+import { loadRepository } from "../../src/data/repositoryNode.js";
 import { buildDay } from "../../src/hours/index.js";
 import { defaultContext } from "../../src/calendar/index.js";
 import { enumerateDayOptions } from "../../src/options/enumerate.js";
@@ -25,9 +25,9 @@ let repo: DataRepository;
 const ctx = defaultContext("general");
 
 beforeAll(async () => {
-  const registry = await SanctoralCalendarRegistry.load(dataRoot, locale);
+  const registry = await loadSanctoralRegistry(dataRoot, locale);
   initSanctoralRegistry(registry);
-  repo = await DataRepository.load(dataRoot, locale);
+  repo = await loadRepository(dataRoot, locale);
 });
 
 /** First date in 2026 whose enumeration contains a saint celebration choice. */

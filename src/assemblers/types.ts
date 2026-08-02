@@ -21,7 +21,9 @@ import type {
   ShortResponsory, Versicle,
 } from "../types/texts.js";
 
-export { DataRepository };
+// Type-only on purpose: a value re-export here would put ./repository.js in
+// the runtime graph of every assembler, and with it the Node loader chain.
+export type { DataRepository };
 
 // ---------------------------------------------------------------------------
 // Assembler interface
