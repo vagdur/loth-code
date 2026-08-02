@@ -26,7 +26,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 
 /** Anything not matched by one of these must not ship. */
 const ALLOWED = [
-  /^dist\/(?!\.).+\.(js|mjs|d\.ts|js\.map)$/,
+  /^dist\/(?!\.)[^\n]+\.(?:d\.ts\.map|d\.ts|js\.map|js|mjs)$/,
   /^html\/loth\.css$/,
   /^html\/ExsurgeChar\.otf$/,
   /^README(\.md)?$/,
@@ -72,6 +72,36 @@ if (report.size > MAX_TARBALL_BYTES) {
 
 if (!entries.some((e) => e === "dist/index.js")) {
   failures.push("dist/index.js is missing; run `npm run build` before packing");
+}
+
+/**
+ * Every path the manifest promises must actually be in the tarball.
+ *
+ * 0.2.0 shipped with `exports[*].types` pointing at .d.ts files that were
+ * never emitted, because tsconfig lacked `declaration`. Consumers saw the
+ * whole package as implicit-any and npm gave no warning — nothing validates
+ * an `exports` map against its own tarball, so this does.
+ */
+const pkg = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"));
+const declared = new Set();
+
+const collect = (value) => {
+  if (typeof value === "string") {
+    if (value.startsWith("./")) declared.add(value.slice(2));
+  } else if (value && typeof value === "object") {
+    for (const v of Object.values(value)) collect(v);
+  }
+};
+collect(pkg.exports);
+collect(pkg.main);
+collect(pkg.types);
+
+const present = new Set(entries);
+for (const target of [...declared].sort()) {
+  if (target === "package.json") continue;
+  if (!present.has(target)) {
+    failures.push(`package.json points at "${target}", which is not in the tarball`);
+  }
 }
 
 if (failures.length > 0) {
