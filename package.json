@@ -1,6 +1,6 @@
 {
   "name": "@vagdur/loth",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Liturgy of the Hours assembler",
   "license": "MIT",
   "author": "Vilhelm Agdur",
@@ -36,7 +36,11 @@
       "default": "./dist/browser/lothChant.js"
     },
     "./loth.css": "./html/loth.css",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./kln": {
+      "types": "./dist/kln/index.d.ts",
+      "default": "./dist/kln/index.js"
+    }
   },
   "files": [
     "dist/",
@@ -83,7 +87,8 @@
     "mark:kln-duplicates": "python scripts/mark-kln-duplicates.py",
     "mark:kln-duplicates:dry-run": "python scripts/mark-kln-duplicates.py --dry-run",
     "mark:kln-split-failures": "python scripts/mark-kln-split-failures.py",
-    "mark:kln-split-failures:dry-run": "python scripts/mark-kln-split-failures.py --dry-run"
+    "mark:kln-split-failures:dry-run": "python scripts/mark-kln-split-failures.py --dry-run",
+    "check:kln-parity": "npm run build && node scripts/check-kln-parity.mjs"
   },
   "dependencies": {
     "@vagdur/exsurge": "^1.28.0",
