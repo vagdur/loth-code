@@ -90,7 +90,10 @@
     "mark:kln-duplicates:dry-run": "python scripts/mark-kln-duplicates.py --dry-run",
     "mark:kln-split-failures": "python scripts/mark-kln-split-failures.py",
     "mark:kln-split-failures:dry-run": "python scripts/mark-kln-split-failures.py --dry-run",
-    "check:kln-parity": "npm run build && node scripts/check-kln-parity.mjs"
+    "check:kln-parity": "npm run build && node scripts/check-kln-parity.mjs",
+    "seed:kln-d1": "python scripts/seed-kln-d1.py",
+    "pull:kln-reviews": "python scripts/pull-kln-reviews.py",
+    "pull:kln-reviews:dry-run": "python scripts/pull-kln-reviews.py --dry-run"
   },
   "dependencies": {
     "@vagdur/exsurge": "^1.28.0",

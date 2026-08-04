@@ -8,6 +8,10 @@ html/ExsurgeChar.otf
 # Environment variables - contains API keys
 .env
 
+# Scratch output from the web-facing scripts: seed projections, the missing-crop
+# list, the review-conflict report. All reproducible by re-running them.
+reports/
+
 # Python bytecode and caches
 __pycache__/
 *.py[cod]
