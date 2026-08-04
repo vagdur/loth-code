@@ -84,6 +84,8 @@
     "transcribe:kln-vector:force": "python scripts/transcribe-kln-vector.py --force",
     "apply:kln-word-grouping": "python scripts/apply-kln-word-grouping.py",
     "apply:kln-word-grouping:force": "python scripts/apply-kln-word-grouping.py --force",
+    "backfill:kln-inclinata": "python scripts/backfill-kln-inclinata.py",
+    "backfill:kln-inclinata:dry-run": "python scripts/backfill-kln-inclinata.py --dry-run -v",
     "mark:kln-duplicates": "python scripts/mark-kln-duplicates.py",
     "mark:kln-duplicates:dry-run": "python scripts/mark-kln-duplicates.py --dry-run",
     "mark:kln-split-failures": "python scripts/mark-kln-split-failures.py",

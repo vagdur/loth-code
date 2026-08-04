@@ -58,6 +58,24 @@ A **key-signature flat** at the left edge of every staff row (items=23 in the KL
 
 ---
 
+## Punctum quadratum and punctum inclinatum
+
+A lowercase pitch letter is a **punctum quadratum** — the ordinary square note. An **uppercase** letter is a **punctum inclinatum**, the diamond note that neumatic notation uses on the way down:
+
+```
+(fgFED)   ← f, g, then a climacus: the quadratum g descends through F E D
+(hiHGe)   ← the descent stops at G; g→e is a third, so e is square again
+(dc)      ← a two-note descent is a clivis, and stays square
+```
+
+The convention is that a stepwise descent of **three or more notes inside one neume**, counting the note the descent starts from, is written with inclinata after that first note. Descents that leap, descents of only two notes, and notes belonging to separate syllables are unaffected — they are separate neumes however they happen to be moving.
+
+Only a punctum quadratum can become an inclinatum: a virga, oriscus, quilisma or stropha is a different notehead and ends the descent. Marks that leave the notehead alone (`_`, `.`, `'`) ride along on an inclinatum.
+
+In this repository the rule is applied by [`scripts/kln_inclinata.py`](../scripts/kln_inclinata.py), called at the end of vector transcription and by `npm run backfill:kln-inclinata` for GABC transcribed before the rule existed.
+
+---
+
 ## Note-shape modifiers
 
 These single characters are appended directly after a note letter (before any accidental on the *next* note):
@@ -114,12 +132,13 @@ The backtick **`` ` ``** (grave accent), written as `` (`) ``, produces a **quar
 
 ## Neume grouping and spacing
 
-Notes within a single `( )` group are sung together as one neume. The transcriber writes them as a plain sequence of note letters:
+Notes within a single `( )` group are sung together as one neume. The transcriber writes them as a sequence of note letters, uppercase where a descent takes puncta inclinata (see above):
 
 ```
 (gh)     ← two-note ascending neume (pes/podatus): g then h
 (hg)     ← two-note descending neume (clivis): h then g
 (ghi)    ← three-note ascending (scandicus)
+(hGF)    ← three-note descending (climacus): quadratum h, then two inclinata
 (ixgi)   ← flat-i, g, i  (three-note neume with accidental on first note)
 ```
 
