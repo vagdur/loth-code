@@ -661,16 +661,23 @@ export class TexAssembler implements Assembler<string> {
     const usePerPsalmProper = Boolean(proper && proper.length === assignments.length);
     return assignments.map((a, i) => {
       const antiphon = usePerPsalmProper ? proper![i]! : a.antiphon;
-      return this.texPsalmAssignment({ ...a, antiphon }, psalmText(a), flags, repo);
+      return this.texPsalmAssignment(
+        { ...a, ...(antiphon ? { antiphon } : {}) },
+        psalmText(a),
+        flags,
+        repo,
+      );
     });
   }
 
+  /** Empty string when the slot has no antiphon — the psalm still stands. */
   private texAntiphonBlock(
     repo: DataRepository,
-    a: Antiphon,
+    a: Antiphon | undefined,
     flags: LiturgicalFlags,
     includePsalmTone: boolean,
   ): string {
+    if (!a) return "";
     const rubric = texMelodyRubric(a.melody);
 
     let scoreLine = "";
@@ -749,7 +756,7 @@ export class TexAssembler implements Assembler<string> {
     }
     const body = texPsalmText(psalmText);
     const close = this.texAntiphonBlock(repo, assignment.antiphon, flags, false);
-    return [open, ...canticleMelody, body, close].join("\n\n");
+    return [open, ...canticleMelody, body, close].filter(Boolean).join("\n\n");
   }
 
   private texShortResponsoryBlock(repo: DataRepository, r: ShortResponsory): string {

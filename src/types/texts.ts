@@ -98,7 +98,12 @@ export interface Antiphon {
 
 export interface PsalmAssignment {
   psalmOrCanticleId: string;
-  antiphon: Antiphon;
+  /**
+   * Absent when the rubrics fix the psalm but not its antiphon — a `psalmody`
+   * slot source, or a data tree that has yet to supply one. The psalm is then
+   * sung without an antiphon rather than not sung at all.
+   */
+  antiphon?: Antiphon;
 }
 
 export interface Hymn {
@@ -251,6 +256,11 @@ export interface OrdoLabels {
     communeInline: string;
     feria: string;
     psalterPrefix: string;
+    /**
+     * Whole phrase for a psalter day: `{psalter}`, `{week}` (arabic), `{day}`.
+     * Absent means the built-in Swedish "{psalter} vecka {week} {day}".
+     */
+    psalterWeekDay?: string;
     sundayWeekI: string;
     complementaryPsalmody: string;
     fixed: string;

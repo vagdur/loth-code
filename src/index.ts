@@ -38,6 +38,7 @@ export {
   nominalDateFromEntry,
 } from "./calendar/sanctoralRegistry.js";
 export {
+  getSaintsOnDate,
   getSanctoralRegistry,
   getSeasonalObservance,
   initSanctoralRegistry,

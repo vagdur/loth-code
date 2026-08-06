@@ -38,10 +38,6 @@ function capitalizeFirst(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function partLabelForSlot(slotKey: string, labels: OrdoLabels): string | null {
-  return partLabelForSlotKey(slotKey, labels);
-}
-
 type SlotPair = [string, import("../types/hours.js").SlotSource | null | undefined];
 
 function resolveSlot(
@@ -53,7 +49,7 @@ function resolveSlot(
   choices?: DayChoices,
 ): SlotEntry | null {
   if (!source) return null;
-  const partLabel = partLabelForSlot(slotKey, labels);
+  const partLabel = partLabelForSlotKey(slotKey, labels);
   if (!partLabel) return null;
   const path = `${hourKey}.${slotKey}`;
   const effective = resolveEffectiveSource(source, repo, {
@@ -66,7 +62,9 @@ function resolveSlot(
   );
   return {
     slotKey,
-    partLabel,
+    // Now that the winner is known, the label can name the part it really is:
+    // a slot the rubrics fix by psalm contributes psalms, not antiphons.
+    partLabel: partLabelForSlotKey(slotKey, labels, effective.winner) ?? partLabel,
     described: describeSource(effective.winner, repo, labels),
     ...(alternatives?.length ? { alternatives } : {}),
   };

@@ -30,7 +30,9 @@ export function buildVespers(
   });
 
   // First Vespers of solemnities use the Laudate series (Ps 112, 116, 134, 145, 146, 147).
-  // This is encoded as specific psalm IDs rather than psalter positions.
+  // This is encoded as specific psalm IDs rather than psalter positions: the
+  // rubric fixes the psalm, so the slot resolves to a `psalmody` source and
+  // takes its antiphon from the proper ahead of it in the chain, if any.
   const laudatePsalms = ["psalm_112", "psalm_116", "psalm_134", "psalm_145", "psalm_146"];
   const laudateNtCanticle: SlotSourceDirect =
     c.seasonalKey
@@ -79,7 +81,7 @@ export function buildVespers(
               ...(c.saintId
                 ? [{ kind: "saint" as const, id: c.saintId, field: `${vespersField}.psalmAssignments[0]` }]
                 : []),
-              { kind: "psalm", id: laudatePsalms[0] ?? "psalm_112" },
+              { kind: "psalmody", psalmId: laudatePsalms[0] ?? "psalm_112" },
             ],
           }),
           psalmSlot({
@@ -91,20 +93,21 @@ export function buildVespers(
               ...(c.saintId
                 ? [{ kind: "saint" as const, id: c.saintId, field: `${vespersField}.psalmAssignments[1]` }]
                 : []),
-              { kind: "psalm", id: laudatePsalms[1] ?? "psalm_116" },
+              { kind: "psalmody", psalmId: laudatePsalms[1] ?? "psalm_116" },
             ],
           }),
-          psalmSlot(
-            c.saintId
-              ? {
-                  kind: "fallback_chain",
-                  sources: [
-                    { kind: "saint", id: c.saintId, field: `${vespersField}.psalmAssignments[2]` },
-                    laudateNtCanticle,
-                  ],
-                }
-              : laudateNtCanticle,
-          ),
+          psalmSlot({
+            kind: "fallback_chain",
+            sources: [
+              ...(c.saintId
+                ? [{ kind: "saint" as const, id: c.saintId, field: `${vespersField}.psalmAssignments[2]` }]
+                : []),
+              laudateNtCanticle,
+              // The proper may name no NT canticle; the Sunday psalter always
+              // does, and First Vespers of a solemnity is never without one.
+              fvPsalterSrc("psalmAssignments[2]"),
+            ],
+          }),
         ]
       : [
           psalmSlot(psalmAssignmentRef(ctx, `${vespersField}.psalmAssignments[0]`, true)),

@@ -141,6 +141,7 @@ labels:
       commune_inline: the common
       feria: the weekday
       psalter_prefix: the psalter
+      psalter_week_day: '{psalter}, week {week} {day}'
       sunday_week_i: Sunday week I
       complementary_psalmody: complementary psalmody
       fixed: the fixed texts

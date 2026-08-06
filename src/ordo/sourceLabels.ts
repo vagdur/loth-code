@@ -1,6 +1,7 @@
 import type { DataRepository } from "../data/repository.js";
 import type { SlotSourceDirect } from "../types/hours.js";
 import type { OrdoLabels } from "../types/texts.js";
+import { applyTemplate } from "./ordinals.js";
 import type { PsalterWeek, Weekday } from "../types/psalter.js";
 
 /** Stable key for grouping parts by source in prose. */
@@ -8,7 +9,7 @@ export type SourceGroupKey = string;
 
 export interface DescribedSource {
   groupKey: SourceGroupKey;
-  /** Short Swedish phrase, e.g. "proprium", "commune (läkare)", "psaltaret vecka II lördag". */
+  /** Short phrase in the locale, e.g. "proprium", "commune (läkare)", "psaltaret vecka II lördag". */
   phrase: string;
   /** True when this is saint/seasonal proper (not commune/psalter). */
   isProper: boolean;
@@ -23,7 +24,12 @@ function psalterPhrase(
     return labels.sources.sundayWeekI;
   }
   const dayName = labels.weekdays[day] ?? day;
-  return `${labels.sources.psalterPrefix} vecka ${week} ${dayName}`;
+  // "psaltaret vecka 2 lördag" / "the psalter week 2 Saturday" — word order and
+  // the word for "week" are the locale's, so the whole phrase is a template.
+  return applyTemplate(
+    labels.sources.psalterWeekDay ?? "{psalter} vecka {week} {day}",
+    { psalter: labels.sources.psalterPrefix, week: String(week), day: dayName },
+  );
 }
 
 export function sourceGroupKey(s: SlotSourceDirect): SourceGroupKey {
@@ -42,6 +48,8 @@ export function sourceGroupKey(s: SlotSourceDirect): SourceGroupKey {
       return `complementary:${s.groupId}:${s.index}`;
     case "psalm":
       return `psalm:${s.id}`;
+    case "psalmody":
+      return `psalm:${s.psalmId}`;
     case "canticle":
       return `canticle:${s.id}`;
   }
@@ -101,6 +109,12 @@ export function describeSource(
       return {
         groupKey: sourceGroupKey(s),
         phrase: `psalm ${s.id.replace(/^psalm_/, "")}`,
+        isProper: false,
+      };
+    case "psalmody":
+      return {
+        groupKey: sourceGroupKey(s),
+        phrase: `psalm ${s.psalmId.replace(/^psalm_/, "")}`,
         isProper: false,
       };
     case "canticle":

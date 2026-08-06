@@ -102,6 +102,9 @@ export class DataRepository {
     switch (source.kind) {
       case "psalm":    return this.psalms.get(source.id);
       case "canticle": return this.canticles.get(source.id);
+      // The psalm is named by the rubric, so the slot resolves whether or not
+      // the tree holds that psalm's text; the antiphon comes from elsewhere.
+      case "psalmody": return { psalmOrCanticleId: source.psalmId };
       case "fixed":    return this.fixedTexts ? getPath(this.fixedTexts, source.field) : undefined;
       case "psalter": {
         const day = this.psalterDays.get(psalterKey(source.week, source.day));

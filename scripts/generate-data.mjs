@@ -36,6 +36,16 @@ const NT_CANTICLES = [
   "nt_phil2", "nt_col1", "nt_1tim3", "nt_1jn4", "nt_eph1", "nt_apoc12", "nt_apoc15",
 ];
 
+/**
+ * The Laudate series, which First Vespers of a solemnity draws on when the
+ * proper supplies no psalmody (see buildVespers). Named by rubric rather than
+ * by psalter position, so nothing else in this file would pull them in.
+ */
+const LAUDATE_PSALMS = ["psalm_112", "psalm_116", "psalm_134", "psalm_145", "psalm_146", "psalm_147"];
+
+/** Sentinel for antiphon-only psalmody: the proper fixes the antiphon, not the psalm. */
+const PSALM_UNASSIGNED = "psalm_unassigned";
+
 /** Lauds morning psalm, praise psalm per week (rows) × day (cols). */
 const LAUDS_MORNING = [
   ["psalm_62", "psalm_143", "psalm_25", "psalm_36", "psalm_51", "psalm_147", "psalm_92"],
@@ -638,7 +648,7 @@ async function main() {
   await fs.mkdir(dataDir, { recursive: true });
   const { psalmIds, canticleIds } = await generatePsalter();
   const compIds = await generateComplementary();
-  const allPsalms = new Set([...psalmIds, ...compIds]);
+  const allPsalms = new Set([...psalmIds, ...compIds, ...LAUDATE_PSALMS, PSALM_UNASSIGNED]);
   await generatePsalmStubs(allPsalms);
   await generateCanticleStubs(canticleIds);
   const keys = await collectSeasonalKeys();
