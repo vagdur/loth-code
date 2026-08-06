@@ -1,15 +1,22 @@
 /**
  * Scored PDF slots omit redundant plain macros; unscored slots keep them.
+ *
+ * Both cases run on the same locale — the second one loads the bundle with its
+ * melody store emptied, which is the shape a locale has before its melodies
+ * are transcribed.
  */
 
 import { expect, test } from "vitest";
 import { TexAssembler } from "../../src/assemblers/texAssembler.js";
+import { DataRepository } from "../../src/data/repository.js";
+import { readRepoBundle } from "../../src/data/repositoryNode.js";
 import {
   buildSampleAbstractDay, loadSampleRepo,
 } from "../helpers/buildSampleDay.js";
+import { dataRoot, defaultLocale } from "../helpers/paths.js";
 
-test("sv lauds omits plain macros when GABC scores are present", async () => {
-  const repo = await loadSampleRepo("sv");
+test("lauds omits plain macros when GABC scores are present", async () => {
+  const repo = await loadSampleRepo();
   const day = buildSampleAbstractDay();
   const tex = new TexAssembler().assembleLauds(day.lauds, repo);
 
@@ -25,8 +32,13 @@ test("sv lauds omits plain macros when GABC scores are present", async () => {
   expect(tex).toContain("\\gospelCanticle{");
 });
 
-test("en lauds keeps plain macros when no melodies are loaded", async () => {
-  const repo = await loadSampleRepo("en");
+test("lauds keeps plain macros when no melodies are loaded", async () => {
+  const bundle = await readRepoBundle(dataRoot, defaultLocale);
+  const repo = DataRepository.fromBundle({
+    ...bundle,
+    melodies: [],
+    melodyAliases: [],
+  });
   const day = buildSampleAbstractDay();
   const tex = new TexAssembler().assembleLauds(day.lauds, repo);
 

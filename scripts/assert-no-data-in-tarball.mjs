@@ -1,11 +1,11 @@
 /**
  * Refuse to publish a tarball containing anything but code.
  *
- * The liturgical texts under `data/` and the KLN material under `raw_data/`
- * are not ours to redistribute — `data/sv/melodies/*.yaml` carries
- * "Katolska Liturgiska Nämnden — not for publication elsewhere without
- * permission" in every entry. npm publishes are irrevocable, so a mistake in
- * the `files` field is not a thing to find out about afterwards.
+ * `data/en/` here is placeholder text for the tests, but a real locale's tree
+ * is somebody else's copyrighted translation, and this package is what such a
+ * tree gets pointed at. Shipping any data directory at all would set the wrong
+ * precedent, and npm publishes are irrevocable, so a mistake in the `files`
+ * field is not a thing to find out about afterwards.
  *
  * This is an allowlist, not a denylist: every path in the tarball must match
  * one of the patterns below. A denylist would pass a data directory nobody
@@ -27,6 +27,9 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 /** Anything not matched by one of these must not ship. */
 const ALLOWED = [
   /^dist\/(?!\.)[^\n]+\.(?:d\.ts\.map|d\.ts|js\.map|js|mjs)$/,
+  // Copied next to a generated .tex by src/tools/compileTex.ts, so the LaTeX
+  // path works from an installed package and not only from a checkout.
+  /^tex\/(loth|ordo)\.sty$/,
   /^html\/loth\.css$/,
   /^html\/ExsurgeChar\.otf$/,
   /^README(\.md)?$/,

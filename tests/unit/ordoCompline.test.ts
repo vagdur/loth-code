@@ -11,25 +11,25 @@ import { dataRoot } from "../helpers/paths.js";
 let repo: DataRepository;
 
 beforeAll(async () => {
-  const registry = await loadSanctoralRegistry(dataRoot, "sv");
+  const registry = await loadSanctoralRegistry(dataRoot, "en");
   initSanctoralRegistry(registry);
-  repo = await loadRepository(dataRoot, "sv");
+  repo = await loadRepository(dataRoot, "en");
 });
 
 describe("compline weekday label", () => {
-  test("Saturday feast uses lördagen", () => {
+  test("Saturday feast borrows the Saturday label", () => {
     const day = resolveDay(utcDate(2026, 7, 11), "stockholm");
     expect(complineWeekday(day)).toBe("Saturday");
     const labels = getOrdoLabels(repo);
-    expect(summarizeComplineLabel(day, labels)).toBe("Kompletorium för lördagen.");
+    expect(summarizeComplineLabel(day, labels)).toBe("Compline for Saturday.");
   });
 
-  test("solemnity uses söndagen", () => {
+  test("solemnity borrows the Sunday label", () => {
     const day = resolveDay(utcDate(2026, 12, 25), "stockholm");
     if (day.celebration.type !== "solemnity") return;
     expect(complineWeekday(day)).toBe("Sunday");
     expect(summarizeComplineLabel(day, getOrdoLabels(repo))).toBe(
-      "Kompletorium för söndagen.",
+      "Compline for Sunday.",
     );
   });
 });

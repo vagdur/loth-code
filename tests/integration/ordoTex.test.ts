@@ -28,9 +28,9 @@ const yearFixtureName = `ordo-${yearEnd - 1}-${yearEnd}.tex`;
 let repo: DataRepository;
 
 beforeAll(async () => {
-  const registry = await loadSanctoralRegistry(dataRoot, "sv");
+  const registry = await loadSanctoralRegistry(dataRoot, "en");
   initSanctoralRegistry(registry);
-  repo = await loadRepository(dataRoot, "sv");
+  repo = await loadRepository(dataRoot, "en");
 });
 
 async function assertOrdoTexFixture(fixtureName: string, tex: string): Promise<void> {

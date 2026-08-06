@@ -20,7 +20,7 @@ import { buildDay } from "../../src/hours/index.js";
 import { HtmlAssembler } from "../../src/assemblers/htmlAssembler.js";
 import { dataRoot } from "../helpers/paths.js";
 
-const LOCALE = "sv";
+const LOCALE = "en";
 const DATE = utcDate(2026, 5, 10);
 
 /** Round-trip through JSON, so this tests the wire format and not just the shape. */

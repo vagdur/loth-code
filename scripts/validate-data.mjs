@@ -46,6 +46,12 @@ async function loadDistModule(relPath) {
   return import(href);
 }
 
+/** Every locale bundle under `data/`, whichever ones this checkout carries. */
+async function localeDirs() {
+  const entries = await fs.readdir(dataRoot, { withFileTypes: true });
+  return entries.filter((e) => e.isDirectory()).map((e) => e.name);
+}
+
 function collectTextIds(obj, psalms, canticles) {
   if (Array.isArray(obj)) {
     for (const x of obj) collectTextIds(x, psalms, canticles);
@@ -287,7 +293,7 @@ async function main() {
       .map((f) => f.replace(/\.yaml$/, "")),
   );
 
-  for (const locale of ["en", "sv"]) {
+  for (const locale of await localeDirs()) {
     const fp = path.join(dataRoot, locale, "psalms", "psalm_unassigned.yaml");
     try {
       await fs.access(fp);
@@ -377,11 +383,10 @@ async function main() {
 
   // Melody stores + melody_refs, for every locale that has one.
   const warnings = [];
-  for (const localeEntry of await fs.readdir(dataRoot, { withFileTypes: true })) {
-    if (!localeEntry.isDirectory()) continue;
-    const localeDir = path.join(dataRoot, localeEntry.name);
-    await validateMelodies(localeDir, localeEntry.name, errors, warnings);
-    await validateDaytimeAntiphons(localeDir, localeEntry.name, errors);
+  for (const locale of await localeDirs()) {
+    const localeDir = path.join(dataRoot, locale);
+    await validateMelodies(localeDir, locale, errors, warnings);
+    await validateDaytimeAntiphons(localeDir, locale, errors);
   }
   if (warnings.length > 0) {
     console.warn("validate:data warnings:\n" + warnings.map((w) => `  - ${w}`).join("\n"));

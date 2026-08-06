@@ -1,1 +1,59 @@
+# A solemnity's proper: its own hymn, responsories and gospel antiphons at the
+# principal Hours, but no Daytime Prayer texts — those come from the Common.
+# Keeping that distinction is what the Ordo's hour prose has to get right.
 id: immaculate_conception
+invitatory_antiphon:
+  text: '[immaculate_conception invitatory antiphon]'
+  melody_refs:
+    - ref: en/sample/invitatory-antiphon
+first_vespers:
+  hymn:
+    stanzas:
+      - '[immaculate_conception I Vespers hymn, stanza 1]'
+      - '[immaculate_conception I Vespers hymn, stanza 2]'
+    doxology: '[immaculate_conception I Vespers hymn, doxology]'
+    melody_refs:
+      - ref: en/sample/hymn
+  short_responsory:
+    text: '[immaculate_conception I Vespers short responsory]'
+    versicle: '[immaculate_conception I Vespers short responsory versicle]'
+    melody_refs:
+      - ref: en/sample/short-responsory
+  magnificat_antiphon:
+    text: '[immaculate_conception I Vespers Magnificat antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon
+lauds:
+  hymn:
+    stanzas:
+      - '[immaculate_conception Lauds hymn, stanza 1]'
+      - '[immaculate_conception Lauds hymn, stanza 2]'
+    doxology: '[immaculate_conception Lauds hymn, doxology]'
+    melody_refs:
+      - ref: en/sample/hymn
+  short_responsory:
+    text: '[immaculate_conception Lauds short responsory]'
+    versicle: '[immaculate_conception Lauds short responsory versicle]'
+    melody_refs:
+      - ref: en/sample/short-responsory
+  benedictus_antiphon:
+    text: '[immaculate_conception Benedictus antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon
+vespers:
+  hymn:
+    stanzas:
+      - '[immaculate_conception Vespers hymn, stanza 1]'
+      - '[immaculate_conception Vespers hymn, stanza 2]'
+    doxology: '[immaculate_conception Vespers hymn, doxology]'
+    melody_refs:
+      - ref: en/sample/hymn
+  short_responsory:
+    text: '[immaculate_conception Vespers short responsory]'
+    versicle: '[immaculate_conception Vespers short responsory versicle]'
+    melody_refs:
+      - ref: en/sample/short-responsory
+  magnificat_antiphon:
+    text: '[immaculate_conception Magnificat antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon

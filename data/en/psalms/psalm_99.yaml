@@ -1,0 +1,18 @@
+id: psalm_99
+number: 99
+title: '[psalm_99 title]'
+christian_heading: '[psalm_99 heading]'
+omitted_verses: []
+verses:
+  - number: 1
+    text: |-
+      [psalm_99 — stub verse 1, first half] *
+      [psalm_99 — stub verse 1, second half]
+  - number: 2
+    text: |-
+      [psalm_99 — stub verse 2, first half] *
+      [psalm_99 — stub verse 2, second half]
+  - number: 3
+    text: |-
+      [psalm_99 — stub verse 3, first half] *
+      [psalm_99 — stub verse 3, second half]

@@ -12,6 +12,7 @@
 import type { DataRepository } from "../data/repository.js";
 import { formatOrdoDayHeadline } from "../ordo/headline.js";
 import type { LiturgicalDay } from "../types/calendar.js";
+import type { ChantLanguage } from "../types/melody.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type {
   Antiphon, Hymn, Intercessions, LongResponsory, ShortResponsory, Versicle,
@@ -338,8 +339,8 @@ export function htmlScoreLine(
   id: string,
   gabc: string,
   extraClass = "",
-  language?: "svenska" | "latin",
-  /** Store melody id (`kln/...`) when the score came from the melody store. */
+  language?: ChantLanguage,
+  /** Store melody id when the score came from the melody store. */
   melodyId?: string,
 ): string {
   const cls = extraClass ? `loth-score ${extraClass}` : "loth-score";
@@ -355,7 +356,7 @@ export function htmlScoreLine(
 export function htmlPsalmToneScoreLine(
   id: string,
   gabc: string,
-  language?: "svenska" | "latin",
+  language?: ChantLanguage,
   melodyId?: string,
 ): string {
   return htmlScoreLine(id, gabc, "loth-psalm-tone", language, melodyId);

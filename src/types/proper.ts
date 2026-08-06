@@ -132,14 +132,15 @@ export interface SaintEntry {
   /** First Vespers: present only when rank === "solemnity". */
   firstVespers?: VespersProperSlot;
   lauds?: LaudsProperSlot & {
-    /** Always present for saints (even if everything else falls back). */
-    concludingPrayer: ConcludingPrayer;
+    /** Absent when the day takes its collect from the Common instead. */
+    concludingPrayer?: ConcludingPrayer;
   };
   terce?: { shortReading?: ShortReading; concludingPrayer?: ConcludingPrayer };
   sext?:  { shortReading?: ShortReading; concludingPrayer?: ConcludingPrayer };
   none?:  { shortReading?: ShortReading; concludingPrayer?: ConcludingPrayer };
   vespers?: VespersProperSlot & {
-    concludingPrayer: ConcludingPrayer;
+    /** Absent when the day takes its collect from the Common instead. */
+    concludingPrayer?: ConcludingPrayer;
   };
 }
 

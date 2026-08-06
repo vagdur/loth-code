@@ -1,1 +1,69 @@
+# The one saint in this bundle with texts of its own, so the fallback chain
+# (saint proper → common → psalter) has something to resolve at every step.
+# Every other entry under proper_of_saints/ is the bare `{id}` stub the
+# generator writes.
+#
+# Shaped like a real feast: the parts a proper actually carries are here, and
+# what is missing — short reading, concluding prayer — falls through to the
+# Common, which is what makes the Ordo's hour prose name two sources.
 id: benedict_of_nursia
+invitatory_antiphon:
+  text: '[benedict_of_nursia invitatory antiphon]'
+  melody_refs:
+    - ref: en/sample/invitatory-antiphon
+lauds:
+  hymn:
+    stanzas:
+      - '[benedict_of_nursia Lauds hymn, stanza 1]'
+      - '[benedict_of_nursia Lauds hymn, stanza 2]'
+    doxology: '[benedict_of_nursia Lauds hymn, doxology]'
+    melody_refs:
+      - ref: en/sample/hymn
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[benedict_of_nursia Lauds antiphon 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[benedict_of_nursia Lauds antiphon 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
+  short_responsory:
+    text: '[benedict_of_nursia Lauds short responsory]'
+    versicle: '[benedict_of_nursia Lauds short responsory versicle]'
+    melody_refs:
+      - ref: en/sample/short-responsory
+  benedictus_antiphon:
+    text: '[benedict_of_nursia Benedictus antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon
+vespers:
+  hymn:
+    stanzas:
+      - '[benedict_of_nursia Vespers hymn, stanza 1]'
+      - '[benedict_of_nursia Vespers hymn, stanza 2]'
+    doxology: '[benedict_of_nursia Vespers hymn, doxology]'
+    melody_refs:
+      - ref: en/sample/hymn
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[benedict_of_nursia Vespers antiphon 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[benedict_of_nursia Vespers antiphon 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
+  short_responsory:
+    text: '[benedict_of_nursia Vespers short responsory]'
+    versicle: '[benedict_of_nursia Vespers short responsory versicle]'
+    melody_refs:
+      - ref: en/sample/short-responsory
+  magnificat_antiphon:
+    text: '[benedict_of_nursia Magnificat antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon

@@ -3,7 +3,7 @@
  * All fields are the actual liturgical content; no liturgical logic lives here.
  */
 
-import type { MelodyParts, MelodyRef } from "./melody.js";
+import type { ChantLanguage, MelodyParts, MelodyRef } from "./melody.js";
 
 export interface Verse {
   number: number;
@@ -22,13 +22,13 @@ export interface Verse {
 export interface Melody {
   /**
    * Store id when this melody was hydrated from `melodyRefs`
-   * (e.g. `kln/2023/09/02PAA/01-antifon`). Absent for inline-only melodies.
+   * (e.g. `en/sample/antiphon-1`). Absent for inline-only melodies.
    */
   id?: string;
   /** Gregorian mode 1–8, when applicable. */
   mode?: number;
-  /** Syllabification language for exsurge (`svenska` | `latin`). */
-  language?: "svenska" | "latin";
+  /** Syllabification language for exsurge. */
+  language?: ChantLanguage;
   /** GABC notation source. */
   gabc?: string;
   /** Free-form note (edition, "simple tone", "solemn tone", etc.). */
@@ -43,7 +43,7 @@ export interface ShortResponsoryMelody {
   /** Store id when hydrated from `melodyRefs`. */
   id?: string;
   mode?: number;
-  language?: "svenska" | "latin";
+  language?: ChantLanguage;
   note?: string;
   responsory?: string;
   responsorySecond?: string;
@@ -60,7 +60,7 @@ export interface DialogueMelody extends MelodyParts {
   /** Store id when hydrated from `melodyRefs`. */
   id?: string;
   mode?: number;
-  language?: "svenska" | "latin";
+  language?: ChantLanguage;
   note?: string;
   gabc?: string;
 }
@@ -227,7 +227,7 @@ export interface DismissalFixed {
   melodyRefs?: MelodyRef[];
 }
 
-/** Swedish Ordo PDF/summary presentation strings. */
+/** Ordo PDF/summary presentation strings, in the locale's own language. */
 export interface OrdoLabels {
   hours: {
     invitatory: string;
@@ -293,6 +293,7 @@ export interface OrdoLabels {
     allFromCommune: string;
     /** Day-level heading, e.g. "Commune: herdar". */
     dayCommune?: string;
+    /** Generic "all from X", whatever the source: "Allt från {source}." */
     allFromPsalter: string;
     except: string;
     ifMemoriaCelebrated: string;
@@ -326,6 +327,13 @@ export interface OrdoLabels {
   weekdays: Record<string, string>;
   /** Definite form for compline labels, e.g. "måndagen". */
   weekdaysDefinite: Record<string, string>;
+  /**
+   * Ordinal words filling `{week}` in the prose templates, from 1 upwards.
+   * Absent means the built-in Swedish list (see src/ordo/ordinals.ts).
+   */
+  ordinals?: string[];
+  /** Suffix for week numbers past `ordinals`, e.g. ":e" (sv) or "th" (en). */
+  ordinalSuffix?: string;
   months: string[];
   seasonalNames?: Record<string, string>;
   documentTitle?: string;

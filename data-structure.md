@@ -117,12 +117,12 @@ These types appear throughout the larger structures below.
 ### 2.1 Melody store and melody references
 
 Sung texts normally do not embed GABC. Instead they carry `melody_refs` into a
-per-locale **melody store** (`data/{locale}/melodies/*.yaml`), which is
-*generated* by `npm run compile:melodies` from the raw extraction pipeline
-(`raw_data/kln/split/**/index.json`, all non-failed entries) and committed so
-that re-extraction produces reviewable diffs. Rubrics never specify melodies,
-so attaching several condition-selected melodies to one rubric-specified text
-is an enrichment, not an override.
+per-locale **melody store** (`data/{locale}/melodies/*.yaml`). A locale that
+transcribes chant from printed sources generates that store from its own
+extraction pipeline and commits it, so re-extraction produces reviewable
+diffs; `data/en/melodies/sample.yaml` here is hand-written instead. Rubrics
+never specify melodies, so attaching several condition-selected melodies to one
+rubric-specified text is an enrichment, not an override.
 
 ```
 SundayCycle = "A" | "B" | "C"    // Sunday gospel lectionary cycle
@@ -140,7 +140,7 @@ MelodyCondition {
 MelodyRef {
   // Ordered list on a slot; the FIRST entry whose condition matches the
   // LiturgicalDay wins (unconditioned entries always match — defaults last).
-  // Later matching entries are free alternatives ("eller:" in KLN sources).
+  // Later matching entries are free alternatives ("or:" in the sources).
   ref:        string           // StoredMelody.id or one of its aliases
   condition?: MelodyCondition
   note?:      string           // "eller", "solemn tone", ...
@@ -150,10 +150,10 @@ MelodyKind = "hymn" | "antiphon" | "gospel_antiphon" | "short_responsory"
            | "long_responsory" | "versicle" | "psalm_tone" | "canticle" | "other"
 
 StoredMelody {
-  id:           string         // "kln/<split-path>/<filename-slug>", e.g. "kln/0125-V/02-antifon-1"
+  id:           string         // stable id from the source tree, e.g. "en/sample/antiphon-1"
   kind:         MelodyKind
   mode?:        int
-  language?:    "svenska" | "latin"  // exsurge syllabification; from raw gabc_metadata
+  language?:    "svenska" | "latin" | "english"  // exsurge syllabification
   gabc?:        string         // full GABC body (hymns etc.)
   parts?: {                    // split bodies, by kind:
     antiphon?: string,  psalm_tone?: string,                 // antiphon / gospel_antiphon
@@ -162,11 +162,12 @@ StoredMelody {
     responsory?: string, responsory_second?: string,         // short responsory
     versicle?: string,   gloria?: string
   }
-  text?:        string         // de-hyphenated Swedish text recovered from GABC lyrics
+  text?:        string         // de-hyphenated text recovered from GABC lyrics
   incipit?:     string         // from raw metadata; cross-check for `text`
   content_hash: string         // hash of normalized GABC; rename/duplicate detection
   aliases?:     string[]       // ids of exact-content duplicates folded into this entry
-  source: { index, pdf, source_category, page, section_label, variant_label?, filename }
+  source?: { index, pdf, source_category, page, section_label, variant_label?, filename }
+                               // provenance in the extraction tree; absent when hand-written
 }
 ```
 

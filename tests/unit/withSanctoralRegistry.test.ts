@@ -22,7 +22,7 @@ import { dataRoot } from "../helpers/paths.js";
 let registry: SanctoralCalendarRegistry;
 
 beforeAll(async () => {
-  registry = await loadSanctoralRegistry(dataRoot, "sv");
+  registry = await loadSanctoralRegistry(dataRoot, "en");
 });
 
 /**

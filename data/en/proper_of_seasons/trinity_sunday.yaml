@@ -1,4 +1,24 @@
 key: trinity_sunday
+# The one seasonal key here with First Vespers psalmody of its own. A solemnity
+# that has none falls back to the Laudate psalms, and that fallback resolves to
+# a bare psalm rather than a psalm assignment — see the note in the README.
+first_vespers:
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[trinity_sunday I Vespers antiphon 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[trinity_sunday I Vespers antiphon 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[trinity_sunday I Vespers antiphon 3]'
+        melody_refs:
+          - ref: en/sample/antiphon-3
 office_of_readings:
   biblical_reading:
     reference: '[trinity_sunday biblical ref]'

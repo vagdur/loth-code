@@ -122,8 +122,10 @@ function allFromClause(
   if (phrase === labels.sources.propriet) return labels.prose.allFromPropriet;
   const commune = communeName(phrase, labels);
   if (commune) {
+    // The day heading already named the variant, so the hour just says "the
+    // common" rather than repeating it.
     if (communeInDayContext(commune, ctx)) {
-      return `Allt från ${labels.sources.communeInline}.`;
+      return allFromSource(labels, labels.sources.communeInline);
     }
     return labels.prose.allFromCommune
       .replace("{commune}", labels.sources.communeInline)
@@ -132,10 +134,12 @@ function allFromClause(
   if (isCurrentPsalter(groupKey, ctx)) {
     return psalterBaselineClause(labels, ctx.psalterBaseline ?? "feria");
   }
-  if (phrase.startsWith(`${labels.sources.psalterPrefix} `)) {
-    return labels.prose.allFromPsalter.replace("{source}", phrase);
-  }
-  return `Allt ${labels.prose.from} ${phrase}.`;
+  return allFromSource(labels, phrase);
+}
+
+/** "All from {source}." — the generic form, whatever the source turns out to be. */
+function allFromSource(labels: OrdoLabels, source: string): string {
+  return labels.prose.allFromPsalter.replace("{source}", source);
 }
 
 function shortFromClause(described: DescribedSource, labels: OrdoLabels): string {

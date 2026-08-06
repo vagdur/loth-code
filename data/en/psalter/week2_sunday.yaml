@@ -2,6 +2,8 @@ week: 2
 day: Sunday
 invitatory_antiphon:
   text: '[Week 2 Sunday invitatory]'
+  melody_refs:
+    - ref: en/sample/invitatory-antiphon
 office_of_readings:
   hymns:
     night:
@@ -9,21 +11,31 @@ office_of_readings:
         - '[Week 2 Sunday OoR night hymn, stanza 1]'
         - '[Week 2 Sunday OoR night hymn, stanza 2]'
       doxology: '[Week 2 Sunday OoR night hymn, doxology]'
+      melody_refs:
+        - ref: en/sample/hymn
     day:
       stanzas:
         - '[Week 2 Sunday OoR day hymn, stanza 1]'
         - '[Week 2 Sunday OoR day hymn, stanza 2]'
       doxology: '[Week 2 Sunday OoR day hymn, doxology]'
+      melody_refs:
+        - ref: en/sample/hymn
   psalm_assignments:
     - psalm_or_canticle_id: psalm_99
       antiphon:
         text: '[OoR psalm 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
     - psalm_or_canticle_id: psalm_23
       antiphon:
         text: '[OoR psalm 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
     - psalm_or_canticle_id: psalm_66
       antiphon:
         text: '[OoR psalm 3]'
+        melody_refs:
+          - ref: en/sample/antiphon-3
   versicle:
     verse: Lord, open our lips.
     response: And our mouth shall proclaim your praise.
@@ -34,29 +46,47 @@ lauds:
         - '[Week 2 Sunday Lauds hymn A, stanza 1]'
         - '[Week 2 Sunday Lauds hymn A, stanza 2]'
       doxology: '[Week 2 Sunday Lauds hymn A, doxology]'
+      melody_refs:
+        - ref: en/sample/hymn
     series_b:
       stanzas:
         - '[Week 2 Sunday Lauds hymn B, stanza 1]'
         - '[Week 2 Sunday Lauds hymn B, stanza 2]'
       doxology: '[Week 2 Sunday Lauds hymn B, doxology]'
+      melody_refs:
+        - ref: en/sample/hymn
   psalm_assignments:
     - psalm_or_canticle_id: psalm_63
       antiphon:
         text: '[Lauds morning psalm]'
+        melody_refs:
+          - ref: en/sample/antiphon-1-alt
+            condition:
+              seasons:
+                - eastertide
+          - ref: en/sample/antiphon-1
     - psalm_or_canticle_id: ot_dn3_glory
       antiphon:
         text: '[Lauds OT canticle]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
     - psalm_or_canticle_id: psalm_149
       antiphon:
         text: '[Lauds praise psalm]'
+        melody_refs:
+          - ref: en/sample/antiphon-3
   short_reading:
     reference: Rev 7:10, 12
     text: '[Short reading: Rev 7:10, 12]'
   short_responsory:
     text: '[Short responsory]'
     versicle: '[Short responsory versicle]'
+    melody_refs:
+      - ref: en/sample/short-responsory
   benedictus_antiphon:
     text: '[Week 2 Sunday Benedictus antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon
   intercessions:
     introduction: '[Lauds intercessions introduction]'
     response: Lord, have mercy.
@@ -75,16 +105,24 @@ terce:
       - '[Week 2 Sunday Terce hymn, stanza 1]'
       - '[Week 2 Sunday Terce hymn, stanza 2]'
     doxology: '[Week 2 Sunday Terce hymn, doxology]'
+    melody_refs:
+      - ref: en/sample/hymn
   psalm_assignments:
     - psalm_or_canticle_id: psalm_118_xxii
       antiphon:
         text: '[Terce psalm 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
     - psalm_or_canticle_id: psalm_118_i
       antiphon:
         text: '[Terce psalm 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
     - psalm_or_canticle_id: psalm_118_ii
       antiphon:
         text: '[Terce psalm 3]'
+        melody_refs:
+          - ref: en/sample/antiphon-3
   short_reading:
     reference: Terce reading
     text: '[Short reading: Terce reading]'
@@ -99,16 +137,24 @@ sext:
       - '[Week 2 Sunday Sext hymn, stanza 1]'
       - '[Week 2 Sunday Sext hymn, stanza 2]'
     doxology: '[Week 2 Sunday Sext hymn, doxology]'
+    melody_refs:
+      - ref: en/sample/hymn
   psalm_assignments:
     - psalm_or_canticle_id: psalm_118_xxii
       antiphon:
         text: '[Sext psalm 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
     - psalm_or_canticle_id: psalm_118_i
       antiphon:
         text: '[Sext psalm 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
     - psalm_or_canticle_id: psalm_118_ii
       antiphon:
         text: '[Sext psalm 3]'
+        melody_refs:
+          - ref: en/sample/antiphon-3
   short_reading:
     reference: Sext reading
     text: '[Short reading: Sext reading]'
@@ -123,16 +169,24 @@ none:
       - '[Week 2 Sunday None hymn, stanza 1]'
       - '[Week 2 Sunday None hymn, stanza 2]'
     doxology: '[Week 2 Sunday None hymn, doxology]'
+    melody_refs:
+      - ref: en/sample/hymn
   psalm_assignments:
     - psalm_or_canticle_id: psalm_118_xxii
       antiphon:
         text: '[None psalm 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
     - psalm_or_canticle_id: psalm_118_i
       antiphon:
         text: '[None psalm 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
     - psalm_or_canticle_id: psalm_118_ii
       antiphon:
         text: '[None psalm 3]'
+        melody_refs:
+          - ref: en/sample/antiphon-3
   short_reading:
     reference: None reading
     text: '[Short reading: None reading]'
@@ -148,29 +202,43 @@ first_vespers:
         - '[Week 2 Sunday I Vespers hymn A, stanza 1]'
         - '[Week 2 Sunday I Vespers hymn A, stanza 2]'
       doxology: '[Week 2 Sunday I Vespers hymn A, doxology]'
+      melody_refs:
+        - ref: en/sample/hymn
     series_b:
       stanzas:
         - '[Week 2 Sunday I Vespers hymn B, stanza 1]'
         - '[Week 2 Sunday I Vespers hymn B, stanza 2]'
       doxology: '[Week 2 Sunday I Vespers hymn B, doxology]'
+      melody_refs:
+        - ref: en/sample/hymn
   psalm_assignments:
     - psalm_or_canticle_id: psalm_118_xiv
       antiphon:
         text: '[I Vespers psalm 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
     - psalm_or_canticle_id: psalm_15
       antiphon:
         text: '[I Vespers psalm 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
     - psalm_or_canticle_id: nt_phil2
       antiphon:
         text: '[I Vespers NT canticle]'
+        melody_refs:
+          - ref: en/sample/antiphon-3
   short_reading:
     reference: Rom 11:33-36
     text: '[Short reading: Rom 11:33-36]'
   short_responsory:
     text: '[Short responsory]'
     versicle: '[Short responsory versicle]'
+    melody_refs:
+      - ref: en/sample/short-responsory
   magnificat_antiphon:
     text: '[Week 2 Sunday I Vespers Magnificat antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon
   intercessions:
     introduction: '[First Vespers intercessions introduction]'
     response: Lord, have mercy.
@@ -190,29 +258,43 @@ vespers:
         - '[Week 2 Sunday Vespers hymn A, stanza 1]'
         - '[Week 2 Sunday Vespers hymn A, stanza 2]'
       doxology: '[Week 2 Sunday Vespers hymn A, doxology]'
+      melody_refs:
+        - ref: en/sample/hymn
     series_b:
       stanzas:
         - '[Week 2 Sunday Vespers hymn B, stanza 1]'
         - '[Week 2 Sunday Vespers hymn B, stanza 2]'
       doxology: '[Week 2 Sunday Vespers hymn B, doxology]'
+      melody_refs:
+        - ref: en/sample/hymn
   psalm_assignments:
     - psalm_or_canticle_id: psalm_104
       antiphon:
         text: '[Vespers psalm 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
     - psalm_or_canticle_id: psalm_105
       antiphon:
         text: '[Vespers psalm 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
     - psalm_or_canticle_id: nt_phil2
       antiphon:
         text: '[Vespers NT canticle]'
+        melody_refs:
+          - ref: en/sample/antiphon-3
   short_reading:
     reference: 1 Pet 1:3-5
     text: '[Short reading: 1 Pet 1:3-5]'
   short_responsory:
     text: '[Short responsory]'
     versicle: '[Short responsory versicle]'
+    melody_refs:
+      - ref: en/sample/short-responsory
   magnificat_antiphon:
     text: '[Week 2 Sunday Magnificat antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon
   intercessions:
     introduction: '[Vespers intercessions introduction]'
     response: Lord, have mercy.
@@ -231,25 +313,37 @@ compline:
       - '[Week 2 Sunday Compline hymn, stanza 1]'
       - '[Week 2 Sunday Compline hymn, stanza 2]'
     doxology: '[Week 2 Sunday Compline hymn, doxology]'
+    melody_refs:
+      - ref: en/sample/hymn
   after_first_vespers:
     - psalm_or_canticle_id: psalm_4
       antiphon:
         text: '[Compline after I Vespers 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
     - psalm_or_canticle_id: psalm_133
       antiphon:
         text: '[Compline after I Vespers 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
   after_second_vespers:
     - psalm_or_canticle_id: psalm_90
       antiphon:
         text: '[Compline after II Vespers]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
   default_psalm_assignments:
     - psalm_or_canticle_id: psalm_90
       antiphon:
         text: '[Compline psalm 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
   short_reading:
     reference: Rev 22:4-5
     text: '[Short reading: Rev 22:4-5]'
   nunc_dimittis_antiphon:
     text: '[Week 2 Sunday Nunc Dimittis antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon
   concluding_prayer:
     text: '[Week 2 Sunday Compline concluding prayer]'

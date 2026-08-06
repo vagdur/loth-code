@@ -110,8 +110,10 @@ test.each(matrix)(
       expect(mount.gabc).toBe(assembler.getScores().get(mount.id));
     }
 
-    // `en` is placeholder data with no melodies; `sv` must have real scores.
-    if (locale === "sv") expect(mounts.length).toBeGreaterThan(0);
+    // Every sample locale carries melodies, so a run with no mounts at all
+    // means the refs stopped resolving rather than that there is nothing to
+    // sing.
+    expect(mounts.length).toBeGreaterThan(0);
 
     for (const mount of mounts) {
       expect(mount.gabc, `${mount.id} lacks a GABC header`).toContain("\n%%\n");

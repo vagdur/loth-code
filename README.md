@@ -18,6 +18,13 @@ a filesystem (a Cloudflare Worker, say) instead load a bundle produced by
 point is free of Node built-ins, so it bundles for a browser or a Worker
 without polyfills; `npm run check:worker-safe` is what keeps that true.
 
+The `data/en/` tree in this repository is **not** an office anyone can pray. It
+is placeholder text — `[Week 2 Sunday Lauds hymn, stanza 1]` — with invented
+chant in `data/en/melodies/sample.yaml`, and it exists so the test suite can
+render every hour, in every output mode, with and without scores. Point the
+library at a real tree to get a real office; `npm run generate:data --
+--locale xx` seeds the shape of a new one.
+
 ```ts
 import { HtmlAssembler, buildDay, defaultContext, resolveDay, utcDate,
          withSanctoralRegistry } from "@vagdur/loth";
@@ -54,8 +61,7 @@ render. A server handling more than one locale must use it rather than
 `initSanctoralRegistry`, whose global would otherwise let one request change
 the calendar out from under another.
 
-MIT licensed. The [repository][repo] is private, since it holds the data.
+MIT licensed.
 
 [gabc]: https://gregorio-project.github.io/gabc/
 [exsurge]: https://github.com/vagdur/exsurge
-[repo]: https://github.com/vagdur/LoTH

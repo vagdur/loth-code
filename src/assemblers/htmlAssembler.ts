@@ -29,6 +29,7 @@ import type {
 } from "../types/texts.js";
 import type { SectionLabelKey } from "./labels.js";
 import type { LiturgicalDay } from "../types/calendar.js";
+import type { ChantLanguage } from "../types/melody.js";
 import type { Assembler, ResolveOptions } from "./types.js";
 import {
   resolveAntiphon, resolveAntiphonList, resolveBiblicalReading,
@@ -601,7 +602,7 @@ export class HtmlAssembler implements Assembler<string> {
   private emitScore(
     gabc: string | undefined,
     kind: "antiphon" | "psalmTone" = "antiphon",
-    language?: "svenska" | "latin",
+    language?: ChantLanguage,
     melodyId?: string,
   ): string {
     if (!this.shouldEmitScores()) return "";

@@ -8,11 +8,12 @@ export const SAMPLE_DATE = new Date("2026-05-10T00:00:00Z");
 export const SAMPLE_CALENDAR = "general" as const;
 
 /**
- * Locales exercised by the assembler fixtures. `en` is dummy placeholder data
- * (no melodies); `sv` is real data that embeds GABC scores, so it also
- * exercises the `filecontents`/GregorioTeX path.
+ * Locales exercised by the assembler fixtures. `en` is placeholder data
+ * throughout, including its melodies (data/en/melodies/sample.yaml), which is
+ * what puts scores in the fixtures and exercises the `filecontents`/GregorioTeX
+ * and exsurge paths.
  */
-export const SAMPLE_LOCALES = ["en", "sv"] as const;
+export const SAMPLE_LOCALES = ["en"] as const;
 export type SampleLocale = (typeof SAMPLE_LOCALES)[number];
 
 export async function loadSampleRepo(

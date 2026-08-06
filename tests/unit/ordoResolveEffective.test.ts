@@ -13,9 +13,9 @@ let repo: DataRepository;
 const ctx = ordoContext("stockholm");
 
 beforeAll(async () => {
-  const registry = await loadSanctoralRegistry(dataRoot, "sv");
+  const registry = await loadSanctoralRegistry(dataRoot, "en");
   initSanctoralRegistry(registry);
-  repo = await loadRepository(dataRoot, "sv");
+  repo = await loadRepository(dataRoot, "en");
 });
 
 describe("resolveEffectiveSource", () => {

@@ -1,5 +1,7 @@
 /**
- * Human-readable Swedish titles for ferial days in the Ordo headline.
+ * Human-readable titles for ferial days in the Ordo headline. The wording is
+ * the locale's: prose templates, weekday names and ordinals all come from
+ * `labels.ordo`.
  */
 
 import type { Weekday } from "../types/psalter.js";
@@ -48,7 +50,7 @@ function weeklyFerialTitle(
   week: number,
   template: string,
 ): string {
-  return applyTemplate(template, { weekday, week: ordinalWeek(week) });
+  return applyTemplate(template, { weekday, week: ordinalWeek(week, labels) });
 }
 
 export function formatFerialTitle(
@@ -98,7 +100,7 @@ export function formatFerialTitle(
     const decDay = Number(/^christmas_dec(\d+)$/.exec(seasonalKey)![1]);
     const octaveDay = decDay - 24; // Dec 26 = 2nd day of the octave (Christmas is day 1)
     return applyTemplate(prose.ferialInChristmasOctave, {
-      day: ordinalWeek(octaveDay),
+      day: ordinalWeek(octaveDay, labels),
     });
   }
 

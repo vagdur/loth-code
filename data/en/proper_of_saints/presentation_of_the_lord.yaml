@@ -1,1 +1,25 @@
+# Antiphon-only psalmody: the proper fixes the antiphons but leaves the psalms
+# to the day, which is what the `psalm_unassigned` sentinel is for. The
+# assemblers then render the antiphon and no psalm text.
 id: presentation_of_the_lord
+vespers:
+  psalm_assignments:
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[presentation_of_the_lord Vespers antiphon 1]'
+        melody_refs:
+          - ref: en/sample/antiphon-1
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[presentation_of_the_lord Vespers antiphon 2]'
+        melody_refs:
+          - ref: en/sample/antiphon-2
+    - psalm_or_canticle_id: psalm_unassigned
+      antiphon:
+        text: '[presentation_of_the_lord Vespers antiphon 3]'
+        melody_refs:
+          - ref: en/sample/antiphon-3
+  magnificat_antiphon:
+    text: '[presentation_of_the_lord Magnificat antiphon]'
+    melody_refs:
+      - ref: en/sample/gospel-antiphon

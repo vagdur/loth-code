@@ -1,5 +1,5 @@
 /**
- * Per-day options end-to-end against the Swedish data: enumeration,
+ * Per-day options end-to-end against the data tree: enumeration,
  * application, and the default round-trip guarantee (applying every
  * option's default choice is byte-identical to applying no choices).
  */
@@ -20,7 +20,7 @@ import { dataRoot } from "../helpers/paths.js";
 import type { Antiphon, Melody } from "../../src/types/texts.js";
 import type { DayChoices } from "../../src/types/options.js";
 
-const locale = "sv";
+const locale = "en";
 let repo: DataRepository;
 const ctx = defaultContext("general");
 
@@ -50,26 +50,30 @@ function defaultsOf(date: Date): DayChoices {
   return Object.fromEntries(options.map((o) => [o.id, o.defaultChoiceId]));
 }
 
-describe("enumerateDayOptions (sv)", () => {
-  test("Easter Sunday exposes 'eller' melody alternatives for the invitatory antiphon", () => {
-    const date = utcDate(2026, 4, 5); // Easter Sunday 2026
+describe("enumerateDayOptions", () => {
+  test("a slot with two settings exposes them as a melody option", () => {
+    const date = utcDate(2026, 5, 10); // 6th Sunday of Easter, Week II
     const { options } = enumerateDayOptions(date, ctx, repo);
-    const melodyOption = options.find((o) => o.id === "invitatory.antiphon.melody");
+    const melodyOption = options.find(
+      (o) => o.id === "lauds.psalmSlots[0].antiphon.melody",
+    );
     expect(melodyOption).toBeDefined();
     expect(melodyOption!.choices.length).toBeGreaterThanOrEqual(2);
 
     // Applying a non-default melody choice changes the hydrated melody.
     const day = resolveDay(date, ctx.calendarId);
     const abs = buildDay(day, ctx);
+    // The slot resolves to a psalm assignment; the antiphon hangs off it, which
+    // is why the option path descends one level further than the slot itself.
     const resolveWith = (choices?: DayChoices) =>
-      resolveSource(abs.invitatory.antiphonRef, repo, day, {
+      (resolveSource(abs.lauds.psalmSlots[0]!.assignmentRef, repo, day, {
         ...(choices ? { choices } : {}),
-        optionPath: "invitatory.antiphon",
-      }) as Antiphon;
+        optionPath: "lauds.psalmSlots[0]",
+      }) as { antiphon: Antiphon }).antiphon;
     const defaultGabc = (resolveWith().melody as Melody).gabc;
     const alt = melodyOption!.choices.find((c) => c.id !== melodyOption!.defaultChoiceId)!;
     const altGabc = (
-      resolveWith({ "invitatory.antiphon.melody": alt.id }).melody as Melody
+      resolveWith({ "lauds.psalmSlots[0].antiphon.melody": alt.id }).melody as Melody
     ).gabc;
     expect(altGabc).toBeDefined();
     expect(altGabc).not.toBe(defaultGabc);

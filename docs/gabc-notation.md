@@ -54,7 +54,7 @@ Accidentals are written as a suffix on the note letter they modify. The flat or 
 | `y` | natural ♮ | `iy` = natural sign; `iyi` = natural sign + note i |
 | `#` | sharp ♯ | `f#` = sharp sign; `f#f` = sharp sign + note f |
 
-A **key-signature flat** at the left edge of every staff row (items=23 in the KLN PDF) applies that flat to all notes at that pitch throughout the row.
+A **key-signature flat** at the left edge of every staff row applies that flat to all notes at that pitch throughout the row.
 
 ---
 
@@ -72,7 +72,7 @@ The convention is that a stepwise descent of **three or more notes inside one ne
 
 Only a punctum quadratum can become an inclinatum: a virga, oriscus, quilisma or stropha is a different notehead and ends the descent. Marks that leave the notehead alone (`_`, `.`, `'`) ride along on an inclinatum.
 
-In this repository the rule is applied by [`scripts/kln_inclinata.py`](../scripts/kln_inclinata.py), called at the end of vector transcription and by `npm run backfill:kln-inclinata` for GABC transcribed before the rule existed.
+A transcription pipeline is expected to apply this rule as it emits GABC; the library renders whatever it is given.
 
 ---
 
@@ -108,7 +108,7 @@ These suffixes produce visually special noteheads used in psalm-tone notation an
 | `r2` | reversed accentus | Accent mark pointing the other way |
 | `r3–r5` | circulus / semi-circuli | Various circular accent marks |
 
-In the KLN PDF these are realised as distinct notehead shapes:
+In printed chant books these are realised as distinct notehead shapes:
 - Oriscus (wider polygon) → `r0` (reciting tone)
 - Virga (heavier-stroked square) → `R` (termination note)
 - Small accent square above the staff → `r1` (accented cadence note)
@@ -155,7 +155,7 @@ Spacing and connection modifiers inside a group:
 
 ## Choral signs
 
-`[cs:t]` placed after a note produces a **choral sign** (signum congruentiae) of type `t`. In the KLN books, `[cs:c]` marks the point in an antiphon where the score connects back to the psalm tone — effectively a repeat/return sign for the choir.
+`[cs:t]` placed after a note produces a **choral sign** (signum congruentiae) of type `t`. `[cs:c]` conventionally marks the point in an antiphon where the score connects back to the psalm tone — effectively a repeat/return sign for the choir.
 
 ---
 

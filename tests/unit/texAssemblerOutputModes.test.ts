@@ -13,7 +13,7 @@ function countMatches(tex: string, pattern: RegExp): number {
 }
 
 test("plain mode emits plain macros and no GABC scores", async () => {
-  const repo = await loadSampleRepo("sv");
+  const repo = await loadSampleRepo("en");
   const day = buildSampleAbstractDay();
   const assembler = new TexAssembler({ outputMode: "plain" });
   const tex = assembler.assembleLauds(day.lauds, repo);
@@ -30,7 +30,7 @@ test("plain mode emits plain macros and no GABC scores", async () => {
 });
 
 test("scored mode emits scores only for sung slots", async () => {
-  const repo = await loadSampleRepo("sv");
+  const repo = await loadSampleRepo("en");
   const day = buildSampleAbstractDay();
   const assembler = new TexAssembler({ outputMode: "scored" });
   const tex = assembler.assembleLauds(day.lauds, repo);
@@ -51,7 +51,7 @@ test("scored mode emits scores only for sung slots", async () => {
 });
 
 test("scored mode emits each psalmody antiphon at most once", async () => {
-  const repo = await loadSampleRepo("sv");
+  const repo = await loadSampleRepo("en");
   const day = buildSampleAbstractDay();
 
   const hybrid = new TexAssembler({ outputMode: "hybrid" }).assembleLauds(day.lauds, repo);
@@ -68,7 +68,7 @@ test("scored mode emits each psalmody antiphon at most once", async () => {
 });
 
 test("default constructor preserves hybrid behaviour", async () => {
-  const repo = await loadSampleRepo("sv");
+  const repo = await loadSampleRepo("en");
   const day = buildSampleAbstractDay();
   const tex = new TexAssembler().assembleLauds(day.lauds, repo);
 

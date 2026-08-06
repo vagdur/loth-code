@@ -129,17 +129,36 @@ function buildPsalterDay(week, dayName) {
   const dayIdx = d;
   const sectionBase = w * 21 + d * 3;
 
-  const psalmSlot = (id, ant) => ({
+  /**
+   * Melody refs into `data/en/melodies/sample.yaml`, on the one psalter day
+   * the fixtures render (Week 2 Sunday). The `en` bundle is the test fixture,
+   * and this is what puts chant into it; a real locale gets its refs from its
+   * own extraction pipeline instead, so nothing is attached elsewhere.
+   *
+   * Entries may be `"id"` or `["id", condition]` — a conditioned ref wins only
+   * on a matching day, which is how a season gets its own setting.
+   */
+  const isSampleDay = locale === "en" && week === 2 && dayName === "Sunday";
+  const refs = (...entries) =>
+    isSampleDay
+      ? {
+          melody_refs: entries.map((e) =>
+            Array.isArray(e) ? { ref: e[0], condition: e[1] } : { ref: e },
+          ),
+        }
+      : {};
+
+  const psalmSlot = (id, ant, ...melodyRefs) => ({
     psalm_or_canticle_id: safePsalmId(id),
-    antiphon: stubAntiphon(ant),
+    antiphon: { ...stubAntiphon(ant), ...refs(...melodyRefs) },
   });
 
   const daytimeHour = (hour) => ({
-    hymn: stubHymn(`${label} ${hour} hymn`),
+    hymn: { ...stubHymn(`${label} ${hour} hymn`), ...refs("en/sample/hymn") },
     psalm_assignments: [
-      psalmSlot(ps118Id(sectionBase), `${hour} psalm 1`),
-      psalmSlot(ps118Id(sectionBase + 1), `${hour} psalm 2`),
-      psalmSlot(ps118Id(sectionBase + 2), `${hour} psalm 3`),
+      psalmSlot(ps118Id(sectionBase), `${hour} psalm 1`, "en/sample/antiphon-1"),
+      psalmSlot(ps118Id(sectionBase + 1), `${hour} psalm 2`, "en/sample/antiphon-2"),
+      psalmSlot(ps118Id(sectionBase + 2), `${hour} psalm 3`, "en/sample/antiphon-3"),
     ],
     short_reading: stubReading(`${hour} reading`),
     versicle: {
@@ -159,13 +178,19 @@ function buildPsalterDay(week, dayName) {
   return {
     week,
     day: dayName,
-    invitatory_antiphon: stubAntiphon(`${label} invitatory`),
+    invitatory_antiphon: {
+      ...stubAntiphon(`${label} invitatory`),
+      ...refs("en/sample/invitatory-antiphon"),
+    },
     office_of_readings: {
-      hymns: { night: stubHymn(`${label} OoR night hymn`), day: stubHymn(`${label} OoR day hymn`) },
+      hymns: {
+        night: { ...stubHymn(`${label} OoR night hymn`), ...refs("en/sample/hymn") },
+        day: { ...stubHymn(`${label} OoR day hymn`), ...refs("en/sample/hymn") },
+      },
       psalm_assignments: [
-        psalmSlot(oor[0], "OoR psalm 1"),
-        psalmSlot(oor[1], "OoR psalm 2"),
-        psalmSlot(oor[2], "OoR psalm 3"),
+        psalmSlot(oor[0], "OoR psalm 1", "en/sample/antiphon-1"),
+        psalmSlot(oor[1], "OoR psalm 2", "en/sample/antiphon-2"),
+        psalmSlot(oor[2], "OoR psalm 3", "en/sample/antiphon-3"),
       ],
       versicle: {
         verse: "Lord, open our lips.",
@@ -173,15 +198,29 @@ function buildPsalterDay(week, dayName) {
       },
     },
     lauds: {
-      hymns: { series_a: stubHymn(`${label} Lauds hymn A`), series_b: stubHymn(`${label} Lauds hymn B`) },
+      hymns: {
+        series_a: { ...stubHymn(`${label} Lauds hymn A`), ...refs("en/sample/hymn") },
+        series_b: { ...stubHymn(`${label} Lauds hymn B`), ...refs("en/sample/hymn") },
+      },
       psalm_assignments: [
-        psalmSlot(laudsMorning, "Lauds morning psalm"),
-        psalmSlot(otCanticle, "Lauds OT canticle"),
-        psalmSlot(laudsPraise, "Lauds praise psalm"),
+        // Two settings, the first only in Eastertide: the conditioned ref is
+        // what exercises condition matching and the melody-choice options.
+        psalmSlot(laudsMorning, "Lauds morning psalm",
+          ["en/sample/antiphon-1-alt", { seasons: ["eastertide"] }],
+          "en/sample/antiphon-1"),
+        psalmSlot(otCanticle, "Lauds OT canticle", "en/sample/antiphon-2"),
+        psalmSlot(laudsPraise, "Lauds praise psalm", "en/sample/antiphon-3"),
       ],
       short_reading: stubReading("Rev 7:10, 12"),
-      short_responsory: { text: "[Short responsory]", versicle: "[Short responsory versicle]" },
-      benedictus_antiphon: stubAntiphon(`${label} Benedictus antiphon`),
+      short_responsory: {
+        text: "[Short responsory]",
+        versicle: "[Short responsory versicle]",
+        ...refs("en/sample/short-responsory"),
+      },
+      benedictus_antiphon: {
+        ...stubAntiphon(`${label} Benedictus antiphon`),
+        ...refs("en/sample/gospel-antiphon"),
+      },
       intercessions: stubIntercessions("Lauds"),
       concluding_prayer: { text: `[${label} Lauds concluding prayer]` },
     },
@@ -191,45 +230,70 @@ function buildPsalterDay(week, dayName) {
     ...(dayName === "Sunday"
       ? {
           first_vespers: {
-            hymns: { series_a: stubHymn(`${label} I Vespers hymn A`), series_b: stubHymn(`${label} I Vespers hymn B`) },
+            hymns: {
+              series_a: { ...stubHymn(`${label} I Vespers hymn A`), ...refs("en/sample/hymn") },
+              series_b: { ...stubHymn(`${label} I Vespers hymn B`), ...refs("en/sample/hymn") },
+            },
             psalm_assignments: [
-              psalmSlot(FIRST_VESPERS_PSALMS[w][0], "I Vespers psalm 1"),
-              psalmSlot(FIRST_VESPERS_PSALMS[w][1], "I Vespers psalm 2"),
-              psalmSlot(FIRST_VESPERS_PSALMS[w][2], "I Vespers NT canticle"),
+              psalmSlot(FIRST_VESPERS_PSALMS[w][0], "I Vespers psalm 1", "en/sample/antiphon-1"),
+              psalmSlot(FIRST_VESPERS_PSALMS[w][1], "I Vespers psalm 2", "en/sample/antiphon-2"),
+              psalmSlot(FIRST_VESPERS_PSALMS[w][2], "I Vespers NT canticle", "en/sample/antiphon-3"),
             ],
             short_reading: stubReading("Rom 11:33-36"),
-            short_responsory: { text: "[Short responsory]", versicle: "[Short responsory versicle]" },
-            magnificat_antiphon: stubAntiphon(`${label} I Vespers Magnificat antiphon`),
+            short_responsory: {
+              text: "[Short responsory]",
+              versicle: "[Short responsory versicle]",
+              ...refs("en/sample/short-responsory"),
+            },
+            magnificat_antiphon: {
+              ...stubAntiphon(`${label} I Vespers Magnificat antiphon`),
+              ...refs("en/sample/gospel-antiphon"),
+            },
             intercessions: stubIntercessions("First Vespers"),
             concluding_prayer: { text: `[${label} I Vespers concluding prayer]` },
           },
         }
       : {}),
     vespers: {
-      hymns: { series_a: stubHymn(`${label} Vespers hymn A`), series_b: stubHymn(`${label} Vespers hymn B`) },
+      hymns: {
+        series_a: { ...stubHymn(`${label} Vespers hymn A`), ...refs("en/sample/hymn") },
+        series_b: { ...stubHymn(`${label} Vespers hymn B`), ...refs("en/sample/hymn") },
+      },
       psalm_assignments: [
-        psalmSlot(vesp1, "Vespers psalm 1"),
-        psalmSlot(vesp2, "Vespers psalm 2"),
-        psalmSlot(ntCanticle, "Vespers NT canticle"),
+        psalmSlot(vesp1, "Vespers psalm 1", "en/sample/antiphon-1"),
+        psalmSlot(vesp2, "Vespers psalm 2", "en/sample/antiphon-2"),
+        psalmSlot(ntCanticle, "Vespers NT canticle", "en/sample/antiphon-3"),
       ],
       short_reading: stubReading("1 Pet 1:3-5"),
-      short_responsory: { text: "[Short responsory]", versicle: "[Short responsory versicle]" },
-      magnificat_antiphon: stubAntiphon(`${label} Magnificat antiphon`),
+      short_responsory: {
+        text: "[Short responsory]",
+        versicle: "[Short responsory versicle]",
+        ...refs("en/sample/short-responsory"),
+      },
+      magnificat_antiphon: {
+        ...stubAntiphon(`${label} Magnificat antiphon`),
+        ...refs("en/sample/gospel-antiphon"),
+      },
       intercessions: stubIntercessions("Vespers"),
       concluding_prayer: { text: `[${label} Vespers concluding prayer]` },
     },
     compline: {
-      hymn: stubHymn(`${label} Compline hymn`),
+      hymn: { ...stubHymn(`${label} Compline hymn`), ...refs("en/sample/hymn") },
       after_first_vespers: [
-        psalmSlot("psalm_4", "Compline after I Vespers 1"),
-        psalmSlot("psalm_133", "Compline after I Vespers 2"),
+        psalmSlot("psalm_4", "Compline after I Vespers 1", "en/sample/antiphon-1"),
+        psalmSlot("psalm_133", "Compline after I Vespers 2", "en/sample/antiphon-2"),
       ],
-      after_second_vespers: [psalmSlot("psalm_90", "Compline after II Vespers")],
+      after_second_vespers: [
+        psalmSlot("psalm_90", "Compline after II Vespers", "en/sample/antiphon-1"),
+      ],
       default_psalm_assignments: COMPLINE_FERIAL_PSALMS[dayName].map((id, i) =>
-        psalmSlot(id, `Compline psalm ${i + 1}`),
+        psalmSlot(id, `Compline psalm ${i + 1}`, "en/sample/antiphon-2"),
       ),
       short_reading: stubReading("Rev 22:4-5"),
-      nunc_dimittis_antiphon: stubAntiphon(`${label} Nunc Dimittis antiphon`),
+      nunc_dimittis_antiphon: {
+        ...stubAntiphon(`${label} Nunc Dimittis antiphon`),
+        ...refs("en/sample/gospel-antiphon"),
+      },
       concluding_prayer: { text: `[${label} Compline concluding prayer]` },
     },
   };
@@ -295,6 +359,18 @@ async function generateComplementary() {
   return psalmIds;
 }
 
+/**
+ * Placeholder verses. Three of them, each with the `*` mediant, so the
+ * assemblers get the same shape a real psalm has — several verses, each split
+ * over two half-lines — without carrying anyone's translation.
+ */
+function stubVerses(id, count = 3) {
+  return Array.from({ length: count }, (_, i) => ({
+    number: i + 1,
+    text: `[${id} — stub verse ${i + 1}, first half] *\n[${id} — stub verse ${i + 1}, second half]`,
+  }));
+}
+
 function stubPsalm(id) {
   const num = parseInt(id.replace("psalm_118_", "").replace("psalm_", ""), 10) || 1;
   const is118 = id.includes("psalm_118_");
@@ -304,7 +380,7 @@ function stubPsalm(id) {
     title: `[${id} title]`,
     christian_heading: `[${id} heading]`,
     omitted_verses: [],
-    verses: [{ number: 1, text: `[${id} — stub verse 1]` }],
+    verses: stubVerses(id),
   };
 }
 
@@ -315,7 +391,7 @@ function stubCanticle(id) {
     type,
     source: `[${id} source]`,
     title: `[${id} title]`,
-    verses: [{ number: 1, text: `[${id} — stub verse 1]` }],
+    verses: stubVerses(id),
   };
 }
 

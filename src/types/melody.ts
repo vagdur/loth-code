@@ -3,10 +3,10 @@
  *
  * Sung texts in the data tree do not embed GABC directly; they carry
  * ordered lists of `MelodyRef`s into a per-locale melody store
- * (`data/{locale}/melodies/*.yaml`) compiled from the raw extraction
- * pipeline (`raw_data/`). The inline `Melody` type (texts.ts) remains as
- * the resolved/hydrated shape and as an escape hatch for hand-authored
- * melodies with no external source.
+ * (`data/{locale}/melodies/*.yaml`). A locale that transcribes chant from
+ * printed sources compiles that store from its own extraction pipeline. The
+ * inline `Melody` type (texts.ts) remains as the resolved/hydrated shape and
+ * as an escape hatch for hand-authored melodies with no external source.
  */
 
 import type { DayClass, Season } from "./calendar.js";
@@ -14,6 +14,12 @@ import type { Weekday } from "./psalter.js";
 
 /** Sunday gospel lectionary cycle (Year A/B/C). */
 export type SundayCycle = "A" | "B" | "C";
+
+/**
+ * Gregorio `language:` header value. Decides how exsurge syllabifies the
+ * lyrics; `src/browser/lothChant.ts` maps it onto an exsurge syllabifier.
+ */
+export type ChantLanguage = "svenska" | "latin" | "english";
 
 /**
  * Predicate deciding whether a melody variant applies on a given day.
@@ -36,7 +42,7 @@ export interface MelodyCondition {
  * A slot carries an ordered list; resolution picks the FIRST entry whose
  * condition matches the LiturgicalDay. Unconditioned entries always match,
  * so defaults go last. Entries after the first match are free alternatives
- * ("eller:" in the KLN sources), retrievable via resolveAllMelodies.
+ * ("or:" in the printed sources), retrievable via resolveAllMelodies.
  */
 export interface MelodyRef {
   /** StoredMelody.id, or one of its aliases. */
@@ -152,18 +158,18 @@ export interface MelodySource {
 
 /** One compiled melody in `data/{locale}/melodies/*.yaml`. */
 export interface StoredMelody {
-  /** Stable id derived from the raw split path, e.g. "kln/2023/09/M1-V/02-antifon-1". */
+  /** Stable id from the source tree, e.g. "en/sample/antiphon-1". */
   id: string;
   kind: MelodyKind;
   /** Gregorian mode 1–8, when identifiable. */
   mode?: number;
   /** Syllabification language for exsurge: Gregorio header values. */
-  language?: "svenska" | "latin";
+  language?: ChantLanguage;
   /** Full GABC body (hymns and other single-body pieces). */
   gabc?: string;
   /** Split GABC parts (antiphon+tone, responsory sections, ...). */
   parts?: MelodyParts;
-  /** De-hyphenated Swedish text recovered from the GABC lyrics. */
+  /** De-hyphenated text recovered from the GABC lyrics. */
   text?: string;
   /** Incipit from the raw metadata; sanity cross-check for `text`. */
   incipit?: string;
@@ -173,5 +179,6 @@ export interface StoredMelody {
   status?: "failed";
   /** Ids of exact-content duplicates folded into this canonical entry. */
   aliases?: string[];
-  source: MelodySource;
+  /** Absent for hand-authored melodies, which came from no extraction tree. */
+  source?: MelodySource;
 }

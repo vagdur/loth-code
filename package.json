@@ -1,12 +1,12 @@
 {
   "name": "@vagdur/loth",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Liturgy of the Hours assembler",
   "license": "MIT",
   "author": "Vilhelm Agdur",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vagdur/LoTH.git"
+    "url": "git+https://github.com/vagdur/loth-code.git"
   },
   "keywords": [
     "liturgy-of-the-hours",
@@ -44,6 +44,7 @@
   },
   "files": [
     "dist/",
+    "tex/",
     "html/loth.css",
     "html/ExsurgeChar.otf",
     "README.md",
@@ -65,35 +66,8 @@
     "test:fixtures:update": "cross-env UPDATE_FIXTURES=1 vitest run tests/integration",
     "test:fixtures:compile-pdf": "cross-env COMPILE_FIXTURE_PDF=1 vitest run --config vitest.fixtures-pdf.config.ts",
     "generate:data": "npm run build && node scripts/generate-data.mjs",
-    "generate:ordo": "npm run build && node scripts/generate-ordo.mjs",
     "validate:data": "npm run build && node scripts/validate-data.mjs",
-    "extract:ordo-calendar": "python scripts/extract-ordo-calendar.py",
-    "build:calendars": "python scripts/build-sanctoral-calendars.py",
-    "check:ordo-calendar": "npm run build && node scripts/check-ordo-calendar.mjs",
-    "compile:melodies": "npm run build && node scripts/compile-melody-store.mjs",
-    "map:melodies": "node scripts/map-melodies.mjs",
-    "map:melodies:apply": "node scripts/map-melodies.mjs --apply",
-    "map:melodies:agent-tasks": "node scripts/map-melodies.mjs --apply --emit-agent-tasks",
-    "import:melodies": "npm run build && node scripts/import-melody-texts.mjs",
-    "report:melody-coverage": "node scripts/report-melody-coverage.mjs",
-    "schedule:melodies": "npm run build && node scripts/compute-melody-schedule.mjs",
-    "fetch:kln-melodies": "node scripts/fetch-kln-melodies.mjs",
-    "split:kln-melodies": "python scripts/split-kln-pdfs.py",
-    "split:kln-melodies:force": "python scripts/split-kln-pdfs.py --force",
-    "transcribe:kln-vector": "python scripts/transcribe-kln-vector.py",
-    "transcribe:kln-vector:force": "python scripts/transcribe-kln-vector.py --force",
-    "apply:kln-word-grouping": "python scripts/apply-kln-word-grouping.py",
-    "apply:kln-word-grouping:force": "python scripts/apply-kln-word-grouping.py --force",
-    "backfill:kln-inclinata": "python scripts/backfill-kln-inclinata.py",
-    "backfill:kln-inclinata:dry-run": "python scripts/backfill-kln-inclinata.py --dry-run -v",
-    "mark:kln-duplicates": "python scripts/mark-kln-duplicates.py",
-    "mark:kln-duplicates:dry-run": "python scripts/mark-kln-duplicates.py --dry-run",
-    "mark:kln-split-failures": "python scripts/mark-kln-split-failures.py",
-    "mark:kln-split-failures:dry-run": "python scripts/mark-kln-split-failures.py --dry-run",
-    "check:kln-parity": "npm run build && node scripts/check-kln-parity.mjs",
-    "seed:kln-d1": "python scripts/seed-kln-d1.py",
-    "pull:kln-reviews": "python scripts/pull-kln-reviews.py",
-    "pull:kln-reviews:dry-run": "python scripts/pull-kln-reviews.py --dry-run"
+    "build:calendars": "python scripts/build-sanctoral-calendars.py"
   },
   "dependencies": {
     "@vagdur/exsurge": "^1.28.0",

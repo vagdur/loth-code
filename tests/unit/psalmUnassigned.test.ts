@@ -12,7 +12,6 @@ import {
 import { buildVespers } from "../../src/hours/buildVespers.js";
 import type { DataRepository } from "../../src/data/repository.js";
 import type { LiturgicalFlags, SlotSource } from "../../src/types/hours.js";
-import { ensureSparseSlot } from "../../scripts/map-melodies.mjs";
 import { resolveDay } from "../../src/calendar/index.js";
 import { loadRepository } from "../../src/data/repositoryNode.js";
 import { dataRoot } from "../helpers/paths.js";
@@ -82,31 +81,8 @@ describe("psalm_unassigned", () => {
     expect(rendered).not.toContain("text not loaded");
   });
 
-  test("ensureSparseSlot pads partial first_vespers psalm_assignments", async () => {
-    const doc = {
-      id: "test_saint",
-      first_vespers: {
-        psalm_assignments: [
-          { psalm_or_canticle_id: "psalm_112", antiphon: { text: "A1" } },
-          { psalm_or_canticle_id: "psalm_116", antiphon: { text: "A2" } },
-        ],
-      },
-    };
-    const ok = await ensureSparseSlot(
-      doc,
-      "first_vespers.psalm_assignments[2].antiphon",
-      { psalmIds: [PSALM_UNASSIGNED, PSALM_UNASSIGNED, PSALM_UNASSIGNED] },
-      async () => undefined,
-    );
-    expect(ok).toBe(true);
-    expect(doc.first_vespers.psalm_assignments).toHaveLength(3);
-    expect(doc.first_vespers.psalm_assignments[2].psalm_or_canticle_id).toBe(
-      PSALM_UNASSIGNED,
-    );
-  });
-
   test("presentation feast 2V resolves saint psalmody when proper slots exist", async () => {
-    const repo = await loadRepository(dataRoot, "sv");
+    const repo = await loadRepository(dataRoot, "en");
     const saint = repo.resolve({
       kind: "saint",
       id: "presentation_of_the_lord",

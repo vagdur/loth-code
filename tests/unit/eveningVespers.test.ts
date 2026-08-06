@@ -38,7 +38,7 @@ describe("eveningVespers", () => {
   test("assembled evening Vespers on that Saturday is First Vespers of Sunday", async () => {
     const lit = resolveDay(utcDate(2026, 8, 1), cal);
     const day = buildDay(lit, defaultContext());
-    const repo = await loadSampleRepo("sv");
+    const repo = await loadSampleRepo("en");
     const text = new PlainTextAssembler().assembleVespers(eveningVespers(day), repo);
     const labels = repo.getAssemblerLabels();
     expect(text).toContain(labels.hours.firstVespers);

@@ -1,0 +1,17 @@
+id: nt_phil2
+type: NT
+source: '[nt_phil2 source]'
+title: '[nt_phil2 title]'
+verses:
+  - number: 1
+    text: |-
+      [nt_phil2 — stub verse 1, first half] *
+      [nt_phil2 — stub verse 1, second half]
+  - number: 2
+    text: |-
+      [nt_phil2 — stub verse 2, first half] *
+      [nt_phil2 — stub verse 2, second half]
+  - number: 3
+    text: |-
+      [nt_phil2 — stub verse 3, first half] *
+      [nt_phil2 — stub verse 3, second half]

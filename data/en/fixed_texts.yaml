@@ -7,10 +7,14 @@ introductory_verse:
   gloria: |
     [Glory be to the Father, and to the Son, and to the Holy Spirit,
     as it was in the beginning, is now, and ever shall be, world without end. Amen.]
+  melody_refs:
+    - ref: en/sample/introductory-verse
 
 invitatory_verse:
   opening: "[Lord, open our lips.]"
   response: "[And our mouth shall proclaim your praise.]"
+  melody_refs:
+    - ref: en/sample/introductory-verse
 
 alleluia: "[Alleluia.]"
 
@@ -32,26 +36,38 @@ te_deum:
 
 lords_prayer:
   text: "[Our Father — full text]"
+  melody_refs:
+    - ref: en/sample/lords-prayer
 
 compline_responsory:
   text: "[Into your hands, Lord, I commend my spirit]"
   versicle: "[You have redeemed us, Lord God of truth]"
+  melody_refs:
+    - ref: en/sample/short-responsory
 
 compline_blessing:
   text: "[℣. The Lord grant us a quiet night and a perfect end. ℟. Amen.]"
+  melody_refs:
+    - ref: en/sample/acclamation
 
 oor_acclamation:
   text: |
     [℣. Let us praise the Lord.
     ℟. Thanks be to God.]
+  melody_refs:
+    - ref: en/sample/acclamation
 
 dismissal_with_minister:
   verse: "[The Lord be with you.]"
   response: "[And with your spirit. Go in the peace of Christ. Thanks be to God.]"
+  melody_refs:
+    - ref: en/sample/dismissal
 
 dismissal_without_minister:
   verse: "[The Lord bless us, protect us from all evil, and bring us to everlasting life.]"
   response: "[Amen.]"
+  melody_refs:
+    - ref: en/sample/dismissal
 
 examination_of_conscience: "[Examination of conscience — optional]"
 
@@ -96,3 +112,193 @@ labels:
     psalm_tone: "Psalm tone"
   errors:
     text_not_loaded: "[{id} — text not loaded]"
+
+  # Wording for the Ordo document (src/ordo/). Every phrase the Ordo prints is
+  # here rather than in the code, so a locale reads in its own language.
+  ordo:
+    hours:
+      invitatory: Invitatory
+      office_of_readings: Office of Readings
+      lauds: Lauds
+      daytime: Daytime Prayer
+      vespers: Vespers
+      first_vespers: First Vespers
+      compline: Compline
+    ranks:
+      triduum: Triduum
+      sunday: Sunday
+      solemnity: Solemnity
+      feast_of_lord_on_sunday: Feast of the Lord on a Sunday
+      feast: Feast
+      obligatory_memoria: Obligatory memorial
+      optional_memoria: Optional memorial
+      privileged_ferial: Weekday (seasonal)
+      ordinary_ferial: Weekday
+    sources:
+      propriet: the proper
+      seasonal_propriet: the proper of the season
+      # Used inline in hour prose: "All from the common", "… except the hymn, from the common"
+      commune_inline: the common
+      feria: the weekday
+      psalter_prefix: the psalter
+      sunday_week_i: Sunday week I
+      complementary_psalmody: complementary psalmody
+      fixed: the fixed texts
+    parts:
+      hymn: hymn
+      antiphons: antiphons
+      psalms: psalms
+      short_reading: short reading
+      responsory: responsory
+      benedictus_antiphon: Benedictus antiphon
+      magnificat_antiphon: Magnificat antiphon
+      nunc_dimittis_antiphon: Nunc Dimittis antiphon
+      intercessions: intercessions
+      concluding_prayer: concluding prayer
+      prayer_for_day: prayers for the day
+      first_reading: first reading
+      second_reading: second reading
+      versicle: versicle
+      te_deum: Te Deum
+      marian_antiphon: Marian antiphon
+      memoria_addendum: addendum (memorial)
+      invitatory_antiphon: invitatory antiphon
+      invitatory_psalm: invitatory psalm
+    prose:
+      from: from
+      from_ur: from
+      and: and
+      or: or
+      alternatives: 'Alternatives:'
+      te_deum_said: Te Deum.
+      first_vespers_for_sunday: First Vespers of the Sunday.
+      all_from_sunday: All from the Sunday.
+      all_from_feria: All from the weekday.
+      all_from_propriet: All from the proper.
+      all_from_commune: All from {commune} ({name}).
+      day_commune: 'Common: {name}'
+      all_from_psalter: All from {source}.
+      except: except
+      if_memoria_celebrated: 'If the memorial is celebrated:'
+      if_memoria_named: 'If {name} is celebrated:'
+      memoria_addendum: Memorial addendum.
+      readings_from: Readings from
+      rest_from: Otherwise from
+      psalmody_option: Complementary psalmody permitted.
+      ot_sunday: '{ordinal} Sunday in Ordinary Time'
+      compline_for_weekday: 'Compline for {day}.'
+      psalter_week: 'Psalter week {week}'
+      ferial_in_advent: '{weekday} of the {week} week of Advent'
+      ferial_in_lent: '{weekday} of the {week} week of Lent'
+      ferial_in_easter: '{weekday} of the {week} week of Eastertide'
+      ferial_in_ot: '{weekday} of the {week} week in Ordinary Time'
+      ferial_in_easter_octave: '{weekday} in the Octave of Easter'
+      ferial_in_holy_week: '{weekday} of Holy Week'
+      ferial_in_christmas_octave: '{day} day of the Octave of Christmas'
+      ferial_in_christmas: '{weekday} of Christmastide'
+      ferial_in_epiphany: '{weekday} after Epiphany'
+      sunday_in_advent: '{week} Sunday of Advent'
+      sunday_in_lent: '{week} Sunday of Lent'
+      sunday_in_easter: '{week} Sunday of Eastertide'
+      sunday_after_christmas: '{week} Sunday after Christmas'
+    weekdays:
+      Sunday: Sunday
+      Monday: Monday
+      Tuesday: Tuesday
+      Wednesday: Wednesday
+      Thursday: Thursday
+      Friday: Friday
+      Saturday: Saturday
+    # English has no separate definite form; the plain names do both jobs.
+    weekdays_definite:
+      Sunday: Sunday
+      Monday: Monday
+      Tuesday: Tuesday
+      Wednesday: Wednesday
+      Thursday: Thursday
+      Friday: Friday
+      Saturday: Saturday
+    ordinals:
+      - first
+      - second
+      - third
+      - fourth
+      - fifth
+      - sixth
+      - seventh
+      - eighth
+      - ninth
+      - tenth
+      - eleventh
+      - twelfth
+      - thirteenth
+      - fourteenth
+      - fifteenth
+      - sixteenth
+      - seventeenth
+      - eighteenth
+      - nineteenth
+      - twentieth
+      - twenty-first
+      - twenty-second
+      - twenty-third
+      - twenty-fourth
+      - twenty-fifth
+      - twenty-sixth
+      - twenty-seventh
+      - twenty-eighth
+      - twenty-ninth
+      - thirtieth
+      - thirty-first
+      - thirty-second
+      - thirty-third
+      - thirty-fourth
+    ordinal_suffix: th
+    months:
+      - January
+      - February
+      - March
+      - April
+      - May
+      - June
+      - July
+      - August
+      - September
+      - October
+      - November
+      - December
+    seasonal_names:
+      christ_the_king: Christ the King
+      trinity_sunday: Trinity Sunday
+      corpus_christi: Corpus Christi
+      sacred_heart: The Sacred Heart of Jesus
+      immaculate_heart: The Immaculate Heart of Mary
+      ascension: The Ascension of the Lord
+      pentecost: Pentecost
+      easter_sunday: Easter Sunday
+      easter_sun: Easter Sunday
+      easter_mon: Monday in the Octave of Easter
+      easter_tue: Tuesday in the Octave of Easter
+      easter_wed: Wednesday in the Octave of Easter
+      easter_thu: Thursday in the Octave of Easter
+      easter_fri: Friday in the Octave of Easter
+      easter_sat: Saturday in the Octave of Easter
+      palm_sunday: Palm Sunday
+      ash_wednesday: Ash Wednesday
+      baptism_of_lord: The Baptism of the Lord
+      presentation_of_lord: The Presentation of the Lord
+      annunciation: The Annunciation of the Lord
+      assumption: The Assumption of the Blessed Virgin Mary
+      all_saints: All Saints
+      immaculate_conception: The Immaculate Conception
+      christmas_dec25: Christmas Day
+      christmas_jan01: Mary, the Holy Mother of God
+      holy_family: The Holy Family
+      holy_monday: Monday of Holy Week
+      holy_tuesday: Tuesday of Holy Week
+      holy_wednesday: Wednesday of Holy Week
+      holy_thursday: Maundy Thursday
+      good_friday: Good Friday
+      holy_saturday: Holy Saturday
+      epiphany: The Epiphany of the Lord
+    document_title: 'Ordo for the Liturgy of the Hours — {year}'

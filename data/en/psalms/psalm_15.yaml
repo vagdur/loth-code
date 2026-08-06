@@ -1,0 +1,18 @@
+id: psalm_15
+number: 15
+title: '[psalm_15 title]'
+christian_heading: '[psalm_15 heading]'
+omitted_verses: []
+verses:
+  - number: 1
+    text: |-
+      [psalm_15 — stub verse 1, first half] *
+      [psalm_15 — stub verse 1, second half]
+  - number: 2
+    text: |-
+      [psalm_15 — stub verse 2, first half] *
+      [psalm_15 — stub verse 2, second half]
+  - number: 3
+    text: |-
+      [psalm_15 — stub verse 3, first half] *
+      [psalm_15 — stub verse 3, second half]

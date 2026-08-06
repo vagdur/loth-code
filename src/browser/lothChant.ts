@@ -17,6 +17,7 @@
 
 import * as exsurge from "@vagdur/exsurge";
 import { withGabcHeader } from "../assemblers/gabcHeader.js";
+import type { ChantLanguage } from "../types/melody.js";
 
 /** Marks the score mounts emitted by `htmlScoreLine`. */
 const SCORE_SELECTOR = "[data-loth-score]";
@@ -44,9 +45,9 @@ export interface MountOptions {
   useDropCap?: boolean;
   /**
    * Page-level fallback when a score mount has no `data-language`.
-   * Gregorio values: `svenska` | `latin`. Defaults to swedish for this corpus.
+   * Defaults to swedish, the language of the corpus this was written for.
    */
-  language?: "svenska" | "latin";
+  language?: ChantLanguage;
   /** Called when one score fails to lay out; the rest still mount. */
   onError?: (error: Error, element: HTMLElement) => void;
 }
@@ -56,6 +57,7 @@ function exsurgeLanguage(
   code: string | undefined,
 ): (typeof exsurge.language)[keyof typeof exsurge.language] {
   if (code === "latin") return exsurge.language.latin;
+  if (code === "english") return exsurge.language.english;
   return exsurge.language.swedish;
 }
 

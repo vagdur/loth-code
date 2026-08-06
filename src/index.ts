@@ -16,7 +16,13 @@
 
 // --- Data -----------------------------------------------------------------
 export { DataRepository, psalterKey } from "./data/repository.js";
-export { hydrateMelodies } from "./data/melodyResolver.js";
+export {
+  collectMelodyOptions,
+  hydrateMelodies,
+  matchesCondition,
+  resolveAllMelodies,
+  selectMelodyRef,
+} from "./data/melodyResolver.js";
 export type { RegistryBundle, RepoBundle } from "./types/bundle.js";
 
 // --- Layer 1: the calendar ------------------------------------------------
@@ -37,6 +43,8 @@ export {
   initSanctoralRegistry,
   withSanctoralRegistry,
 } from "./calendar/saints.js";
+export { getSeasonalDayKey } from "./calendar/liturgicalYear.js";
+export { addDays } from "./calendar/computus.js";
 
 // --- Layer 2: the abstract hours ------------------------------------------
 export {
@@ -49,7 +57,16 @@ export {
 export { HtmlAssembler } from "./assemblers/htmlAssembler.js";
 export { PlainTextAssembler } from "./assemblers/plainText.js";
 export { TexAssembler } from "./assemblers/texAssembler.js";
+export { assembleOrdoDocument } from "./assemblers/ordoTex.js";
+export {
+  resolvePsalmAssignment,
+  resolveSource,
+} from "./assemblers/types.js";
 export type { Assembler, ResolveOptions } from "./assemblers/types.js";
+export {
+  PSALM_UNASSIGNED,
+  resolvePsalmText,
+} from "./assemblers/liturgicalText.js";
 
 // --- Options and ordo -----------------------------------------------------
 export * from "./options/index.js";
