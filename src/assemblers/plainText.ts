@@ -363,12 +363,7 @@ export function renderDaytimePsalmodyPlain(
   const usePerPsalmProper = Boolean(proper && proper.length === assignments.length);
   return assignments.map((a, i) => {
     const antiphon = usePerPsalmProper ? proper![i]! : a.antiphon;
-    return renderPsalmAssignment(
-      repo,
-      { ...a, ...(antiphon ? { antiphon } : {}) },
-      psalmText(a),
-      flags,
-    );
+    return renderPsalmAssignment(repo, { ...a, antiphon }, psalmText(a), flags);
   });
 }
 
@@ -382,12 +377,8 @@ function renderPsalmAssignment(
   psalmText: string,
   flags: LiturgicalFlags,
 ): string {
-  // A slot whose antiphon the rubrics leave to the proper may have none.
-  const antiphon = assignment.antiphon
-    ? formatAntiphonPlain(repo, assignment.antiphon, flags)
-    : "";
+  const antiphon = formatAntiphonPlain(repo, assignment.antiphon, flags);
   if (!psalmText.trim()) return antiphon;
-  if (!antiphon) return psalmText;
   return `${antiphon}\n\n${psalmText}\n\n${antiphon}`;
 }
 

@@ -687,23 +687,16 @@ export class HtmlAssembler implements Assembler<string> {
     const usePerPsalmProper = Boolean(proper && proper.length === assignments.length);
     return assignments.map((a, i) => {
       const antiphon = usePerPsalmProper ? proper![i]! : a.antiphon;
-      return this.htmlPsalmAssignment(
-        { ...a, ...(antiphon ? { antiphon } : {}) },
-        psalmText(a),
-        flags,
-        repo,
-      );
+      return this.htmlPsalmAssignment({ ...a, antiphon }, psalmText(a), flags, repo);
     });
   }
 
-  /** Empty string when the slot has no antiphon — the psalm still stands. */
   private htmlAntiphonBlock(
     repo: DataRepository,
-    a: Antiphon | undefined,
+    a: Antiphon,
     flags: LiturgicalFlags,
     includePsalmTone: boolean,
   ): string {
-    if (!a) return "";
     const rubric = htmlMelodyRubric(a.melody);
 
     let scoreLine = "";
@@ -782,7 +775,7 @@ export class HtmlAssembler implements Assembler<string> {
     }
     const body = htmlPsalmText(psalmText);
     const close = this.htmlAntiphonBlock(repo, assignment.antiphon, flags, false);
-    return [open, ...canticleMelody, body, close].filter(Boolean).join("\n\n");
+    return [open, ...canticleMelody, body, close].join("\n\n");
   }
 
   private htmlShortResponsoryBlock(repo: DataRepository, r: ShortResponsory): string {

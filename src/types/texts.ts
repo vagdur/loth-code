@@ -99,11 +99,11 @@ export interface Antiphon {
 export interface PsalmAssignment {
   psalmOrCanticleId: string;
   /**
-   * Absent when the rubrics fix the psalm but not its antiphon — a `psalmody`
-   * slot source, or a data tree that has yet to supply one. The psalm is then
-   * sung without an antiphon rather than not sung at all.
+   * Never absent: psalmody is always sung under an antiphon. Where the source
+   * records the antiphon but not which psalm goes with it, the id is the
+   * `psalm_unassigned` sentinel rather than the antiphon being dropped.
    */
-  antiphon?: Antiphon;
+  antiphon: Antiphon;
 }
 
 export interface Hymn {

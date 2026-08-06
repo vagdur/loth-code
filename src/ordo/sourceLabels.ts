@@ -48,8 +48,6 @@ export function sourceGroupKey(s: SlotSourceDirect): SourceGroupKey {
       return `complementary:${s.groupId}:${s.index}`;
     case "psalm":
       return `psalm:${s.id}`;
-    case "psalmody":
-      return `psalm:${s.psalmId}`;
     case "canticle":
       return `canticle:${s.id}`;
   }
@@ -109,12 +107,6 @@ export function describeSource(
       return {
         groupKey: sourceGroupKey(s),
         phrase: `psalm ${s.id.replace(/^psalm_/, "")}`,
-        isProper: false,
-      };
-    case "psalmody":
-      return {
-        groupKey: sourceGroupKey(s),
-        phrase: `psalm ${s.psalmId.replace(/^psalm_/, "")}`,
         isProper: false,
       };
     case "canticle":

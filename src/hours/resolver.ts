@@ -138,6 +138,29 @@ export function hymnRef(
 // Psalm assignments
 // ---------------------------------------------------------------------------
 
+/**
+ * Psalmody for First Vespers of a solemnity.
+ *
+ * Same precedence as everywhere else — proper, then Common, then psalter —
+ * with the psalter entry being the Sunday of the week the eve runs into. The
+ * Laudate psalms that a solemnity's First Vespers normally uses are not named
+ * here: they arrive with the antiphons that carry them, from the Common.
+ */
+export function solemnityFirstVespersPsalmAssignmentRef(
+  ctx: SlotContext,
+  fvWeek: PsalterWeek,
+  index: 0 | 1 | 2,
+): SlotSource {
+  const { celebration: c } = ctx;
+  const field = `firstVespers.psalmAssignments[${index}]`;
+  return chain(
+    ...(c.seasonalKey ? [seasonalSrc(c.seasonalKey, field)] : []),
+    ...(c.saintId ? [saintSrc(c.saintId, field)] : []),
+    ...commonSources(c.applicableCommons, 0, field),
+    psalterSrc(fvWeek, "Sunday", field),
+  );
+}
+
 export function psalmAssignmentRef(
   ctx: SlotContext,
   hourField: string,        // e.g. "lauds.psalmAssignments[0]"

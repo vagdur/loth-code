@@ -36,14 +36,7 @@ const NT_CANTICLES = [
   "nt_phil2", "nt_col1", "nt_1tim3", "nt_1jn4", "nt_eph1", "nt_apoc12", "nt_apoc15",
 ];
 
-/**
- * The Laudate series, which First Vespers of a solemnity draws on when the
- * proper supplies no psalmody (see buildVespers). Named by rubric rather than
- * by psalter position, so nothing else in this file would pull them in.
- */
-const LAUDATE_PSALMS = ["psalm_112", "psalm_116", "psalm_134", "psalm_145", "psalm_146", "psalm_147"];
-
-/** Sentinel for antiphon-only psalmody: the proper fixes the antiphon, not the psalm. */
+/** Sentinel psalm id for an antiphon whose psalm the source does not record. */
 const PSALM_UNASSIGNED = "psalm_unassigned";
 
 /** Lauds morning psalm, praise psalm per week (rows) × day (cols). */
@@ -405,6 +398,60 @@ function stubCanticle(id) {
   };
 }
 
+/**
+ * Psalm and canticle ids referenced anywhere in the tree — the Commons and the
+ * propers, not just the psalter tables. Written files are the source of truth
+ * here, so a hand-edited proper pulls its psalms in on the next run.
+ */
+async function collectReferencedTextIds() {
+  const psalms = new Set();
+  const canticles = new Set();
+  for (const dir of ["commons", "proper_of_saints", "proper_of_seasons", "psalter"]) {
+    for (const file of await collectYamlFiles(path.join(dataDir, dir))) {
+      collectTextIds(yaml.load(await fs.readFile(file, "utf-8")), psalms, canticles);
+    }
+  }
+  psalms.delete(PSALM_UNASSIGNED);
+  return { psalms, canticles };
+}
+
+/** Every .yaml under `dir`, recursively; empty when the directory is absent. */
+async function collectYamlFiles(dir) {
+  const out = [];
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const e of entries) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) out.push(...(await collectYamlFiles(p)));
+    else if (e.name.endsWith(".yaml") || e.name.endsWith(".yml")) out.push(p);
+  }
+  return out;
+}
+
+/**
+ * The sentinel an antiphon carries when its source does not record which psalm
+ * goes with it. Empty by construction: it stands for a psalm, it is not one.
+ */
+async function writeUnassignedSentinel() {
+  const fp = path.join(dataDir, "psalms", `${PSALM_UNASSIGNED}.yaml`);
+  try {
+    await fs.access(fp);
+  } catch {
+    await writeYaml(fp, {
+      id: PSALM_UNASSIGNED,
+      number: 0,
+      title: "[unassigned psalmody]",
+      christian_heading: "",
+      omitted_verses: [],
+      verses: [],
+    });
+  }
+}
+
 async function generatePsalmStubs(psalmIds) {
   const dir = path.join(dataDir, "psalms");
   for (const id of psalmIds) {
@@ -648,15 +695,21 @@ async function main() {
   await fs.mkdir(dataDir, { recursive: true });
   const { psalmIds, canticleIds } = await generatePsalter();
   const compIds = await generateComplementary();
-  const allPsalms = new Set([...psalmIds, ...compIds, ...LAUDATE_PSALMS, PSALM_UNASSIGNED]);
+  const saints = await generateSaintStubs();
+  const commons = await generateCommonsStubs();
+
+  // Every psalm and canticle the generated tree points at, from wherever it
+  // points: the Commons name the Laudate psalms that First Vespers of a
+  // solemnity falls back to, and nothing else in here would mention them.
+  const { psalms: refPsalms, canticles: refCanticles } = await collectReferencedTextIds();
+  const allPsalms = new Set([...psalmIds, ...compIds, ...refPsalms]);
   await generatePsalmStubs(allPsalms);
-  await generateCanticleStubs(canticleIds);
+  await writeUnassignedSentinel();
+  await generateCanticleStubs(new Set([...canticleIds, ...refCanticles]));
   const keys = await collectSeasonalKeys();
   await generateSeasonalProper(keys);
   await writePsalterReadme();
   await seedLocaleBaseline();
-  const saints = await generateSaintStubs();
-  const commons = await generateCommonsStubs();
   console.log(`Generated [${locale}] psalter (28), psalms (${allPsalms.size}), canticles, complementary (21), seasonal (${keys.length}), saints (+${saints}), commons (+${commons})`);
 }
 

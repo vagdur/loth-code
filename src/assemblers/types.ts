@@ -63,7 +63,6 @@ export function sourceChoiceId(s: SlotSourceDirect): string {
     case "psalter":  return "psalter";
     case "fixed":    return "fixed";
     case "psalm":    return `psalm:${s.id}`;
-    case "psalmody": return `psalmody:${s.psalmId}`;
     case "canticle": return `canticle:${s.id}`;
     case "complementary": return `complementary:${s.groupId}:${s.index}`;
   }
