@@ -1,11 +1,11 @@
 /**
  * The shape of a KLN melody entry, as far as the review loop cares.
  *
- * Structural rather than exhaustive: `raw_data/kln/split/**\/index.json`
- * carries a good deal more (crop boxes, transcription diagnostics, confidence
- * scores), all of which exists to improve the transcriber rather than to
- * review its output. A host that only reviews never needs to see it, so the
- * type does not describe it.
+ * Structural rather than exhaustive: the pipeline's own `index.json` carries
+ * a good deal more (crop boxes, transcription diagnostics, confidence scores),
+ * all of which exists to improve the transcriber rather than to review its
+ * output. A host that only reviews never needs to see it, so the type does
+ * not describe it.
  */
 
 /** GABC for one named section, or for a whole unsplit piece. */
