@@ -9,6 +9,7 @@ import type { AbstractVespers, PsalmSlot, SlotSource, SlotSourceDirect } from ".
 import {
   antiphonRef, concludingPrayerRef, hymnRef, intercessionsRef,
   psalmAssignmentRef, shortReadingRef, shortResponsoryRef,
+  solemnityFirstVespersPsalmAssignmentRef,
 } from "./resolver.js";
 import { makeCtx, makeFlags, psalmSlot } from "./shared.js";
 
@@ -28,16 +29,6 @@ export function buildVespers(
   const fvPsalterSrc = (field: string): SlotSourceDirect => ({
     kind: "psalter", week: fvWeek, day: "Sunday", field: `firstVespers.${field}`,
   });
-
-  // First Vespers of solemnities use the Laudate series (Ps 112, 116, 134, 145, 146, 147).
-  // This is encoded as specific psalm IDs rather than psalter positions: the
-  // rubric fixes the psalm, so the slot resolves to a `psalmody` source and
-  // takes its antiphon from the proper ahead of it in the chain, if any.
-  const laudatePsalms = ["psalm_112", "psalm_116", "psalm_134", "psalm_145", "psalm_146"];
-  const laudateNtCanticle: SlotSourceDirect =
-    c.seasonalKey
-      ? { kind: "seasonal", key: c.seasonalKey, field: `${vespersField}.psalmAssignments[2]` }
-      : { kind: "psalter", week: w, day: d, field: "vespers.psalmAssignments[2]" };
 
   const psalmSlots: [PsalmSlot, PsalmSlot, PsalmSlot] =
     isFirstVespers && c.type === "sunday"
@@ -72,42 +63,9 @@ export function buildVespers(
         ]
       : isFirstVespers && c.type === "solemnity"
       ? [
-          psalmSlot({
-            kind: "fallback_chain",
-            sources: [
-              ...(c.seasonalKey
-                ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${vespersField}.psalmAssignments[0]` }]
-                : []),
-              ...(c.saintId
-                ? [{ kind: "saint" as const, id: c.saintId, field: `${vespersField}.psalmAssignments[0]` }]
-                : []),
-              { kind: "psalmody", psalmId: laudatePsalms[0] ?? "psalm_112" },
-            ],
-          }),
-          psalmSlot({
-            kind: "fallback_chain",
-            sources: [
-              ...(c.seasonalKey
-                ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${vespersField}.psalmAssignments[1]` }]
-                : []),
-              ...(c.saintId
-                ? [{ kind: "saint" as const, id: c.saintId, field: `${vespersField}.psalmAssignments[1]` }]
-                : []),
-              { kind: "psalmody", psalmId: laudatePsalms[1] ?? "psalm_116" },
-            ],
-          }),
-          psalmSlot({
-            kind: "fallback_chain",
-            sources: [
-              ...(c.saintId
-                ? [{ kind: "saint" as const, id: c.saintId, field: `${vespersField}.psalmAssignments[2]` }]
-                : []),
-              laudateNtCanticle,
-              // The proper may name no NT canticle; the Sunday psalter always
-              // does, and First Vespers of a solemnity is never without one.
-              fvPsalterSrc("psalmAssignments[2]"),
-            ],
-          }),
+          psalmSlot(solemnityFirstVespersPsalmAssignmentRef(ctx, fvWeek, 0)),
+          psalmSlot(solemnityFirstVespersPsalmAssignmentRef(ctx, fvWeek, 1)),
+          psalmSlot(solemnityFirstVespersPsalmAssignmentRef(ctx, fvWeek, 2)),
         ]
       : [
           psalmSlot(psalmAssignmentRef(ctx, `${vespersField}.psalmAssignments[0]`, true)),

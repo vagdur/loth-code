@@ -62,9 +62,7 @@ function resolveSlot(
   );
   return {
     slotKey,
-    // Now that the winner is known, the label can name the part it really is:
-    // a slot the rubrics fix by psalm contributes psalms, not antiphons.
-    partLabel: partLabelForSlotKey(slotKey, labels, effective.winner) ?? partLabel,
+    partLabel,
     described: describeSource(effective.winner, repo, labels),
     ...(alternatives?.length ? { alternatives } : {}),
   };

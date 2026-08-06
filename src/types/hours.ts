@@ -26,13 +26,6 @@ export type SlotSourceDirect =
   | { kind: "fixed";                                      field: string }
   | { kind: "psalm";    id: string }      // looks up Psalm by id
   | { kind: "canticle"; id: string }      // looks up Canticle by id
-  /**
-   * A psalm the rubrics fix directly, as a psalmody slot: resolves to a
-   * PsalmAssignment naming that psalm and carrying no antiphon, since the
-   * antiphon of such a slot comes from the proper or the Common. Distinct
-   * from `psalm`, which resolves to the Psalm itself.
-   */
-  | { kind: "psalmody"; psalmId: string }
   | { kind: "complementary"; groupId: string; index: 0 | 1 | 2 };
 
 /**
