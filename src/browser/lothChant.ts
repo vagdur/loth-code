@@ -51,6 +51,17 @@ export interface RenderOptions {
   useDropCap?: boolean;
   /** Used when the spec carries no language of its own. */
   language?: ScoreSpec["language"];
+  /**
+   * Prefix for the `id` exsurge puts on each note element.
+   *
+   * Defaults to one derived from the score id, because exsurge's own default
+   * is the constant `"note-"` and every score gets its own `ChantContext` —
+   * so a page showing an hour would otherwise carry twenty-odd elements all
+   * called `note-1`. Playback is unaffected either way (the player matches on
+   * `element-index`, scoped to its own roots), but duplicate ids make the
+   * document invalid and anything addressing a note by id ambiguous.
+   */
+  noteIdPrefix?: string;
   /** Called when this score fails to lay out. */
   onError?: (error: Error, element: HTMLElement) => void;
   /** Override the layout watchdog. Chiefly for tests. */
@@ -151,6 +162,10 @@ export function renderScore(
   // async, so scores must not share one.
   const ctxt = new exsurge.ChantContext();
   ctxt.defaultLanguage = exsurgeLanguage(spec.language ?? options?.language);
+  // Real at runtime (Exsurge.Drawing.js sets it in the constructor) but absent
+  // from exsurge's declarations — see vagdur/exsurge#15.
+  (ctxt as exsurge.ChantContext & { noteIdPrefix: string }).noteIdPrefix =
+    options?.noteIdPrefix ?? `note-${spec.id}-`;
 
   watchdog = setTimeout(() => {
     watchdog = undefined;
