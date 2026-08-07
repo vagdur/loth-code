@@ -1,8 +1,8 @@
 /**
  * Golden .html snapshots for every hour + the full-day document, in each locale
  * and each HtmlAssembler output mode (`hybrid`, `plain`, `scored`).
- * `en` is dummy data (no melodies); `sv` is real data whose scores travel
- * inline in `data-gabc`.
+ * The only locale is `en`: placeholder text with invented melodies, whose
+ * scores travel inline in `data-gabc`.
  * Regenerate goldens: `npm run test:fixtures:update`.
  */
 

@@ -1,7 +1,8 @@
 /**
  * Golden .tex snapshots for every hour + the full-day document, in each locale
  * and each TexAssembler output mode (`hybrid`, `plain`, `scored`).
- * `en` is dummy data (no melodies); `sv` is real data with sibling `.gabc` scores.
+ * The only locale is `en`: placeholder text with invented melodies, which is
+ * what puts the sibling `.gabc` scores in the fixtures.
  * Regenerate goldens (`.tex`, `.gabc`): `npm run test:fixtures:update`.
  * Refresh reference PDFs: `npm run test:fixtures:compile-pdf`.
  */

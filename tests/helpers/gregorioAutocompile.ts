@@ -3,7 +3,7 @@
  * environment. This needs `lualatex --shell-escape` AND a `gregorio` binary
  * whose major.minor matches the installed `gregoriotex` package.
  *
- * Score-bearing compile tests (the `sv` locale) skip when this returns false,
+ * Score-bearing compile tests skip when this returns false,
  * so the suite stays green on machines without a working GregorioTeX toolchain
  * and auto-runs where one is present. Result is memoised for the run.
  */
