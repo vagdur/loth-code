@@ -3,10 +3,11 @@
  * the browser by @vagdur/exsurge.
  *
  * Emits semantic markup (see html/loth.css). Unlike the LaTeX path, GABC does
- * not become sibling files: each score travels inline in a `data-gabc`
- * attribute, so an assembled page is self-contained. `mountScores` in
- * src/browser/lothChant.ts finds those mounts and hands each to exsurge, which
- * renders the notation and wires up click-to-play.
+ * not become sibling files: each score is a node in the returned tree and also
+ * travels inline in a `data-gabc` attribute, so an assembled page is
+ * self-contained either way. `renderScore` in src/browser/lothChant.ts takes
+ * one spec and an element and hands it to exsurge, which renders the notation
+ * and wires up click-to-play.
  *
  * This mirrors TexAssembler slot-for-slot — same body builders, same fallback
  * rules, same per-hour score numbering — so the two outputs stay comparable.
@@ -62,9 +63,7 @@ import {
   htmlPlainProse,
   htmlPsalmText,
   htmlPsalmToneBlock,
-  htmlPsalmToneScoreLine,
   htmlReading,
-  htmlScoreLine,
   htmlSectionHeading,
   htmlShortReading,
   htmlShortResponsory,
@@ -73,6 +72,18 @@ import {
   wrapLothHtmlDocument,
   type LothHtmlDocumentOptions,
 } from "./liturgicalHtml.js";
+import {
+  el,
+  fragment,
+  renderHtml,
+  score,
+  text,
+  type AssembledHour,
+  type LothNode,
+  type LothScoreNode,
+  type MaybeNode,
+  type ScoreSpec,
+} from "./tree.js";
 import {
   formatComplineResponsoryFallbackPlain,
   getComplineResponsory,
@@ -101,13 +112,13 @@ export interface HtmlAssemblerOptions {
   fragmentOnly?: boolean;
 }
 
-export class HtmlAssembler implements Assembler<string> {
+export class HtmlAssembler implements Assembler<AssembledHour> {
   private readonly outputMode: HtmlOutputMode;
   private readonly documentOptions: LothHtmlDocumentOptions | undefined;
   private readonly fragmentOnly: boolean;
   private scoreCounter = 0;
   private scorePrefix = "loth";
-  private scores = new Map<string, string>();
+  private specs: ScoreSpec[] = [];
 
   constructor(options?: HtmlAssemblerOptions) {
     this.outputMode = options?.outputMode ?? "hybrid";
@@ -117,7 +128,7 @@ export class HtmlAssembler implements Assembler<string> {
 
   private reset(): void {
     this.scoreCounter = 0;
-    this.scores = new Map();
+    this.specs = [];
   }
 
   /**
@@ -132,17 +143,37 @@ export class HtmlAssembler implements Assembler<string> {
 
   /**
    * Every score emitted by the last assemble call, keyed by score id and
-   * carrying the same header-normalised GABC that went into `data-gabc`. Lets a
-   * host pre-render server-side (exsurge's `createSvgTree`) instead of mounting
-   * in the browser, and lets tests check each score without parsing HTML.
+   * carrying the same header-normalised GABC that went into `data-gabc`.
+   *
+   * Superseded by the `scores` on the returned `AssembledHour`, which carries
+   * the language and melody id too; kept because it is the shape the fixture
+   * tests and the TeX parity check read.
    */
   getScores(): ReadonlyMap<string, string> {
-    return this.scores;
+    return new Map(this.specs.map((spec) => [spec.id, spec.gabc]));
   }
 
-  private wrap(repo: DataRepository, body: string): string {
-    if (this.fragmentOnly) return body;
-    return wrapLothHtmlDocument(repo, body, this.documentOptions);
+  /** Package a finished body as an AssembledHour. */
+  private assembled(repo: DataRepository, tree: LothNode | null): AssembledHour {
+    // An hour always has at least a heading; the empty text node is just so
+    // `tree` is never null for a host walking it.
+    const body = tree ?? text("");
+    const specs = this.specs.slice();
+    const { fragmentOnly, documentOptions } = this;
+    return {
+      tree: body,
+      scores: specs,
+      html(): string {
+        const markup = renderHtml(body);
+        if (fragmentOnly) return markup;
+        // The page carries its own scores: the runtime no longer discovers
+        // them by scanning, so a standalone page has to name them.
+        return wrapLothHtmlDocument(repo, markup, {
+          ...documentOptions,
+          scores: documentOptions?.scores ?? specs,
+        });
+      },
+    };
   }
 
   private shouldEmitScores(): boolean {
@@ -157,8 +188,8 @@ export class HtmlAssembler implements Assembler<string> {
     return !this.isScoredOnly();
   }
 
-  private joinBody(body: string[]): string {
-    return body.filter((s) => s.trim()).join("\n\n");
+  private joinBody(body: MaybeNode[]): LothNode | null {
+    return fragment(body, "\n\n");
   }
 
   // -------------------------------------------------------------------------
@@ -166,9 +197,9 @@ export class HtmlAssembler implements Assembler<string> {
   // assembleDay resets once and concatenates all hour bodies into one document.
   // -------------------------------------------------------------------------
 
-  assembleDay(day: AbstractDay, repo: DataRepository, choices?: DayChoices): string {
+  assembleDay(day: AbstractDay, repo: DataRepository, choices?: DayChoices): AssembledHour {
     this.reset();
-    const bodies: string[] = [
+    const bodies: MaybeNode[] = [
       htmlHourFragment("officeOfReadings", this.officeOfReadingsBody(day.officeOfReadings, repo, choices)),
       htmlHourFragment("lauds", this.laudsBody(day.lauds, repo, choices)),
     ];
@@ -181,44 +212,52 @@ export class HtmlAssembler implements Assembler<string> {
       this.vespersBody(vespers, repo, choices),
     ));
     bodies.push(htmlHourFragment("compline", this.complineBody(day.compline, repo, choices)));
-    return this.wrap(repo, bodies.join('\n<hr class="loth-page-break">\n'));
+
+    // The rule separating hours is a sibling of the articles rather than a
+    // separator string, so the day is one tree like any single hour.
+    const separated: MaybeNode[] = [];
+    for (const hourBody of bodies.filter((b): b is LothNode => b != null)) {
+      if (separated.length > 0) separated.push(el("hr", { class: "loth-page-break" }));
+      separated.push(hourBody);
+    }
+    return this.assembled(repo, fragment(separated, "\n"));
   }
 
-  assembleOfficeOfReadings(hour: AbstractOfficeOfReadings, repo: DataRepository, choices?: DayChoices): string {
+  assembleOfficeOfReadings(hour: AbstractOfficeOfReadings, repo: DataRepository, choices?: DayChoices): AssembledHour {
     this.reset();
-    return this.wrap(repo, htmlHourFragment("officeOfReadings", this.officeOfReadingsBody(hour, repo, choices)));
+    return this.assembled(repo, htmlHourFragment("officeOfReadings", this.officeOfReadingsBody(hour, repo, choices)));
   }
 
-  assembleLauds(hour: AbstractLauds, repo: DataRepository, choices?: DayChoices): string {
+  assembleLauds(hour: AbstractLauds, repo: DataRepository, choices?: DayChoices): AssembledHour {
     this.reset();
-    return this.wrap(repo, htmlHourFragment("lauds", this.laudsBody(hour, repo, choices)));
+    return this.assembled(repo, htmlHourFragment("lauds", this.laudsBody(hour, repo, choices)));
   }
 
-  assembleDaytimePrayer(hour: AbstractDaytimePrayer, repo: DataRepository, choices?: DayChoices): string {
+  assembleDaytimePrayer(hour: AbstractDaytimePrayer, repo: DataRepository, choices?: DayChoices): AssembledHour {
     this.reset();
-    return this.wrap(repo, htmlHourFragment(hour.kind, this.daytimePrayerBody(hour, repo, choices)));
+    return this.assembled(repo, htmlHourFragment(hour.kind, this.daytimePrayerBody(hour, repo, choices)));
   }
 
-  assembleVespers(hour: AbstractVespers, repo: DataRepository, choices?: DayChoices): string {
+  assembleVespers(hour: AbstractVespers, repo: DataRepository, choices?: DayChoices): AssembledHour {
     this.reset();
     const key = hour.isFirstVespers ? "firstVespers" : "vespers";
-    return this.wrap(repo, htmlHourFragment(key, this.vespersBody(hour, repo, choices)));
+    return this.assembled(repo, htmlHourFragment(key, this.vespersBody(hour, repo, choices)));
   }
 
-  assembleCompline(hour: AbstractCompline, repo: DataRepository, choices?: DayChoices): string {
+  assembleCompline(hour: AbstractCompline, repo: DataRepository, choices?: DayChoices): AssembledHour {
     this.reset();
-    return this.wrap(repo, htmlHourFragment("compline", this.complineBody(hour, repo, choices)));
+    return this.assembled(repo, htmlHourFragment("compline", this.complineBody(hour, repo, choices)));
   }
 
   // -------------------------------------------------------------------------
   // Per-hour body builders (no wrapping; register scores as they go).
   // -------------------------------------------------------------------------
 
-  private officeOfReadingsBody(hour: AbstractOfficeOfReadings, repo: DataRepository, choices?: DayChoices): string {
+  private officeOfReadingsBody(hour: AbstractOfficeOfReadings, repo: DataRepository, choices?: DayChoices): LothNode | null {
     this.startHourScores("oor");
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, "officeOfReadings", slot);
-    const body: string[] = [htmlHourHeading(repo, "officeOfReadings", hour.liturgicalDay)];
+    const body: MaybeNode[] = [htmlHourHeading(repo, "officeOfReadings", hour.liturgicalDay)];
 
     body.push(
       hour.isFirstHour
@@ -277,11 +316,11 @@ export class HtmlAssembler implements Assembler<string> {
     return this.joinBody(body);
   }
 
-  private laudsBody(hour: AbstractLauds, repo: DataRepository, choices?: DayChoices): string {
+  private laudsBody(hour: AbstractLauds, repo: DataRepository, choices?: DayChoices): LothNode | null {
     this.startHourScores("lauds");
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, "lauds", slot);
-    const body: string[] = [htmlHourHeading(repo, "lauds", hour.liturgicalDay)];
+    const body: MaybeNode[] = [htmlHourHeading(repo, "lauds", hour.liturgicalDay)];
 
     if (!hour.suppressIntroVerse) {
       body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "lauds"));
@@ -328,12 +367,12 @@ export class HtmlAssembler implements Assembler<string> {
     return this.joinBody(body);
   }
 
-  private daytimePrayerBody(hour: AbstractDaytimePrayer, repo: DataRepository, choices?: DayChoices): string {
+  private daytimePrayerBody(hour: AbstractDaytimePrayer, repo: DataRepository, choices?: DayChoices): LothNode | null {
     const hourKey = hour.kind;
     this.startHourScores(hourKey);
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
-    const body: string[] = [htmlHourHeading(repo, hourKey, hour.liturgicalDay)];
+    const body: MaybeNode[] = [htmlHourHeading(repo, hourKey, hour.liturgicalDay)];
 
     body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
 
@@ -357,12 +396,12 @@ export class HtmlAssembler implements Assembler<string> {
     return this.joinBody(body);
   }
 
-  private vespersBody(hour: AbstractVespers, repo: DataRepository, choices?: DayChoices): string {
+  private vespersBody(hour: AbstractVespers, repo: DataRepository, choices?: DayChoices): LothNode | null {
     const hourKey: HourKey = hour.isFirstVespers ? "firstVespers" : "vespers";
     this.startHourScores(hourKey);
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
-    const body: string[] = [htmlHourHeading(repo, hourKey, hour.liturgicalDay)];
+    const body: MaybeNode[] = [htmlHourHeading(repo, hourKey, hour.liturgicalDay)];
 
     body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
 
@@ -407,11 +446,11 @@ export class HtmlAssembler implements Assembler<string> {
     return this.joinBody(body);
   }
 
-  private complineBody(hour: AbstractCompline, repo: DataRepository, choices?: DayChoices): string {
+  private complineBody(hour: AbstractCompline, repo: DataRepository, choices?: DayChoices): LothNode | null {
     this.startHourScores("compline");
     const { flags } = hour;
     const opt = (slot: string) => slotOpts(choices, "compline", slot);
-    const body: string[] = [htmlHourHeading(repo, "compline", hour.liturgicalDay)];
+    const body: MaybeNode[] = [htmlHourHeading(repo, "compline", hour.liturgicalDay)];
 
     body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "compline"));
     if (this.includePlainProse()) body.push(htmlExaminationOfConscience(repo));
@@ -470,11 +509,11 @@ export class HtmlAssembler implements Assembler<string> {
     choices: DayChoices | undefined,
     path: string,
     parts: (keyof DialogueMelody)[],
-    text: string,
-  ): string {
+    fallback: MaybeNode,
+  ): LothNode | null {
     if (!fixed) {
-      if (this.isScoredOnly()) return "";
-      return text;
+      if (this.isScoredOnly()) return null;
+      return fallback ?? null;
     }
     const hydrated = hydrateMelodies(fixed, repo, day, {
       ...(choices ? { choices } : {}),
@@ -483,23 +522,18 @@ export class HtmlAssembler implements Assembler<string> {
     const melody = hydrated.melody;
 
     if (this.outputMode === "plain") {
-      const chunks: string[] = [];
-      if (melody) {
-        const rubric = htmlMelodyRubric(melody);
-        if (rubric) chunks.push(rubric);
-      }
-      chunks.push(text);
-      return chunks.join("\n\n");
+      const chunks: MaybeNode[] = [];
+      if (melody) chunks.push(htmlMelodyRubric(melody));
+      chunks.push(fallback);
+      return fragment(chunks, "\n\n");
     }
 
     if (!melody) {
-      if (this.isScoredOnly()) return "";
-      return text;
+      if (this.isScoredOnly()) return null;
+      return fallback ?? null;
     }
 
-    const chunks: string[] = [];
-    const rubric = htmlMelodyRubric(melody);
-    if (rubric) chunks.push(rubric);
+    const chunks: MaybeNode[] = [htmlMelodyRubric(melody)];
     let scored = false;
     for (const key of parts) {
       const gabc = melody[key];
@@ -511,10 +545,10 @@ export class HtmlAssembler implements Assembler<string> {
       }
     }
     if (!scored) {
-      if (this.isScoredOnly()) return "";
-      chunks.push(text);
+      if (this.isScoredOnly()) return null;
+      chunks.push(fallback);
     }
-    return chunks.join("\n\n");
+    return fragment(chunks, "\n\n");
   }
 
   private htmlIntroVerseBlock(
@@ -523,7 +557,7 @@ export class HtmlAssembler implements Assembler<string> {
     flags: LiturgicalFlags,
     choices: DayChoices | undefined,
     hourKey: HourKey,
-  ): string {
+  ): LothNode | null {
     // The concluding Halleluja is omitted in Lent, score included.
     const parts: (keyof DialogueMelody)[] = flags.alleluiaInIntroVerse
       ? ["versicle", "response", "gloria", "alleluia"]
@@ -539,7 +573,7 @@ export class HtmlAssembler implements Assembler<string> {
     repo: DataRepository,
     day: LiturgicalDay,
     choices: DayChoices | undefined,
-  ): string {
+  ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.invitatoryVerse, repo, day, choices,
       slotPath("invitatory", "verse"), ["versicle", "response"],
@@ -552,7 +586,7 @@ export class HtmlAssembler implements Assembler<string> {
     day: LiturgicalDay,
     choices: DayChoices | undefined,
     hourKey: HourKey,
-  ): string {
+  ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.lordsPrayer, repo, day, choices,
       slotPath(hourKey, "lordsPrayer"), ["gabc"],
@@ -565,7 +599,7 @@ export class HtmlAssembler implements Assembler<string> {
     day: LiturgicalDay,
     choices: DayChoices | undefined,
     hourKey: HourKey,
-  ): string {
+  ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.oorAcclamation, repo, day, choices,
       slotPath(hourKey, "acclamation"), ["versicle", "response"],
@@ -577,7 +611,7 @@ export class HtmlAssembler implements Assembler<string> {
     repo: DataRepository,
     day: LiturgicalDay,
     choices: DayChoices | undefined,
-  ): string {
+  ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.complineBlessing, repo, day, choices,
       slotPath("compline", "blessing"), ["versicle", "response"],
@@ -590,7 +624,7 @@ export class HtmlAssembler implements Assembler<string> {
     day: LiturgicalDay,
     choices: DayChoices | undefined,
     hourKey: HourKey,
-  ): string {
+  ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.dismissalWithoutMinister, repo, day, choices,
       slotPath(hourKey, "dismissal"), ["blessing", "amen"],
@@ -598,23 +632,27 @@ export class HtmlAssembler implements Assembler<string> {
     );
   }
 
-  /** Register a GABC score, return its mount element or empty. */
+  /** Register a GABC score and return its node, or null if there is none. */
   private emitScore(
     gabc: string | undefined,
     kind: "antiphon" | "psalmTone" = "antiphon",
     language?: ChantLanguage,
     melodyId?: string,
-  ): string {
-    if (!this.shouldEmitScores()) return "";
+  ): LothScoreNode | null {
+    if (!this.shouldEmitScores()) return null;
     const trimmed = gabc?.trim();
-    if (!trimmed) return "";
+    if (!trimmed) return null;
 
     const id = `${this.scorePrefix}-score-${++this.scoreCounter}`;
-    const source = withGabcHeader(trimmed, id);
-    this.scores.set(id, source);
-    return kind === "psalmTone"
-      ? htmlPsalmToneScoreLine(id, source, language, melodyId)
-      : htmlScoreLine(id, source, "", language, melodyId);
+    const spec: ScoreSpec = {
+      id,
+      gabc: withGabcHeader(trimmed, id),
+      ...(language ? { language } : {}),
+      ...(melodyId ? { melodyId } : {}),
+      ...(kind === "psalmTone" ? { psalmTone: true } : {}),
+    };
+    this.specs.push(spec);
+    return score(spec);
   }
 
   private htmlGospelCanticleSlot(
@@ -623,14 +661,11 @@ export class HtmlAssembler implements Assembler<string> {
     flags: LiturgicalFlags,
     sectionKey: SectionLabelKey,
     canticleKind: GospelCanticleKind,
-  ): string[] {
-    const parts: string[] = [htmlSectionHeading(repo, sectionKey)];
+  ): MaybeNode[] {
+    const parts: MaybeNode[] = [htmlSectionHeading(repo, sectionKey)];
 
     if (this.isScoredOnly()) {
-      if (antiphon) {
-        const block = this.htmlAntiphonBlock(repo, antiphon, flags, true);
-        if (block) parts.push(block);
-      }
+      if (antiphon) parts.push(this.htmlAntiphonBlock(repo, antiphon, flags, true));
       return parts;
     }
 
@@ -652,7 +687,7 @@ export class HtmlAssembler implements Assembler<string> {
     hour: AbstractDaytimePrayer,
     flags: LiturgicalFlags,
     choices?: DayChoices,
-  ): string[] {
+  ): MaybeNode[] {
     const opt = (slot: string) => slotOpts(choices, hour.kind, slot);
     const assignments = hour.psalmSlots
       .map((slot, i) =>
@@ -670,13 +705,12 @@ export class HtmlAssembler implements Assembler<string> {
     if (proper && proper.length === 1) {
       const antiphon = proper[0] as PsalmAssignment["antiphon"];
       if (this.isScoredOnly()) {
-        const block = this.htmlAntiphonBlock(repo, antiphon, flags, true);
-        return block ? [block] : [];
+        return [this.htmlAntiphonBlock(repo, antiphon, flags, true)];
       }
-      const parts: string[] = [this.htmlAntiphonBlock(repo, antiphon, flags, true)];
+      const parts: MaybeNode[] = [this.htmlAntiphonBlock(repo, antiphon, flags, true)];
       for (const a of assignments) {
-        const text = psalmText(a);
-        if (text.trim()) parts.push(htmlPsalmText(text));
+        const body = psalmText(a);
+        if (body.trim()) parts.push(htmlPsalmText(body));
       }
       parts.push(this.htmlAntiphonBlock(repo, antiphon, flags, false));
       return parts;
@@ -696,59 +730,48 @@ export class HtmlAssembler implements Assembler<string> {
     a: Antiphon,
     flags: LiturgicalFlags,
     includePsalmTone: boolean,
-  ): string {
+  ): LothNode | null {
     const rubric = htmlMelodyRubric(a.melody);
 
-    let scoreLine = "";
+    let scoreLine: LothScoreNode | null = null;
     if (this.shouldEmitScores() && a.melody?.gabc) {
       scoreLine = this.emitScore(a.melody.gabc, "antiphon", a.melody.language, a.melody.id);
     }
 
-    let toneLine = "";
+    let toneLine: LothScoreNode | null = null;
     if (this.shouldEmitScores() && includePsalmTone && a.psalmTone?.trim()) {
       toneLine = this.emitScore(a.psalmTone, "psalmTone", a.melody?.language, a.melody?.id);
     }
 
-    const hasScore = Boolean(scoreLine || toneLine);
-
     if (this.isScoredOnly()) {
-      if (!hasScore) return "";
-      const chunks: string[] = [];
-      if (rubric) chunks.push(rubric);
-      if (scoreLine) chunks.push(scoreLine);
-      if (toneLine) chunks.push(htmlPsalmToneBlock(repo, toneLine));
-      return chunks.join("\n\n");
+      if (!scoreLine && !toneLine) return null;
+      return fragment([rubric, scoreLine, htmlPsalmToneBlock(repo, toneLine)], "\n\n");
     }
 
-    const chunks: string[] = [];
-    if (rubric) chunks.push(rubric);
-    if (scoreLine) chunks.push(scoreLine);
-    else chunks.push(htmlAntiphon(repo, a, flags));
-    if (toneLine) chunks.push(htmlPsalmToneBlock(repo, toneLine));
-    return chunks.join("\n\n");
+    return fragment(
+      [
+        rubric,
+        scoreLine ?? htmlAntiphon(repo, a, flags),
+        htmlPsalmToneBlock(repo, toneLine),
+      ],
+      "\n\n",
+    );
   }
 
-  private htmlHymnBlock(hymn: Hymn): string {
+  private htmlHymnBlock(hymn: Hymn): LothNode | null {
     const rubric = htmlMelodyRubric(hymn.melody);
 
-    let scoreLine = "";
+    let scoreLine: LothScoreNode | null = null;
     if (this.shouldEmitScores() && hymn.melody?.gabc) {
       scoreLine = this.emitScore(hymn.melody.gabc, "antiphon", hymn.melody.language, hymn.melody.id);
     }
 
     if (this.isScoredOnly()) {
-      if (!scoreLine) return "";
-      const chunks: string[] = [];
-      if (rubric) chunks.push(rubric);
-      chunks.push(scoreLine);
-      return chunks.join("\n\n");
+      if (!scoreLine) return null;
+      return fragment([rubric, scoreLine], "\n\n");
     }
 
-    const chunks: string[] = [];
-    if (rubric) chunks.push(rubric);
-    if (scoreLine) chunks.push(scoreLine);
-    else chunks.push(htmlHymn(hymn));
-    return chunks.join("\n\n");
+    return fragment([rubric, scoreLine ?? htmlHymn(hymn)], "\n\n");
   }
 
   private htmlPsalmAssignment(
@@ -756,31 +779,31 @@ export class HtmlAssembler implements Assembler<string> {
     psalmText: string,
     flags: LiturgicalFlags,
     repo: DataRepository,
-  ): string {
+  ): LothNode | null {
     if (this.isScoredOnly()) {
       return this.htmlAntiphonBlock(repo, assignment.antiphon, flags, true);
     }
 
     const open = this.htmlAntiphonBlock(repo, assignment.antiphon, flags, true);
     if (!psalmText.trim()) return open;
-    const canticleMelody: string[] = [];
+    const canticleMelody: MaybeNode[] = [];
     if (this.shouldEmitScores()) {
       const canticle = repo.getCanticle(assignment.psalmOrCanticleId);
       if (canticle?.melody?.gabc?.trim()) {
-        const rub = htmlMelodyRubric(canticle.melody);
-        if (rub) canticleMelody.push(rub);
-        const line = this.emitScore(canticle.melody.gabc, "antiphon", canticle.melody.language, canticle.melody.id);
-        if (line) canticleMelody.push(line);
+        canticleMelody.push(htmlMelodyRubric(canticle.melody));
+        canticleMelody.push(
+          this.emitScore(canticle.melody.gabc, "antiphon", canticle.melody.language, canticle.melody.id),
+        );
       }
     }
     const body = htmlPsalmText(psalmText);
     const close = this.htmlAntiphonBlock(repo, assignment.antiphon, flags, false);
-    return [open, ...canticleMelody, body, close].join("\n\n");
+    return fragment([open, ...canticleMelody, body, close], "\n\n");
   }
 
-  private htmlShortResponsoryBlock(repo: DataRepository, r: ShortResponsory): string {
+  private htmlShortResponsoryBlock(repo: DataRepository, r: ShortResponsory): LothNode | null {
     const rubric = htmlMelodyRubric(r.melody);
-    const scoreLines: string[] = [];
+    const scoreLines: LothScoreNode[] = [];
     if (this.shouldEmitScores()) {
       for (const gabc of [
         r.melody?.responsory,
@@ -794,17 +817,15 @@ export class HtmlAssembler implements Assembler<string> {
     }
 
     if (this.isScoredOnly()) {
-      if (scoreLines.length === 0) return "";
-      const chunks: string[] = [];
-      if (rubric) chunks.push(rubric);
-      chunks.push(...scoreLines);
-      return chunks.join("\n\n");
+      if (scoreLines.length === 0) return null;
+      return fragment([rubric, ...scoreLines], "\n\n");
     }
 
-    const chunks: string[] = [];
-    if (rubric) chunks.push(rubric);
-    if (scoreLines.length > 0) chunks.push(...scoreLines);
-    else chunks.push(htmlShortResponsory(repo, r));
-    return chunks.join("\n\n");
+    return fragment(
+      scoreLines.length > 0
+        ? [rubric, ...scoreLines]
+        : [rubric, htmlShortResponsory(repo, r)],
+      "\n\n",
+    );
   }
 }

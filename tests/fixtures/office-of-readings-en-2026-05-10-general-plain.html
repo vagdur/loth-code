@@ -8,9 +8,15 @@
 <script type="importmap">
 {"imports": {"@vagdur/exsurge": "./exsurge.mjs"}}
 </script>
+<script type="application/json" id="loth-scores">[]</script>
 <script type="module">
-import { mountScores } from "./lothChant.js";
-mountScores(document);
+import { renderScore } from "./lothChant.js";
+for (const spec of JSON.parse(document.getElementById("loth-scores").textContent)) {
+  // The selector is built rather than written out so that this script does not
+  // itself read as a score mount to anything grepping the page for one.
+  const el = document.querySelector('[data-score-id=' + JSON.stringify(spec.id) + ']');
+  if (el) renderScore(el, spec);
+}
 </script>
 </head>
 <body>

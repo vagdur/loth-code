@@ -107,18 +107,19 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
+/** The assembled page as markup — `assemble*` now returns a tree plus its scores. */
 function renderHour(assembler, day, repo, hour) {
   switch (hour) {
-    case "day": return assembler.assembleDay(day, repo);
-    case "officeOfReadings": return assembler.assembleOfficeOfReadings(day.officeOfReadings, repo);
-    case "lauds": return assembler.assembleLauds(day.lauds, repo);
+    case "day": return assembler.assembleDay(day, repo).html();
+    case "officeOfReadings": return assembler.assembleOfficeOfReadings(day.officeOfReadings, repo).html();
+    case "lauds": return assembler.assembleLauds(day.lauds, repo).html();
     case "terce": case "sext": case "none": {
       const h = day[hour];
       if (!h) return `<p class="loth-prose">No ${hour} on this day.</p>`;
-      return assembler.assembleDaytimePrayer(h, repo);
+      return assembler.assembleDaytimePrayer(h, repo).html();
     }
-    case "vespers": return assembler.assembleVespers(eveningVespers(day), repo);
-    case "compline": return assembler.assembleCompline(day.compline, repo);
+    case "vespers": return assembler.assembleVespers(eveningVespers(day), repo).html();
+    case "compline": return assembler.assembleCompline(day.compline, repo).html();
     default: return `<p class="loth-prose">Unknown hour "${hour}".</p>`;
   }
 }
@@ -131,7 +132,7 @@ function option(value, current, label) {
 /**
  * The demo chrome: pickers, plus a speed slider driving every player's
  * `setSpeed`. Illustrates the intended host pattern — take the handles
- * `mountScores` returns and build whatever interface you want.
+ * `renderScore` returns and build whatever interface you want.
  */
 function headerHtml({ date, locale, hour, mode, calendar }) {
   return `<header class="demo-bar">
@@ -158,22 +159,29 @@ function headerHtml({ date, locale, hour, mode, calendar }) {
 </style>`;
 }
 
-/** Mount, then wire the slider to the players — the host-side half of the demo. */
+/** Render, then wire the slider to the players — the host-side half of the demo. */
 const FOOTER_SCRIPT = `<script type="module">
-import { mountScores } from "/dist/browser/lothChant.js";
+import { renderScore } from "/dist/browser/lothChant.js";
 
-const scores = mountScores(document);
+// The page carries its own specs; the runtime does not search the document.
+const specs = JSON.parse(document.getElementById("loth-scores").textContent);
+const scores = specs.flatMap((spec) => {
+  const el = document.querySelector('[data-score-id=' + JSON.stringify(spec.id) + ']');
+  return el ? [renderScore(el, spec)] : [];
+});
 window.lothScores = scores; // handy from the devtools console
 
 const slider = document.getElementById("speed");
 const out = document.getElementById("speed-out");
 slider.addEventListener("input", () => {
   out.value = slider.value + "%";
-  for (const score of scores) score.player?.setSpeed(Number(slider.value));
+  // setPlayback rather than reaching for .player: it works before layout has
+  // finished, so dragging the slider early is not silently dropped.
+  for (const score of scores) score.setPlayback({ speed: Number(slider.value) });
 });
 
 const players = await Promise.all(scores.map((s) => s.ready.catch(() => null)));
-console.log(\`mounted \${players.filter(Boolean).length}/\${scores.length} scores\`);
+console.log(\`rendered \${players.filter(Boolean).length}/\${scores.length} scores\`);
 </script>`;
 
 async function buildPage(params) {
@@ -188,8 +196,8 @@ async function buildPage(params) {
       cssHref: "/loth.css",
       exsurgeUrl: "/vendor/exsurge/dist/exsurge.mjs",
       runtimeUrl: "/dist/browser/lothChant.js",
-      // The footer script mounts, so the page does not need the default
-      // bootstrap; two mounts of the same element would be a no-op anyway.
+      // The footer script renders the scores itself so it can keep the
+      // handles for the slider; the score data is emitted either way.
       mountScores: false,
       headerHtml: headerHtml(params),
       footerHtml: FOOTER_SCRIPT,

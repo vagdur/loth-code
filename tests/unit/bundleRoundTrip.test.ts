@@ -32,7 +32,8 @@ function renderLauds(repo: DataRepository, registry: SanctoralCalendarRegistry):
   return withSanctoralRegistry(registry, () => {
     const day = buildDay(resolveDay(DATE, "general"), defaultContext("general"));
     return new HtmlAssembler({ outputMode: "hybrid", fragmentOnly: true })
-      .assembleLauds(day.lauds, repo);
+      .assembleLauds(day.lauds, repo)
+      .html();
   });
 }
 

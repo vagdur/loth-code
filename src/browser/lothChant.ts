@@ -1,39 +1,45 @@
 /**
- * Browser runtime — turns the score mounts an HtmlAssembler page carries into
- * rendered, playable chant.
+ * Browser runtime — turns a `ScoreSpec` into rendered, playable chant.
  *
- * This is the only DOM-touching code in the package, and the whole of what a
- * host needs to add an hour to a page: drop the assembled markup in, link
- * html/loth.css, call `mountScores`.
+ * This is the only DOM-touching code in the package. A host gives it an element
+ * it owns and a spec from the assembled tree; it returns a handle that owns
+ * everything it created.
  *
- * The player deliberately has no interface of its own — clicking a note plays
- * from there, clicking again stops. Hosts build their own controls on the
- * returned `ChantPlayer` handles (`setSpeed`, `setTuning`, `setTranspose`,
- * `setInstrument`, `setVolume`, all safe to call mid-playback). Browsers only
- * start audio inside a user gesture: clicking a note satisfies that by itself,
- * but a host-built play button must call `player.unlock()` from its own click
- * handler first.
+ * It deliberately does **not** search the document. The previous version took a
+ * root and scanned it for `[data-loth-score]`, which meant teardown had to scan
+ * again and hope the DOM was as it had been left — false under any framework
+ * that owns its own elements, so players and their resize listeners were never
+ * released. Passing the spec in and handing a handle back removes the question:
+ * `destroy()` closes over exactly what it made, and works on an element that
+ * has already been detached.
+ *
+ * The player has no interface of its own — clicking a note plays from there,
+ * clicking again stops. Hosts build their own controls on `setPlayback` or on
+ * the `ChantPlayer` from `ready`. Browsers only start audio inside a user
+ * gesture: clicking a note satisfies that by itself, but a host-built play
+ * button must call `player.unlock()` from its own click handler first.
  */
 
 import * as exsurge from "@vagdur/exsurge";
 import { withGabcHeader } from "../assemblers/gabcHeader.js";
-import type { ChantLanguage } from "../types/melody.js";
+import type { ScoreSpec } from "../assemblers/tree.js";
 
-/** Marks the score mounts emitted by `htmlScoreLine`. */
-const SCORE_SELECTOR = "[data-loth-score]";
+export type { ScoreSpec };
 
-/** A mounted score and its player. */
-export interface LothScore {
-  /** The `data-score-id` from the markup (e.g. `lauds-score-1`). */
-  readonly id: string;
-  readonly element: HTMLElement;
-  /** Resolves once exsurge has laid out the score and wired up playback. */
-  readonly ready: Promise<exsurge.ChantPlayer>;
-  /** The player, once ready; null until then, and if layout failed. */
-  player: exsurge.ChantPlayer | null;
-}
+/**
+ * How long layout may take before we call it failed.
+ *
+ * exsurge lays out across `setTimeout` chunks, so a throw inside one is not
+ * catchable from here and simply means the completion callback never fires. It
+ * also retries indefinitely, every 100ms, when it cannot get a sane text
+ * measurement. Both look the same from outside — a permanently empty element
+ * and no error anywhere — which is precisely how a blank score stayed invisible
+ * before. A watchdog turns either into a rejected `ready` and a
+ * `data-loth-score-error` attribute the stylesheet already knows how to show.
+ */
+const LAYOUT_TIMEOUT_MS = 15_000;
 
-export interface MountOptions {
+export interface RenderOptions {
   /**
    * exsurge player options, forwarded verbatim: `speed`, `tuning`,
    * `transpose`, `instrument`, `volume`, `loop`, `onNoteChange`, …
@@ -43,49 +49,58 @@ export interface MountOptions {
   autoResize?: boolean;
   /** Render the first letter as a drop cap. Default false. */
   useDropCap?: boolean;
-  /**
-   * Page-level fallback when a score mount has no `data-language`.
-   * Defaults to swedish, the language of the corpus this was written for.
-   */
-  language?: ChantLanguage;
-  /** Called when one score fails to lay out; the rest still mount. */
+  /** Used when the spec carries no language of its own. */
+  language?: ScoreSpec["language"];
+  /** Called when this score fails to lay out. */
   onError?: (error: Error, element: HTMLElement) => void;
+  /** Override the layout watchdog. Chiefly for tests. */
+  layoutTimeoutMs?: number;
+}
+
+/** A rendered score. Everything the host needs, and nothing it must look up. */
+export interface ScoreHandle {
+  readonly id: string;
+  /** The element the score was rendered into. */
+  readonly element: HTMLElement;
+  /** Resolves once exsurge has laid the score out and wired up playback. */
+  readonly ready: Promise<exsurge.ChantPlayer>;
+  /** The player, once ready; null until then, and if layout failed. */
+  readonly player: exsurge.ChantPlayer | null;
+  /**
+   * Volume, tempo, key. Safe to call at any time — before `ready` the settings
+   * are held and handed to the player when it arrives, so a host never has to
+   * sequence its controls against layout.
+   */
+  setPlayback(options: Partial<exsurge.ChantPlayerOptions>): void;
+  /**
+   * Release the player, its audio resources and its resize listener, and empty
+   * the element. Idempotent, and safe once the element is detached.
+   */
+  destroy(): void;
 }
 
 /** Map Gregorio language headers to exsurge syllabification languages. */
 function exsurgeLanguage(
-  code: string | undefined,
+  code: ScoreSpec["language"],
 ): (typeof exsurge.language)[keyof typeof exsurge.language] {
   if (code === "latin") return exsurge.language.latin;
-  if (code === "english") return exsurge.language.english;
   return exsurge.language.swedish;
 }
 
-/** Per-element bookkeeping, so `unmountScores` can undo exactly what we did. */
-const mounted = new WeakMap<HTMLElement, LothScore>();
-
 /**
- * Render every score under `root` and wire up playback.
+ * Render one score into `element`.
  *
- * Returns synchronously — the elements are claimed immediately, while exsurge
- * lays out asynchronously. Await `score.ready` (or
- * `Promise.all(scores.map((s) => s.ready))`) for the players.
+ * Returns synchronously — the element is claimed immediately, while exsurge
+ * lays out asynchronously. Await `handle.ready` for the player.
  */
-export function mountScores(root: ParentNode, options?: MountOptions): LothScore[] {
-  const elements = Array.from(root.querySelectorAll<HTMLElement>(SCORE_SELECTOR));
-  return elements.map((element) => mountScore(element, options));
-}
-
-/** Render one score element. Re-mounting an already-mounted element is a no-op. */
-export function mountScore(element: HTMLElement, options?: MountOptions): LothScore {
-  const existing = mounted.get(element);
-  if (existing) return existing;
-
-  const id = element.dataset["scoreId"] ?? "loth-score";
-  const gabc = element.dataset["gabc"] ?? "";
-  // Hand-written mounts may carry a bare notation body; the assembler's own
+export function renderScore(
+  element: HTMLElement,
+  spec: ScoreSpec,
+  options?: RenderOptions,
+): ScoreHandle {
+  // Hand-written specs may carry a bare notation body; the assembler's own
   // always arrive with a header, and withGabcHeader leaves those alone.
-  const source = withGabcHeader(gabc.trim(), id);
+  const source = withGabcHeader(spec.gabc.trim(), spec.id);
 
   let resolveReady!: (player: exsurge.ChantPlayer) => void;
   let rejectReady!: (error: Error) => void;
@@ -93,74 +108,92 @@ export function mountScore(element: HTMLElement, options?: MountOptions): LothSc
     resolveReady = resolve;
     rejectReady = reject;
   });
+  // Nothing may await `ready`; a rejection must not surface as an unhandled one.
+  void ready.catch(() => undefined);
 
-  const score: LothScore = { id, element, ready, player: null };
-  mounted.set(element, score);
+  let player: exsurge.ChantPlayer | null = null;
+  let pending: Partial<exsurge.ChantPlayerOptions> | null = options?.player ?? null;
+  let destroyed = false;
+  let watchdog: ReturnType<typeof setTimeout> | undefined;
+
+  const fail = (cause: unknown): void => {
+    if (destroyed) return;
+    const error = cause instanceof Error ? cause : new Error(String(cause));
+    element.dataset["lothScoreError"] = error.message;
+    rejectReady(error);
+    options?.onError?.(error, element);
+  };
+
+  const handle: ScoreHandle = {
+    id: spec.id,
+    element,
+    ready,
+    get player() {
+      return player;
+    },
+    setPlayback(next) {
+      if (destroyed) return;
+      if (player) player.setOptions(next);
+      else pending = { ...pending, ...next };
+    },
+    destroy() {
+      if (destroyed) return;
+      destroyed = true;
+      if (watchdog !== undefined) clearTimeout(watchdog);
+      // Also removes the window resize listener createPlayableChant installed.
+      player?.destroy();
+      player = null;
+      element.replaceChildren();
+    },
+  };
 
   // One ChantContext per score: parsing mutates ctxt.activeClef and layout is
   // async, so scores must not share one.
   const ctxt = new exsurge.ChantContext();
-  ctxt.defaultLanguage = exsurgeLanguage(
-    element.dataset["language"] ?? options?.language,
-  );
+  ctxt.defaultLanguage = exsurgeLanguage(spec.language ?? options?.language);
+
+  watchdog = setTimeout(() => {
+    watchdog = undefined;
+    fail(new Error(`exsurge did not finish laying out "${spec.id}" in time`));
+  }, options?.layoutTimeoutMs ?? LAYOUT_TIMEOUT_MS);
+
   try {
     exsurge.createPlayableChant(
       ctxt,
       source,
       element,
       {
-        ...options?.player,
+        ...(pending ?? {}),
         // Explicit after the spread: these have dedicated options, and exsurge
         // defaults useDropCap to true, which suits a book opening rather than
         // the score fragments an hour is made of.
         autoResize: options?.autoResize ?? true,
         useDropCap: options?.useDropCap ?? false,
       },
-      (player) => {
-        score.player = player;
+      (ready_) => {
+        if (watchdog !== undefined) {
+          clearTimeout(watchdog);
+          watchdog = undefined;
+        }
+        // Destroyed while laying out: the element is no longer ours, so let go
+        // of what exsurge just built rather than leaving it running.
+        if (destroyed) {
+          ready_.destroy();
+          return;
+        }
+        player = ready_;
+        if (pending) player.setOptions(pending);
+        pending = null;
         resolveReady(player);
       },
     );
   } catch (cause) {
-    const error = cause instanceof Error ? cause : new Error(String(cause));
-    element.dataset["lothScoreError"] = error.message;
-    rejectReady(error);
-    if (options?.onError) options.onError(error, element);
-    // Nothing awaits `ready` in the fire-and-forget bootstrap; keep a rejected
-    // promise from surfacing as an unhandled rejection there.
-    void ready.catch(() => undefined);
+    if (watchdog !== undefined) {
+      clearTimeout(watchdog);
+      watchdog = undefined;
+    }
+    fail(cause);
   }
 
-  return score;
-}
-
-/** Tear down every mounted score under `root`, releasing its audio resources. */
-export function unmountScores(root: ParentNode): void {
-  for (const element of root.querySelectorAll<HTMLElement>(SCORE_SELECTOR)) {
-    unmountScore(element);
-  }
-}
-
-export function unmountScore(element: HTMLElement): void {
-  const score = mounted.get(element);
-  if (score) {
-    score.player?.destroy();
-    score.player = null;
-    mounted.delete(element);
-  }
-  element.replaceChildren();
-}
-
-/**
- * Put an assembled hour into a container and mount its scores — the one-call
- * path for a host that already has the markup as a string.
- */
-export function renderHour(
-  container: HTMLElement,
-  html: string,
-  options?: MountOptions,
-): LothScore[] {
-  unmountScores(container);
-  container.innerHTML = html;
-  return mountScores(container, options);
+  return handle;
 }
