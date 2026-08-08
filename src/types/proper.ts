@@ -39,6 +39,14 @@ export interface VespersProperSlot {
   shortReading?: ShortReading;
   shortResponsory?: ShortResponsory;
   magnificatAntiphon?: Antiphon;
+  /**
+   * Sunday gospel-canticle antiphon for lectionary Year A/B/C
+   * (editio typica altera; office-spec §7). Plain `magnificatAntiphon` is the
+   * fallback when the day does not vary by cycle.
+   */
+  magnificatAntiphonYrA?: Antiphon;
+  magnificatAntiphonYrB?: Antiphon;
+  magnificatAntiphonYrC?: Antiphon;
   intercessions?: Intercessions;
   concludingPrayer?: ConcludingPrayer;
 }
@@ -51,6 +59,14 @@ export interface LaudsProperSlot {
   shortReading?: ShortReading;
   shortResponsory?: ShortResponsory;
   benedictusAntiphon?: Antiphon;
+  /**
+   * Sunday gospel-canticle antiphon for lectionary Year A/B/C
+   * (editio typica altera; office-spec §7). Plain `benedictusAntiphon` is the
+   * fallback when the day does not vary by cycle.
+   */
+  benedictusAntiphonYrA?: Antiphon;
+  benedictusAntiphonYrB?: Antiphon;
+  benedictusAntiphonYrC?: Antiphon;
   intercessions?: Intercessions;
   concludingPrayer?: ConcludingPrayer;
 }

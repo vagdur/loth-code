@@ -218,6 +218,50 @@ describe("shortReadingRef and antiphonRef and intercessionsRef", () => {
     });
   });
 
+  test("antiphonRef: seasonal gospel canticle prefers sunday-cycle field", () => {
+    const ctx = baseCtx(seasonalFerialCelebration());
+    const src = antiphonRef(
+      ctx,
+      "lauds.benedictusAntiphon",
+      "lauds.benedictusAntiphon",
+      "B",
+    );
+    const flat = flattenSources(src);
+    expect(flat[0]).toMatchObject({
+      kind: "seasonal",
+      key: "ot_w5_mon",
+      field: "lauds.benedictusAntiphonYrB",
+    });
+    expect(flat[1]).toMatchObject({
+      kind: "seasonal",
+      key: "ot_w5_mon",
+      field: "lauds.benedictusAntiphon",
+    });
+    expect(flat[2]).toMatchObject({ kind: "psalter", field: "lauds.benedictusAntiphon" });
+  });
+
+  test("antiphonRef: memoria gospel canticle inserts cycle before plain seasonal", () => {
+    const ctx = baseCtx(obligatoryMemoria());
+    const src = antiphonRef(
+      ctx,
+      "vespers.magnificatAntiphon",
+      "vespers.magnificatAntiphon",
+      "C",
+    );
+    const flat = flattenSources(src);
+    expect(flat.map((s) => s.kind)).toEqual([
+      "saint", "common", "seasonal", "seasonal", "psalter",
+    ]);
+    expect(flat[2]).toMatchObject({
+      kind: "seasonal",
+      field: "vespers.magnificatAntiphonYrC",
+    });
+    expect(flat[3]).toMatchObject({
+      kind: "seasonal",
+      field: "vespers.magnificatAntiphon",
+    });
+  });
+
   test("antiphonRef: memoria invitatory still falls back to psalter", () => {
     const ctx = baseCtx(obligatoryMemoria());
     const src = antiphonRef(ctx, "invitatoryAntiphon", "invitatoryAntiphon");

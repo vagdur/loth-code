@@ -113,18 +113,36 @@ export function buildVespers(
       }
     : shortResponsoryRef(ctx, `${vespersField}.shortResponsory`);
 
+  // Gospel-canticle antiphon: cycle field ahead of plain (office-spec §7 /
+  // editio typica altera), same shape as ferialBiblicalReadingRef.
   const magnificatAntiphon: SlotSource = isSundayFirstVespers
     ? {
         kind: "fallback_chain",
         sources: [
           ...(c.seasonalKey
-            ? [{ kind: "seasonal" as const, key: c.seasonalKey, field: `${vespersField}.magnificatAntiphon` }]
+            ? [
+                {
+                  kind: "seasonal" as const,
+                  key: c.seasonalKey,
+                  field: `${vespersField}.magnificatAntiphonYr${day.sundayCycle}`,
+                },
+                {
+                  kind: "seasonal" as const,
+                  key: c.seasonalKey,
+                  field: `${vespersField}.magnificatAntiphon`,
+                },
+              ]
             : []),
           fvPsalterSrc("magnificatAntiphon"),
           { kind: "psalter", week: w, day: d, field: "vespers.magnificatAntiphon" },
         ],
       }
-    : antiphonRef(ctx, `${vespersField}.magnificatAntiphon`, "vespers.magnificatAntiphon");
+    : antiphonRef(
+        ctx,
+        `${vespersField}.magnificatAntiphon`,
+        "vespers.magnificatAntiphon",
+        day.sundayCycle,
+      );
   const intercessions: SlotSource = isSundayFirstVespers
     ? fvPsalterSrc("intercessions")
     : intercessionsRef(ctx, `${vespersField}.intercessions`);

@@ -6,6 +6,7 @@
  */
 
 import type { Celebration, Season } from "../types/calendar.js";
+import type { SundayCycle } from "../types/melody.js";
 import type { CommonType, SeasonalDayKey } from "../types/proper.js";
 import type { PsalterWeek, Weekday } from "../types/psalter.js";
 import type { FallbackChain, SlotSource, SlotSourceDirect } from "../types/hours.js";
@@ -255,10 +256,33 @@ export function shortResponsoryRef(
 // Antiphon (Benedictus / Magnificat / Invitatory / Nunc Dimittis)
 // ---------------------------------------------------------------------------
 
+/**
+ * Seasonal sources for a gospel-canticle antiphon: cycle field ahead of the
+ * plain field, mirroring `ferialBiblicalReadingRef` for the two-year OoR
+ * cycle (data-structure.md §9 / office-spec §7).
+ */
+function seasonalGospelAntiphonSources(
+  key: SeasonalDayKey,
+  field: string,
+  sundayCycle: SundayCycle | undefined,
+): SlotSourceDirect[] {
+  if (!sundayCycle) return [seasonalSrc(key, field)];
+  return [
+    seasonalSrc(key, `${field}Yr${sundayCycle}`),
+    seasonalSrc(key, field),
+  ];
+}
+
 export function antiphonRef(
   ctx: SlotContext,
   field: string,    // e.g. "lauds.benedictusAntiphon"
   psalterField: string, // may differ from `field` for the psalter path
+  /**
+   * When set (Benedictus / Magnificat), prefer the seasonal
+   * `…AntiphonYrA|YrB|YrC` field for `LiturgicalDay.sundayCycle` before the
+   * plain antiphon. Omit for Invitatory / Nunc Dimittis.
+   */
+  sundayCycle?: SundayCycle,
 ): SlotSource {
   const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
 
@@ -267,12 +291,17 @@ export function antiphonRef(
     return make(
       saintSrc(c.saintId, field),
       ...commonSources(c.applicableCommons, 0, field),
-      ...(c.seasonalKey ? [seasonalSrc(c.seasonalKey, field)] : []),
+      ...(c.seasonalKey
+        ? seasonalGospelAntiphonSources(c.seasonalKey, field, sundayCycle)
+        : []),
       psalterSrc(w, d, psalterField),
     );
   }
   if (c.seasonalKey) {
-    return chain(seasonalSrc(c.seasonalKey, field), psalterSrc(w, d, psalterField));
+    return chain(
+      ...seasonalGospelAntiphonSources(c.seasonalKey, field, sundayCycle),
+      psalterSrc(w, d, psalterField),
+    );
   }
   return psalterSrc(w, d, psalterField);
 }

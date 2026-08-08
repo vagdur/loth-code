@@ -87,6 +87,7 @@ export function buildLauds(
     ctx,
     "lauds.benedictusAntiphon",
     "lauds.benedictusAntiphon",
+    day.sundayCycle,
   );
 
   const intercessions = intercessionsRef(ctx, "lauds.intercessions");

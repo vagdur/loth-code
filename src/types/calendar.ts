@@ -67,7 +67,11 @@ export interface LiturgicalDay {
   /** Day of week as used to look up the psalter entry. */
   psalterDay: Weekday;
   readingYear: ReadingYear;
-  /** Sunday gospel lectionary cycle (Year A/B/C) of the current liturgical year. */
+  /**
+   * Sunday gospel lectionary cycle (Year A/B/C) of the current liturgical year.
+   * Selects gospel-canticle antiphon texts (`…AntiphonYrA|YrB|YrC`) and
+   * cycle-conditioned melody variants.
+   */
   sundayCycle: SundayCycle;
   /**
    * The current week number within Ordinary Time (1–34).
