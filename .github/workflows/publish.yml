@@ -60,8 +60,13 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       # Trusted publishing needs npm >= 11.5.1; Node 22 still bundles npm 10.
+      #
+      # Pinned to a major, not `@latest`. npm 12 changed the shape of
+      # `npm pack --json` and broke scripts/assert-no-data-in-tarball.mjs, and
+      # an unpinned `@latest` meant that arrived in a release run rather than in
+      # a pull request. A major bump here should be a reviewed commit.
       - name: Use an npm that can do OIDC
-        run: npm install -g npm@latest
+        run: npm install -g npm@12
 
       - name: Install
         run: npm ci

@@ -56,8 +56,38 @@ const raw = execFileSync("npm", ["pack", "--dry-run", "--json"], {
   shell: process.platform === "win32",
 });
 
-// npm prints notices on stdout before the JSON; take from the first bracket.
-const [report] = JSON.parse(raw.slice(raw.indexOf("[")));
+/**
+ * Find the pack report, whatever npm decided to wrap it in this major.
+ *
+ * npm <= 11 prints `[ {report} ]`; npm 12 prints `{ "<name>": {report} }`. The
+ * report itself is unchanged, so only the unwrapping is version-dependent.
+ *
+ * Either way the prepack scripts have already written to the same stdout, so
+ * the JSON starts somewhere past byte zero and has to be located. "Slice from
+ * the first `[`" is what this used to do, and it is wrong under npm 12: the
+ * first `[` is the inner `files` array, which parses cleanly on its own and
+ * then throws on the trailing keys. Scanning for the first position that parses
+ * *into a report* is indifferent to both the noise and the shape.
+ */
+const parsePackReport = (out) => {
+  for (let i = 0; i < out.length; i++) {
+    if (out[i] !== "[" && out[i] !== "{") continue;
+    let doc;
+    try {
+      doc = JSON.parse(out.slice(i));
+    } catch {
+      continue;
+    }
+    const candidate = Array.isArray(doc) ? doc[0] : Object.values(doc)[0];
+    if (candidate && Array.isArray(candidate.files)) return candidate;
+  }
+  throw new Error(
+    "no pack report in `npm pack --json` output; npm may have changed its " +
+      `shape again. Raw output was:\n${out}`,
+  );
+};
+
+const report = parsePackReport(raw);
 const entries = report.files.map((f) => f.path.replace(/\\/g, "/"));
 
 for (const entry of entries) {
