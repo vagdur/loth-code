@@ -39,6 +39,15 @@ export interface RenderOptions {
   /** Used when the spec carries no language of its own. */
   language?: ScoreSpec["language"];
   /**
+   * A single line printed above the clef of the first staff — `℣`, `Ant.`, a
+   * mode number — as Gregorio prints one.
+   *
+   * It has to be an option rather than something the gabc carries: exsurge's
+   * parser strips the header, so an `annotation:` field in the source never
+   * reaches the score.
+   */
+  annotation?: string;
+  /**
    * Prefix for the `id` exsurge puts on each note element.
    *
    * Defaults to one derived from the score id, because exsurge's own default
@@ -84,6 +93,31 @@ function exsurgeLanguage(
 ): (typeof exsurge.language)[keyof typeof exsurge.language] {
   if (code === "latin") return exsurge.language.latin;
   return exsurge.language.swedish;
+}
+
+/**
+ * A score built here rather than by exsurge, so its annotation is in place
+ * before layout runs.
+ *
+ * This is the one thing `createPlayableChant` cannot be told: it constructs the
+ * `ChantScore` from the gabc itself, and `annotation` is read during layout, so
+ * the score handed to `onReady` is already too late to set it on. exsurge takes
+ * a prebuilt score for exactly this (vagdur/exsurge#15) — construction is the
+ * two lines it would have run anyway, and everything after it is still theirs.
+ */
+function annotatedScore(
+  ctxt: exsurge.ChantContext,
+  source: string,
+  annotation: string,
+  useDropCap: boolean,
+): exsurge.ChantScore {
+  const score = new exsurge.ChantScore(
+    ctxt,
+    exsurge.Gabc.createMappingsFromSource(ctxt, source),
+    useDropCap,
+  );
+  score.annotation = new exsurge.Annotation(ctxt, annotation);
+  return score;
 }
 
 /**
@@ -150,18 +184,24 @@ export function renderScore(
   ctxt.defaultLanguage = exsurgeLanguage(spec.language ?? options?.language);
   ctxt.noteIdPrefix = options?.noteIdPrefix ?? `note-${spec.id}-`;
 
+  // exsurge defaults this to true, which suits a book opening rather than the
+  // score fragments an hour is made of.
+  const useDropCap = options?.useDropCap ?? false;
+
   try {
     exsurge.createPlayableChant(
       ctxt,
-      source,
+      options?.annotation
+        ? annotatedScore(ctxt, source, options.annotation, useDropCap)
+        : source,
       element,
       {
         ...(pending ?? {}),
-        // Explicit after the spread: these have dedicated options, and exsurge
-        // defaults useDropCap to true, which suits a book opening rather than
-        // the score fragments an hour is made of.
+        // Explicit after the spread: these have dedicated options. useDropCap
+        // is ignored when the second argument is a prebuilt score, which is
+        // why annotatedScore takes it too.
         autoResize: options?.autoResize ?? true,
-        useDropCap: options?.useDropCap ?? false,
+        useDropCap,
         // Layout failures used to hang silently; exsurge now reports them here
         // (vagdur/exsurge#13). Reject ready and stamp data-loth-score-error.
         onError: (error) => {
