@@ -2,6 +2,8 @@
  * Build an AbstractVespers (first or second) for a given liturgical day.
  */
 
+import { addDays } from "../calendar/computus.js";
+import { getSundayCycle } from "../calendar/liturgicalYear.js";
 import type { LiturgicalDay } from "../types/calendar.js";
 import type { PsalterWeek } from "../types/psalter.js";
 import type { AbstractVespers, PsalmSlot, SlotSource, SlotSourceDirect } from "../types/hours.js";
@@ -13,13 +15,26 @@ import {
 } from "./resolver.js";
 import { makeCtx, makeFlags, psalmSlot } from "./shared.js";
 
+/**
+ * First Vespers is of tomorrow. On the Saturday before Advent the eve still
+ * belongs to the ending liturgical year, so `day.sundayCycle` can disagree
+ * with the Sunday being celebrated (office-spec §7). Use tomorrow's cycle for
+ * gospel-canticle antiphon fields and melody condition matching on that hour.
+ */
+function dayForVespers(day: LiturgicalDay, isFirstVespers: boolean): LiturgicalDay {
+  if (!isFirstVespers) return day;
+  const sundayCycle = getSundayCycle(addDays(day.date, 1));
+  return sundayCycle === day.sundayCycle ? day : { ...day, sundayCycle };
+}
+
 export function buildVespers(
   day: LiturgicalDay,
   isFirstVespers: boolean,
 ): AbstractVespers {
-  const ctx = makeCtx(day);
-  const { celebration: c, psalterWeek: w, psalterDay: d } = day;
-  const flags = makeFlags(day, false);
+  const officeDay = dayForVespers(day, isFirstVespers);
+  const ctx = makeCtx(officeDay);
+  const { celebration: c, psalterWeek: w, psalterDay: d } = officeDay;
+  const flags = makeFlags(officeDay, false);
   const vespersField = isFirstVespers ? "firstVespers" : "vespers";
 
   // First Vespers of a Sunday is stored on the SUNDAY's psalter entry
@@ -124,7 +139,7 @@ export function buildVespers(
                 {
                   kind: "seasonal" as const,
                   key: c.seasonalKey,
-                  field: `${vespersField}.magnificatAntiphonYr${day.sundayCycle}`,
+                  field: `${vespersField}.magnificatAntiphonYr${officeDay.sundayCycle}`,
                 },
                 {
                   kind: "seasonal" as const,
@@ -141,7 +156,7 @@ export function buildVespers(
         ctx,
         `${vespersField}.magnificatAntiphon`,
         "vespers.magnificatAntiphon",
-        day.sundayCycle,
+        officeDay.sundayCycle,
       );
   const intercessions: SlotSource = isSundayFirstVespers
     ? fvPsalterSrc("intercessions")
@@ -161,7 +176,7 @@ export function buildVespers(
   return {
     kind: "vespers",
     isFirstVespers,
-    liturgicalDay: day,
+    liturgicalDay: officeDay,
     flags,
     hymnRef: hymn,
     psalmSlots,
