@@ -63,6 +63,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:fixtures:update": "cross-env UPDATE_FIXTURES=1 vitest run tests/integration",
+    "test:fixtures:compile": "vitest run --config vitest.fixtures-compile.config.ts",
     "test:fixtures:compile-pdf": "cross-env COMPILE_FIXTURE_PDF=1 vitest run --config vitest.fixtures-pdf.config.ts",
     "generate:data": "npm run build && node scripts/generate-data.mjs",
     "validate:data": "npm run build && node scripts/validate-data.mjs",

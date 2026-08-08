@@ -4,6 +4,7 @@
  * The only locale is `en`: placeholder text with invented melodies, which is
  * what puts the sibling `.gabc` scores in the fixtures.
  * Regenerate goldens (`.tex`, `.gabc`): `npm run test:fixtures:update`.
+ * Compile goldens with LuaLaTeX: `npm run test:fixtures:compile`.
  * Refresh reference PDFs: `npm run test:fixtures:compile-pdf`.
  */
 
