@@ -16,6 +16,7 @@
 import * as exsurge from "@vagdur/exsurge";
 import { expect, test } from "vitest";
 import { HtmlAssembler, type HtmlOutputMode } from "../../src/assemblers/htmlAssembler.js";
+import type { AssembledHour } from "../../src/assemblers/tree.js";
 import { eveningVespers } from "../../src/hours/index.js";
 import {
   buildSampleAbstractDay, loadSampleRepo, SAMPLE_LOCALES,
@@ -25,7 +26,7 @@ import type { AbstractDay } from "../../src/types/hours.js";
 
 const HOURS: ReadonlyArray<{
   name: string;
-  render: (a: HtmlAssembler, day: AbstractDay, repo: DataRepository) => string;
+  render: (a: HtmlAssembler, day: AbstractDay, repo: DataRepository) => AssembledHour;
 }> = [
   { name: "Office of Readings", render: (a, d, r) => a.assembleOfficeOfReadings(d.officeOfReadings, r) },
   { name: "Lauds", render: (a, d, r) => a.assembleLauds(d.lauds, r) },
@@ -100,7 +101,7 @@ test.each(matrix)(
   async ({ locale, mode, render }) => {
     const repo = await loadSampleRepo(locale);
     const assembler = new HtmlAssembler({ outputMode: mode });
-    const html = render(assembler, buildSampleAbstractDay(), repo);
+    const html = render(assembler, buildSampleAbstractDay(), repo).html();
     const mounts = extractMounts(html);
 
     // The markup and the side-channel must agree: this is what proves the

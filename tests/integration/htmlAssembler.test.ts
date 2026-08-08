@@ -10,6 +10,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { expect, test } from "vitest";
 import { HtmlAssembler, type HtmlOutputMode } from "../../src/assemblers/htmlAssembler.js";
+import type { AssembledHour } from "../../src/assemblers/tree.js";
 import { eveningVespers } from "../../src/hours/index.js";
 import {
   buildSampleAbstractDay, loadSampleRepo, SAMPLE_LOCALES,
@@ -22,7 +23,7 @@ import type { AbstractDay } from "../../src/types/hours.js";
 type Case = {
   name: string;
   jobName: string;
-  render: (assembler: HtmlAssembler, day: AbstractDay, repo: DataRepository) => string;
+  render: (assembler: HtmlAssembler, day: AbstractDay, repo: DataRepository) => AssembledHour;
 };
 
 const cases: Case[] = [
@@ -87,7 +88,8 @@ test.each(matrix)("[$locale/$mode] $name HTML matches fixture", async ({
   const repo = await loadSampleRepo(locale);
   const abs = buildSampleAbstractDay();
   const assembler = new HtmlAssembler({ outputMode: mode });
-  const html = normalizeLf(render(assembler, abs, repo));
+  const assembled = render(assembler, abs, repo);
+  const html = normalizeLf(assembled.html());
   const scores = assembler.getScores();
   const fixturePath = htmlFixturePath(jobName, locale, suffix);
 

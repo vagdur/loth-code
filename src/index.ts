@@ -56,6 +56,21 @@ export {
 
 // --- Layer 3: the assemblers ----------------------------------------------
 export { HtmlAssembler } from "./assemblers/htmlAssembler.js";
+/**
+ * The document tree HtmlAssembler produces. A host that renders this itself
+ * gets each score as data rather than as markup to be found afterwards;
+ * `renderHtml` is the same output as a string, for the static path.
+ */
+export { collectScores, renderHtml } from "./assemblers/tree.js";
+export type {
+  AssembledHour,
+  LothElement,
+  LothFragment,
+  LothNode,
+  LothScoreNode,
+  LothText,
+  ScoreSpec,
+} from "./assemblers/tree.js";
 export { PlainTextAssembler } from "./assemblers/plainText.js";
 export { TexAssembler } from "./assemblers/texAssembler.js";
 export { assembleOrdoDocument } from "./assemblers/ordoTex.js";

@@ -33,7 +33,7 @@ import { loadRepository, loadSanctoralRegistry } from "@vagdur/loth/node";
 const repo     = await loadRepository("./data", "sv");
 const registry = await loadSanctoralRegistry("./data", "sv");
 
-const html = withSanctoralRegistry(registry, () => {
+const hour = withSanctoralRegistry(registry, () => {
   const day = buildDay(resolveDay(utcDate(2026, 5, 10), "general"),
                        defaultContext("general"));
   return new HtmlAssembler({ outputMode: "hybrid", fragmentOnly: true })
@@ -41,19 +41,30 @@ const html = withSanctoralRegistry(registry, () => {
 });
 ```
 
-Then mount the scores, client-side, so they render and play:
+`assemble*` returns the hour as a tree, the scores it contains, and `html()`
+for the markup. A host that walks the tree gets each score as data — id, GABC,
+language — rather than having to find it in markup afterwards, which is what
+lets a framework render an hour without the renderer and the framework
+fighting over the same DOM.
+
+Then render the scores, client-side, so they play:
 
 ```js
-import { mountScores } from "@vagdur/loth/browser";
-container.innerHTML = html;
-const scores = await Promise.all(mountScores(container).map((s) => s.ready));
+import { renderScore } from "@vagdur/loth/browser";
+
+// `element` is yours: renderScore fills it and never looks outside it.
+const handles = hour.scores.map((spec) => renderScore(elementFor(spec.id), spec));
+await Promise.all(handles.map((h) => h.ready));
+
+handles.forEach((h) => h.setPlayback({ volume: 0.5 }));  // safe before ready too
+handles.forEach((h) => h.destroy());                     // releases audio + listeners
 ```
 
 | Entry point | What it holds |
 | --- | --- |
-| `@vagdur/loth` | Calendar, hours, assemblers. No Node built-ins. |
+| `@vagdur/loth` | Calendar, hours, assemblers, the document tree. No Node built-ins. |
 | `@vagdur/loth/node` | Reading the data tree, exsurge's asset paths, LaTeX compilation. |
-| `@vagdur/loth/browser` | `mountScores` — the only DOM-touching code. |
+| `@vagdur/loth/browser` | `renderScore` — the only DOM-touching code. |
 | `@vagdur/loth/loth.css` | Presentation for the emitted class names. Ships with `ExsurgeChar.otf` beside it, which the `@font-face` expects. |
 
 `withSanctoralRegistry` scopes the ambient calendar around a synchronous
