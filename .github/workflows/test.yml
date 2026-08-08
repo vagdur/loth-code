@@ -1,0 +1,54 @@
+# Run the suite on every pull request into main.
+#
+# Merging into main auto-publishes (see publish.yml), so this is the last point
+# at which a break can be caught before it becomes an irrevocable npm release.
+# The two workflows deliberately run the same `npm test`; if this passes and
+# publish.yml's test step then fails, the difference is the merge itself.
+
+name: Test
+
+on:
+  pull_request:
+    branches: [main]
+
+# Superseded runs are worth cancelling here — unlike a publish, nothing is
+# half-finished when a test run dies.
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # `pretest` runs validate:data and check:worker-safe, both of which build
+      # first — so this covers the typecheck, the data tree and the Worker-safety
+      # boundary as well as the tests themselves.
+      #
+      # The LuaLaTeX fixture compiles are a separate vitest config and are not
+      # part of this suite; they need a TeX toolchain plus a matching gregorio
+      # binary, so they stay a local concern.
+      - name: Test
+        run: npm test
+
+      # Its own step rather than a lifecycle hook: as a hook this is reachable
+      # only through `npm publish`, where `--ignore-scripts` would skip it.
+      # Shipping a data directory would be someone else's copyrighted text, so
+      # the check wants a path that cannot be bypassed. Self-contained — the
+      # `npm pack --dry-run` inside it triggers `prepack`, which builds.
+      - name: Assert the tarball is code-only
+        run: node scripts/assert-no-data-in-tarball.mjs
