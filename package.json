@@ -69,7 +69,7 @@
     "build:calendars": "python scripts/build-sanctoral-calendars.py"
   },
   "dependencies": {
-    "@vagdur/exsurge": "^1.28.0",
+    "@vagdur/exsurge": "^1.29.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
