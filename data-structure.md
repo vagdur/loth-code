@@ -531,6 +531,13 @@ SeasonalProperDay {
     short_reading?:     ShortReading
     short_responsory?:  ShortResponsory
     benedictus_antiphon?: Antiphon
+    // Sunday gospel-canticle antiphon by lectionary Year A/B/C (editio typica
+    // altera; office-spec §7). Assembly selects via LiturgicalDay.sunday_cycle
+    // before falling back to the plain field — same pattern as
+    // biblical_reading_yr1 / _yr2 above.
+    benedictus_antiphon_yr_a?: Antiphon
+    benedictus_antiphon_yr_b?: Antiphon
+    benedictus_antiphon_yr_c?: Antiphon
     intercessions?:     Intercessions
     concluding_prayer?: ConcludingPrayer
   }
@@ -551,6 +558,10 @@ VespersSlot {
   short_reading?:     ShortReading
   short_responsory?:  ShortResponsory
   magnificat_antiphon?: Antiphon
+  // Sunday gospel-canticle antiphon by lectionary Year A/B/C (see lauds above).
+  magnificat_antiphon_yr_a?: Antiphon
+  magnificat_antiphon_yr_b?: Antiphon
+  magnificat_antiphon_yr_c?: Antiphon
   intercessions?:     Intercessions
   concluding_prayer?: ConcludingPrayer
 }
@@ -740,7 +751,7 @@ LiturgicalDay {
   psalter_day:   "Sunday" | "Monday" | "Tuesday" | "Wednesday"
                 | "Thursday" | "Friday" | "Saturday"
   reading_year:  "I" | "II"     // for two-year OoR cycle
-  sunday_cycle:  "A" | "B" | "C" // Sunday gospel lectionary cycle (melody variants)
+  sunday_cycle:  "A" | "B" | "C" // Sunday gospel lectionary cycle (gospel-canticle antiphon texts + melody variants)
   ot_week_number: int           // 1–34, for OoR reading selection in OT
 
   // What is celebrated on this day:
@@ -812,12 +823,12 @@ For each slot in each Hour, the assembly algorithm applies the following fallbac
 | **Lauds / Vespers hymn** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Psalter | Seasonal proper → Psalter |
 | **Lauds psalmody** | Sunday Week I (fixed) | Sunday Week I | Psalter (ferial), unless saint has proper antiphons | Psalter |
 | **Lauds short reading** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Seasonal proper → Psalter | Seasonal proper → Psalter |
-| **Benedictus antiphon** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Seasonal proper → Psalter | Seasonal proper → Psalter |
+| **Benedictus antiphon** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Seasonal proper (cycle → plain) → Psalter | Seasonal proper (cycle → plain) → Psalter |
 | **Lauds intercessions** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Psalter | Seasonal proper → Psalter |
 | **Lauds concluding prayer** | Saint proper → Common | Saint proper → Common | Saint proper (always) | Seasonal proper → Psalter |
 | **1st Vespers psalmody** | Laudate series (Ps 112, 116, 134, 145, 146, 147); NT canticle from proper | — (no 1st Vespers) | — | Psalter |
 | **2nd Vespers psalmody** | Saint proper → Common | Saint proper → Common | Psalter | Psalter |
-| **Magnificat antiphon** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Seasonal proper → Psalter | Seasonal proper → Psalter |
+| **Magnificat antiphon** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Seasonal proper (cycle → plain) → Psalter | Seasonal proper (cycle → plain) → Psalter |
 | **Vespers short reading** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Seasonal proper → Psalter | Seasonal proper → Psalter |
 | **Vespers intercessions** | Saint proper → Common | Saint proper → Common | Saint proper → Common → Psalter | Seasonal proper → Psalter |
 | **Vespers concluding prayer** | Saint proper → Common | Saint proper → Common | Saint proper (always) | Seasonal proper → Psalter (§6) |
@@ -943,6 +954,7 @@ back to the BVM common.
 
 - **Particular calendars** — `calendars/local/<id>.yaml` overlays on the General Roman Calendar (additions, rank/date overrides, suppressions). The `calendar_id` in `AssemblyContext` selects the merged sanctoral schedule. Optional `proper_of_saints` texts use the same saint `id`.
 - **Two-year supplement** — `proper_of_seasons` entries carry `_yr1` / `_yr2` variants for the optional two-year biblical reading cycle. The assembly algorithm selects based on `LiturgicalDay.reading_year`.
+- **Three-year gospel-canticle antiphons** — seasonal `lauds` / `vespers` / `first_vespers` slots may carry `benedictus_antiphon_yr_a|b|c` and `magnificat_antiphon_yr_a|b|c` for the Sunday lectionary cycle (*Liturgia Horarum* editio typica altera). Assembly selects via `LiturgicalDay.sunday_cycle` before the plain antiphon field.
 - **Optional Lectionary** — an additional collection of patristic reading alternatives per day, structured identically to the `patristic_reading` fields. The user/implementer selects whether to use the standard assignment or the Optional Lectionary reading.
 - **Votive Offices** — a small collection of `VotiveOffice` entries (e.g., for the BVM, for peace, for the dead), each structured as a `CommonVariant`. Subject to the day-class restrictions of §spec-§18.
 - **Vigil Canticles Appendix** — a collection of canticle sets keyed by `SeasonalDayKey` or solemnity, used when the vigil extension (§spec-§3.3) is celebrated.

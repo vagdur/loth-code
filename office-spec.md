@@ -257,6 +257,7 @@ On Saturdays in Ordinary Time on which optional memorias are permitted, the opti
   - Seasonal Office: from the Proper of Season if any, else from the current psalter.
   - Solemnities and feasts: from the Proper, else from the Common.
   - Memorias (if not having proper antiphons): from the Common, or from the current ferial day.
+  - **Three-year Sunday cycle** (*Liturgia Horarum* editio typica altera, 1985–87): on Sundays (and other days that take the Sunday gospel), the Proper of Season may assign a distinct gospel-canticle antiphon for lectionary Years A, B, and C. When cycle-specific texts are present, the antiphon of the current Sunday cycle is used; otherwise the single (non-cycled) proper antiphon remains the fallback.
 - **Eastertide**: *Alleluia* is appended to every antiphon, unless it clashes with the antiphon's meaning.
 
 ---
@@ -439,12 +440,13 @@ Given a date, identify the contents of the Office as follows:
 2. **Determine the psalter week**:
    - Anchor: 1st Sunday of Advent / 1st Sunday of Ordinary Time / 1st Sunday of Lent / Easter Sunday begin Week I; cycle resumes from the week indicated in the Proper of Season after Pentecost.
 3. **Determine the year of the biblical reading cycle** (Year I or II) if using the two-year supplement.
-4. **For each Hour**:
+4. **Determine the Sunday gospel lectionary cycle** (Year A, B, or C) for gospel-canticle antiphons that vary by cycle (§7).
+5. **For each Hour**:
    - Apply the structural rules of §3 for that Hour.
    - Choose each variable element (hymn, antiphons, psalmody, readings, responsories, intercessions, concluding prayer, Marian antiphon, etc.) by:
      - First, the rule for the day's class (§5).
      - Where a "proper" is called for and absent, fall back to the relevant Common (224).
      - Where a season-specific variation applies (Eastertide *Alleluia*, Lent omission of *Alleluia* in the introductory verse, Friday penitential character), apply it.
    - Apply the special joining rules (§15) if joining with Mass or another Hour.
-5. **Apply Triduum (§16) and Christmas (§17) specifics where relevant.**
-6. **Apply day-of-week / season-specific psalter rules** (§10, §11) — e.g., gradual psalms at Daytime Prayer on solemnities, Laudate at First Vespers, Sunday Week I at Lauds of solemnities, complementary psalmody at Daytime Prayer when more than one Hour is said.
+6. **Apply Triduum (§16) and Christmas (§17) specifics where relevant.**
+7. **Apply day-of-week / season-specific psalter rules** (§10, §11) — e.g., gradual psalms at Daytime Prayer on solemnities, Laudate at First Vespers, Sunday Week I at Lauds of solemnities, complementary psalmody at Daytime Prayer when more than one Hour is said.
