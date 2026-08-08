@@ -36,14 +36,14 @@ jobs:
       id-token: write # mint the short-lived npm token via OIDC
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # `npm version` needs somewhere to commit to, and the push at the end
           # needs the branch, not the detached merge commit.
           ref: main
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
