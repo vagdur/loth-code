@@ -32,6 +32,13 @@ jobs:
           node-version: 22
           cache: npm
 
+      # The same npm publish.yml releases with. Without this the two workflows
+      # run different majors, and a pull request cannot see a break that only
+      # the release path would hit — which is exactly how npm 12's changed
+      # `npm pack --json` shape reached main green and failed on publish.
+      - name: Match the npm publish.yml uses
+        run: npm install -g npm@12
+
       - name: Install
         run: npm ci
 
