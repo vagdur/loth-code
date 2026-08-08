@@ -2,6 +2,8 @@
  * Compile every golden `.tex` fixture with LuaLaTeX and assert success.
  * Score-bearing fixtures reuse `tests/fixtures/.compile-cache/` so unchanged
  * GABC is not recompiled on every test run.
+ *
+ * Excluded from `npm test` — run with `npm run test:fixtures:compile`.
  */
 
 import { mkdirSync, readdirSync, readFileSync } from "fs";

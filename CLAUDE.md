@@ -32,16 +32,18 @@ npx vitest run tests/unit/computus.test.ts
 | `npm run validate:data` | Structural check of `data/en/`. Takes `-- --fix` for the repairs it knows how to make. |
 | `npm run test:watch` | Vitest watch. |
 | `npm run test:fixtures:update` | Rewrite the golden `.tex` / `.html` / `.gabc` fixtures (`UPDATE_FIXTURES=1`, integration tests only). |
+| `npm run test:fixtures:compile` | Compile every golden `.tex` with LuaLaTeX (+ Gregorio for scores). Separate config, excluded from `npm test`. |
 | `npm run test:fixtures:compile-pdf` | Refresh reference PDFs; separate config, excluded from `npm test`. |
 | `npm run serve:hours` | Local harness at `localhost:5173` for eyeballing the HTML output (`date`, `hour`, `locale`, `mode`, `calendar` query params). Runs against `dist/`, so build first — the script does. |
 | `npm run generate:data -- --locale xx` | Seed the shape of a new locale tree. |
 | `npm run build:calendars` | Python; regenerates the sanctoral YAML from `scripts/grc_sanctoral_data.py`. Needs PyYAML. |
 
-`npm test` includes LaTeX integration tests. They need `lualatex --shell-escape`
-plus a `gregorio` binary whose major.minor matches the installed `gregoriotex`;
-when that toolchain is missing the compile cases **skip** (probed once by
-`tests/helpers/gregorioAutocompile.ts`) rather than fail, and the golden text
-comparisons still run.
+`npm test` compares golden `.tex` / `.html` / `.gabc` text only — it does **not**
+invoke `lualatex`. The LuaLaTeX (+ Gregorio) compile suite lives behind
+`npm run test:fixtures:compile`. That needs `lualatex --shell-escape` plus a
+`gregorio` binary whose major.minor matches the installed `gregoriotex`; when
+the toolchain is missing, score-bearing cases **skip** (probed once by
+`tests/helpers/gregorioAutocompile.ts`) rather than fail.
 
 ## The three layers
 

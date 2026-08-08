@@ -1,5 +1,6 @@
 /**
  * Regenerate goldens: `npm run test:fixtures:update` (sets UPDATE_FIXTURES=1).
+ * Compile goldens with LuaLaTeX: `npm run test:fixtures:compile`.
  * Refresh reference PDFs: `npm run test:fixtures:compile-pdf`.
  */
 

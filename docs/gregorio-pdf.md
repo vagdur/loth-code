@@ -47,19 +47,25 @@ Defined in `loth.sty` and emitted from [`liturgicalTex.ts`](../src/assemblers/li
 
 ## Integration tests (LaTeX + PDF)
 
-From the repository root, `npm test` runs Vitest integration tests. For each hour (and the full-day document) one test assembles the sample `.tex` into a temporary directory, copies `loth.sty` beside it, and runs **LuaLaTeX** (with `--shell-escape`, needed for GregorioTeX auto-compilation) twice there.
+From the repository root, `npm test` runs Vitest integration tests that compare assembled TeX to golden fixtures. It does **not** invoke LuaLaTeX. To compile every golden `.tex` with **LuaLaTeX** (with `--shell-escape`, needed for GregorioTeX auto-compilation) and assert success:
 
-The fixtures cover the one locale in the repository: `en`, placeholder text whose invented melodies (`data/en/melodies/sample.yaml`) carry GABC, so the fixtures also exercise the `filecontents` → GregorioTeX score path. Golden `.tex` and reference `.pdf` files live under [`tests/fixtures/`](../tests/fixtures/), named `<hour>-<locale>-2026-05-10-general.{tex,pdf}` (for example `lauds-en-…`, `day-en-…`), with `-plain`/`-scored` suffixes for the non-hybrid output modes. The suite compares generated TeX to the fixture text; it does **not** byte-compare PDFs, but when you refresh goldens you can commit updated PDFs for human review.
+```powershell
+npm run test:fixtures:compile
+```
 
-The score-bearing **compile** tests need a working GregorioTeX toolchain: `lualatex --shell-escape` **and** a `gregorio` binary whose major.minor matches the installed `gregoriotex` package. When that isn't available (e.g. a stale MiKTeX whose `gregorio` binary lags the package), those cases **skip** rather than fail; all golden `.tex` comparisons still run. The skip is decided by a one-off probe (`tests/helpers/gregorioAutocompile.ts`).
+That suite copies `loth.sty` beside each fixture and runs LuaLaTeX (often twice). Score-bearing fixtures reuse `tests/fixtures/.compile-cache/` so unchanged GABC is not recompiled every run.
 
-To rewrite the TeX fixtures and copy freshly built PDFs into `tests/fixtures/`:
+The fixtures cover the one locale in the repository: `en`, placeholder text whose invented melodies (`data/en/melodies/sample.yaml`) carry GABC, so the fixtures also exercise the `filecontents` → GregorioTeX score path. Golden `.tex` and reference `.pdf` files live under [`tests/fixtures/`](../tests/fixtures/), named `<hour>-<locale>-2026-05-10-general.{tex,pdf}` (for example `lauds-en-…`, `day-en-…`), with `-plain`/`-scored` suffixes for the non-hybrid output modes. The default suite compares generated TeX to the fixture text; it does **not** byte-compare PDFs. Refresh committed PDF previews with `npm run test:fixtures:compile-pdf`.
+
+The score-bearing **compile** tests need a working GregorioTeX toolchain: `lualatex --shell-escape` **and** a `gregorio` binary whose major.minor matches the installed `gregoriotex` package. When that isn't available (e.g. a stale MiKTeX whose `gregorio` binary lags the package), those cases **skip** rather than fail; all golden `.tex` comparisons still run under `npm test`. The skip is decided by a one-off probe (`tests/helpers/gregorioAutocompile.ts`).
+
+To rewrite the TeX (and HTML / GABC) fixtures:
 
 ```powershell
 npm run test:fixtures:update
 ```
 
-That requires LuaLaTeX + Gregorio on `PATH`, same as a normal `npm test` on a machine that runs the compile test.
+That does not require LuaLaTeX. To also refresh reference PDFs afterward, run `npm run test:fixtures:compile-pdf` with LuaLaTeX + Gregorio on `PATH`.
 
 ## Install LuaLaTeX + Gregorio (Windows)
 
@@ -77,4 +83,4 @@ That requires LuaLaTeX + Gregorio on `PATH`, same as a normal `npm test` on a ma
 
 - The plain-text placeholder `[Benedictus text — Lk 1:68-79]` matches [`PlainTextAssembler`](../src/assemblers/plainText.ts) until the Gospel canticle text is wired into data.
 - GABC is written literally into `filecontents` blocks; avoid placing the substring `\end{filecontents}` inside real GABC sources.
-- CI or machines without TeX cannot pass `npm test` as long as the compile integration tests are enabled; use a TeX-capable runner or adjust those tests for your pipeline.
+- Machines without TeX can still pass `npm test`. Run `npm run test:fixtures:compile` (or `test:fixtures:compile-pdf`) on a TeX-capable machine when you change generated TeX, `loth.sty`, or Gregorio-related tooling.
