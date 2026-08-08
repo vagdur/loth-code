@@ -26,19 +26,6 @@ import type { ScoreSpec } from "../assemblers/tree.js";
 
 export type { ScoreSpec };
 
-/**
- * How long layout may take before we call it failed.
- *
- * exsurge lays out across `setTimeout` chunks, so a throw inside one is not
- * catchable from here and simply means the completion callback never fires. It
- * also retries indefinitely, every 100ms, when it cannot get a sane text
- * measurement. Both look the same from outside — a permanently empty element
- * and no error anywhere — which is precisely how a blank score stayed invisible
- * before. A watchdog turns either into a rejected `ready` and a
- * `data-loth-score-error` attribute the stylesheet already knows how to show.
- */
-const LAYOUT_TIMEOUT_MS = 15_000;
-
 export interface RenderOptions {
   /**
    * exsurge player options, forwarded verbatim: `speed`, `tuning`,
@@ -62,10 +49,11 @@ export interface RenderOptions {
    * document invalid and anything addressing a note by id ambiguous.
    */
   noteIdPrefix?: string;
-  /** Called when this score fails to lay out. */
+  /**
+   * Called when layout fails. Wired to exsurge's `onError` (vagdur/exsurge#13);
+   * also stamps `data-loth-score-error` and rejects `ready`.
+   */
   onError?: (error: Error, element: HTMLElement) => void;
-  /** Override the layout watchdog. Chiefly for tests. */
-  layoutTimeoutMs?: number;
 }
 
 /** A rendered score. Everything the host needs, and nothing it must look up. */
@@ -125,7 +113,6 @@ export function renderScore(
   let player: exsurge.ChantPlayer | null = null;
   let pending: Partial<exsurge.ChantPlayerOptions> | null = options?.player ?? null;
   let destroyed = false;
-  let watchdog: ReturnType<typeof setTimeout> | undefined;
 
   const fail = (cause: unknown): void => {
     if (destroyed) return;
@@ -150,7 +137,6 @@ export function renderScore(
     destroy() {
       if (destroyed) return;
       destroyed = true;
-      if (watchdog !== undefined) clearTimeout(watchdog);
       // Also removes the window resize listener createPlayableChant installed.
       player?.destroy();
       player = null;
@@ -162,15 +148,7 @@ export function renderScore(
   // async, so scores must not share one.
   const ctxt = new exsurge.ChantContext();
   ctxt.defaultLanguage = exsurgeLanguage(spec.language ?? options?.language);
-  // Real at runtime (Exsurge.Drawing.js sets it in the constructor) but absent
-  // from exsurge's declarations — see vagdur/exsurge#15.
-  (ctxt as exsurge.ChantContext & { noteIdPrefix: string }).noteIdPrefix =
-    options?.noteIdPrefix ?? `note-${spec.id}-`;
-
-  watchdog = setTimeout(() => {
-    watchdog = undefined;
-    fail(new Error(`exsurge did not finish laying out "${spec.id}" in time`));
-  }, options?.layoutTimeoutMs ?? LAYOUT_TIMEOUT_MS);
+  ctxt.noteIdPrefix = options?.noteIdPrefix ?? `note-${spec.id}-`;
 
   try {
     exsurge.createPlayableChant(
@@ -184,12 +162,13 @@ export function renderScore(
         // the score fragments an hour is made of.
         autoResize: options?.autoResize ?? true,
         useDropCap: options?.useDropCap ?? false,
+        // Layout failures used to hang silently; exsurge now reports them here
+        // (vagdur/exsurge#13). Reject ready and stamp data-loth-score-error.
+        onError: (error) => {
+          fail(error);
+        },
       },
       (ready_) => {
-        if (watchdog !== undefined) {
-          clearTimeout(watchdog);
-          watchdog = undefined;
-        }
         // Destroyed while laying out: the element is no longer ours, so let go
         // of what exsurge just built rather than leaving it running.
         if (destroyed) {
@@ -197,16 +176,14 @@ export function renderScore(
           return;
         }
         player = ready_;
+        // Re-applies host player options, including a host-supplied onError for
+        // subsequent playback failures (layout already went through ours above).
         if (pending) player.setOptions(pending);
         pending = null;
         resolveReady(player);
       },
     );
   } catch (cause) {
-    if (watchdog !== undefined) {
-      clearTimeout(watchdog);
-      watchdog = undefined;
-    }
     fail(cause);
   }
 
