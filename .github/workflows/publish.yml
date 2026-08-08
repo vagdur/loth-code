@@ -1,0 +1,161 @@
+# Bump the patch version and publish to npm on every push to main.
+#
+# npm publishes are irrevocable, so the whole test suite gates the publish and
+# the version bump is only written back to main *after* npm has accepted the
+# tarball. A failed publish therefore leaves main untouched and the run is safe
+# to retry; the version is only ever burned on a release that actually shipped.
+#
+# Re-runs must be safe too. Checkout is pinned to `github.sha` (the original
+# triggering commit), not the live tip of main: after a successful publish and
+# bump push but a failed tag push, main already carries the new version, and
+# checking out that tip would bump and publish again. Publish and the final
+# git push are likewise idempotent — a re-run skips work that already landed
+# and only repairs what is still missing (typically the tag).
+#
+# The bump commit carries `[skip ci]` so it cannot trigger this workflow again.
+# That marker also works by hand: a commit whose message contains `[skip ci]`
+# lands on main without releasing.
+#
+# Authentication is npm trusted publishing (OIDC) — there is no npm token in
+# this repository. See the Trusted Publisher setup note at the bottom of this
+# file.
+
+name: Publish to npm
+
+on:
+  push:
+    branches: [main]
+
+# Queue runs rather than cancelling them: a cancelled run could be one that had
+# already published but not yet pushed its bump commit.
+concurrency:
+  group: publish-npm
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Never fire from a fork that happens to have a `main`.
+    if: github.repository == 'vagdur/loth-code'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # push the bump commit and its tag
+      id-token: write # mint the short-lived npm token via OIDC
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The commit that triggered this run, not the live tip of main. On a
+          # re-run `github.sha` is unchanged; `ref: main` would not be, and
+          # would let a partial success (publish + bump, missing tag) burn a
+          # second npm version. Detached HEAD is fine: `npm version` is
+          # `--no-git-tag-version`, and the final step pushes `HEAD:main`.
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm >= 11.5.1; Node 22 still bundles npm 10.
+      - name: Use an npm that can do OIDC
+        run: npm install -g npm@latest
+
+      - name: Install
+        run: npm ci
+
+      # `pretest` runs validate:data and check:worker-safe, both of which build
+      # first. The LuaLaTeX fixture compiles are a separate config and are not
+      # part of this suite, so no TeX toolchain is needed here.
+      - name: Test
+        run: npm test
+
+      - name: Bump the patch version
+        id: bump
+        run: |
+          npm version patch --no-git-tag-version
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Releasing v$version"
+
+      # `prepack` builds, re-runs check:worker-safe and stages the exsurge font;
+      # `prepublishOnly` asserts the tarball is code-only. Neither is a
+      # formality — see scripts/assert-no-data-in-tarball.mjs.
+      #
+      # Skip when the version is already on the registry so a re-run after a
+      # successful publish (but failed git push) only repairs git state.
+      - name: Publish
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          if npm view "@vagdur/loth@$VERSION" version >/dev/null 2>&1; then
+            echo "v$VERSION is already on npm — skipping publish (likely a re-run)"
+          else
+            npm publish
+          fi
+
+      - name: Push the bump commit and tag
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin main --tags
+
+          release_commit="$(
+            git log origin/main --format=%H --grep="^Release v${VERSION}$" -n 1
+          )"
+
+          if [ -n "$release_commit" ]; then
+            echo "Bump commit for v$VERSION already on main ($release_commit)"
+          else
+            main_version="$(
+              git show origin/main:package.json \
+                | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version"
+            )"
+            if node -e "
+              const [a, b] = process.argv.slice(1).map((v) => v.split('.').map(Number));
+              const cmp = a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+              process.exit(cmp >= 0 ? 0 : 1);
+            " "$main_version" "$VERSION"; then
+              echo "main is already at v$main_version (≥ v$VERSION); not rewriting history"
+            else
+              git commit package.json package-lock.json \
+                -m "Release v$VERSION" \
+                -m "[skip ci]"
+              # main may have moved while the suite ran. Rebasing a bump commit
+              # is safe: it touches only the two version fields.
+              git pull --rebase origin main
+              git push origin HEAD:main
+              git fetch origin main
+              release_commit="$(git rev-parse HEAD)"
+            fi
+          fi
+
+          # Tag after the bump is on main, so the tag cannot land on a commit a
+          # rebase orphaned. Re-runs only create the tag when it is still missing.
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists on origin"
+          elif [ -z "$release_commit" ]; then
+            echo "No release commit for v$VERSION on main; cannot tag" >&2
+            exit 1
+          else
+            git tag -a "v$VERSION" -m "v$VERSION" "$release_commit"
+            git push origin "v$VERSION"
+          fi
+
+# ---------------------------------------------------------------------------
+# One-time setup on npmjs.com, without which the publish step fails:
+#
+#   npmjs.com → @vagdur/loth → Settings → Trusted Publisher → GitHub Actions
+#     Organization or user:  vagdur
+#     Repository:            loth-code
+#     Workflow filename:     publish.yml
+#     Environment:           (leave empty)
+#
+# If main is a protected branch, the final push needs github-actions[bot] to be
+# allowed to push to it, or the run will publish and then fail at the last step.
+# ---------------------------------------------------------------------------
