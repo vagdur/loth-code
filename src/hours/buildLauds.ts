@@ -8,6 +8,7 @@
 import type { AssemblyContext, LiturgicalDay } from "../types/calendar.js";
 import type { AbstractLauds, PsalmSlot } from "../types/hours.js";
 
+import { buildInvitatory } from "./buildInvitatory.js";
 import {
   antiphonRef, concludingPrayerRef, hymnRef, intercessionsRef,
   psalmAssignmentRef, shortReadingRef, shortResponsoryRef, SlotContext,
@@ -73,7 +74,14 @@ export function buildLauds(
   const ctx: SlotContext = makeCtx(day);
 
   const flags = makeFlags(day, false);
-  const suppressIntroVerse = context.oorIsFirstHour && context.laudsFollowsOorDirectly;
+
+  // office-spec §3.1: Invitatory prefixes whichever Hour begins the day.
+  // When OoR is not first, Lauds begins the day (OoR omitted or said earlier).
+  const beginsDay = !context.oorIsFirstHour;
+  // GILH 41: omit Lauds' intro verse when the Invitatory immediately precedes
+  // (either on Lauds itself, or on OoR when Lauds follows directly).
+  const suppressIntroVerse =
+    beginsDay || (context.oorIsFirstHour && context.laudsFollowsOorDirectly);
 
   const hymn = hymnRef(ctx, "lauds.hymns");
   const psalmSlots = buildPsalmSlots(ctx, day);
@@ -107,6 +115,9 @@ export function buildLauds(
     liturgicalDay: day,
     flags,
     suppressIntroVerse,
+    // GILH 35 permits omitting the psalm with antiphon when the Invitatory
+    // precedes Lauds; we always emit the full Invitatory (verse + psalmody).
+    ...(beginsDay ? { invitatory: buildInvitatory(day) } : {}),
     hymnRef: hymn,
     psalmSlots,
     shortReadingRef: shortReading,

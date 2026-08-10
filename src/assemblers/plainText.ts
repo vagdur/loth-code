@@ -9,7 +9,7 @@ import type { DataRepository } from "../data/repository.js";
 import { eveningVespers } from "../hours/index.js";
 import type {
   AbstractCompline, AbstractDay, AbstractDaytimePrayer,
-  AbstractLauds, AbstractOfficeOfReadings, AbstractVespers,
+  AbstractInvitatory, AbstractLauds, AbstractOfficeOfReadings, AbstractVespers,
 } from "../types/hours.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type {
@@ -28,6 +28,7 @@ import {
   formatInvitatoryVersePlain, formatLordsPrayerPlain, formatOorAcclamationPlain,
   formatTeDeumPlain, getComplineResponsory, resolvePsalmText,
 } from "./liturgicalText.js";
+import { resolveInvitatoryPsalmody } from "./invitatory.js";
 import {
   formatAntiphonPlain,
   formatConcludingPrayerPlain,
@@ -79,8 +80,8 @@ export class PlainTextAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, "officeOfReadings", slot);
     const lines: string[] = [hourHeadingPlain(repo, "officeOfReadings")];
 
-    if (hour.isFirstHour) {
-      lines.push(formatInvitatoryVersePlain(repo));
+    if (hour.invitatory) {
+      lines.push(...renderInvitatoryPlain(hour.invitatory, repo, choices));
     } else {
       lines.push(formatIntroductoryVersePlain(repo, flags));
     }
@@ -141,7 +142,11 @@ export class PlainTextAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, "lauds", slot);
     const lines: string[] = [hourHeadingPlain(repo, "lauds")];
 
-    if (!hour.suppressIntroVerse) lines.push(formatIntroductoryVersePlain(repo, flags));
+    if (hour.invitatory) {
+      lines.push(...renderInvitatoryPlain(hour.invitatory, repo, choices));
+    } else if (!hour.suppressIntroVerse) {
+      lines.push(formatIntroductoryVersePlain(repo, flags));
+    }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
     if (hymn) lines.push(renderHymn(hymn));
@@ -326,6 +331,24 @@ export class PlainTextAssembler implements Assembler<string> {
 // ---------------------------------------------------------------------------
 // Rendering helpers
 // ---------------------------------------------------------------------------
+
+/** office-spec §3.1 — invitatory verse + psalm with antiphon. */
+function renderInvitatoryPlain(
+  invitatory: AbstractInvitatory,
+  repo: DataRepository,
+  choices?: DayChoices,
+): string[] {
+  const lines: string[] = [formatInvitatoryVersePlain(repo)];
+  const psalmody = resolveInvitatoryPsalmody(
+    invitatory, repo, invitatory.liturgicalDay, choices,
+  );
+  if (psalmody) {
+    lines.push(renderPsalmAssignment(
+      repo, psalmody.assignment, psalmody.psalmText, invitatory.flags,
+    ));
+  }
+  return lines;
+}
 
 /**
  * Daytime psalmody, honouring the 1-or-3 antiphon rule (GILH 122):

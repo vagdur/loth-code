@@ -86,6 +86,11 @@ export interface AbstractOfficeOfReadings {
   flags: LiturgicalFlags;
   /** If true, the Invitatory precedes; otherwise the introductory verse is used. */
   isFirstHour: boolean;
+  /**
+   * Present when this hour begins the day (office-spec §3.1 / GILH 34–36).
+   * Assemblers emit the invitatory verse and psalm with antiphon before the hymn.
+   */
+  invitatory?: AbstractInvitatory;
   /** Resolved to the specific hymn (night or day series already chosen). */
   hymnRef: SlotSource;
   psalmSlots: [PsalmSlot, PsalmSlot, PsalmSlot];
@@ -109,6 +114,12 @@ export interface AbstractLauds {
   flags: LiturgicalFlags;
   /** Suppressed when the Invitatory immediately precedes Lauds (GILH 41). */
   suppressIntroVerse: boolean;
+  /**
+   * Present when Lauds begins the day — OoR omitted or said earlier
+   * (office-spec §3.1 / GILH 34–36). Assemblers emit the invitatory verse and
+   * psalm with antiphon before the hymn; the introductory verse is omitted.
+   */
+  invitatory?: AbstractInvitatory;
   hymnRef: SlotSource;
   /** [morning psalm, OT canticle, psalm of praise] */
   psalmSlots: [PsalmSlot, PsalmSlot, PsalmSlot];

@@ -5,6 +5,7 @@
 import type { AssemblyContext, LiturgicalDay } from "../types/calendar.js";
 import type { AbstractOfficeOfReadings, PsalmSlot, SlotSource } from "../types/hours.js";
 
+import { buildInvitatory } from "./buildInvitatory.js";
 import {
   biblicalReadingRef, concludingPrayerRef, officeOfReadingsHymnRef,
   patristicReadingRef, psalmAssignmentRef,
@@ -72,11 +73,15 @@ export function buildOfficeOfReadings(
         }
       : undefined;
 
+  const isFirstHour = context.oorIsFirstHour;
+
   return {
     kind: "office_of_readings",
     liturgicalDay: day,
     flags,
-    isFirstHour: context.oorIsFirstHour,
+    isFirstHour,
+    // office-spec §3.1 / GILH 34–36: Invitatory precedes the first Hour.
+    ...(isFirstHour ? { invitatory: buildInvitatory(day) } : {}),
     hymnRef: hymnExplicit,
     psalmSlots,
     versicleRef: versicle,

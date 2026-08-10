@@ -168,6 +168,7 @@ function resolveEvening(date: Date, calendarId: string): EveningContext {
 export function defaultContext(calendarId = "general"): AssemblyContext {
   return {
     daytimeHoursSaid: ["sext"],
+    // Solo default: begin the day with Lauds, so the Invitatory precedes it.
     oorIsFirstHour: false,
     laudsFollowsOorDirectly: false,
     oorSaidAtNight: false,

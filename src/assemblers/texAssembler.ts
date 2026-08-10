@@ -19,7 +19,7 @@ import type { DataRepository } from "../data/repository.js";
 import { eveningVespers } from "../hours/index.js";
 import type {
   AbstractCompline, AbstractDay, AbstractDaytimePrayer,
-  AbstractLauds, AbstractOfficeOfReadings, AbstractVespers,
+  AbstractInvitatory, AbstractLauds, AbstractOfficeOfReadings, AbstractVespers,
 } from "../types/hours.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type {
@@ -39,6 +39,7 @@ import { withGabcHeader } from "./gabcHeader.js";
 import type { DayChoices } from "../types/options.js";
 import type { HourKey } from "../options/slotTable.js";
 import { slotPath } from "../options/slotTable.js";
+import { resolveInvitatoryPsalmody } from "./invitatory.js";
 import {
   texAntiphon,
   texComplineBlessing,
@@ -198,11 +199,11 @@ export class TexAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, "officeOfReadings", slot);
     const body: string[] = [texHourHeading(repo, "officeOfReadings", hour.liturgicalDay)];
 
-    body.push(
-      hour.isFirstHour
-        ? this.texInvitatoryVerseBlock(repo, hour.liturgicalDay, choices)
-        : this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "officeOfReadings"),
-    );
+    if (hour.invitatory) {
+      body.push(...this.texInvitatoryBlocks(hour.invitatory, repo, choices));
+    } else {
+      body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "officeOfReadings"));
+    }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
     if (hymn) body.push(this.texHymnBlock(hymn));
@@ -261,7 +262,9 @@ export class TexAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, "lauds", slot);
     const body: string[] = [texHourHeading(repo, "lauds", hour.liturgicalDay)];
 
-    if (!hour.suppressIntroVerse) {
+    if (hour.invitatory) {
+      body.push(...this.texInvitatoryBlocks(hour.invitatory, repo, choices));
+    } else if (!hour.suppressIntroVerse) {
       body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "lauds"));
     }
 
@@ -523,6 +526,26 @@ export class TexAssembler implements Assembler<string> {
       slotPath("invitatory", "verse"), ["versicle", "response"],
       texInvitatoryVerse(repo),
     );
+  }
+
+  /** office-spec §3.1 — invitatory verse + psalm with antiphon. */
+  private texInvitatoryBlocks(
+    invitatory: AbstractInvitatory,
+    repo: DataRepository,
+    choices?: DayChoices,
+  ): string[] {
+    const parts: string[] = [
+      this.texInvitatoryVerseBlock(repo, invitatory.liturgicalDay, choices),
+    ];
+    const psalmody = resolveInvitatoryPsalmody(
+      invitatory, repo, invitatory.liturgicalDay, choices,
+    );
+    if (psalmody) {
+      parts.push(this.texPsalmAssignment(
+        psalmody.assignment, psalmody.psalmText, invitatory.flags, repo,
+      ));
+    }
+    return parts;
   }
 
   private texLordsPrayerBlock(

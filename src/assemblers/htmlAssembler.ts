@@ -22,7 +22,7 @@ import type { DataRepository } from "../data/repository.js";
 import { eveningVespers } from "../hours/index.js";
 import type {
   AbstractCompline, AbstractDay, AbstractDaytimePrayer,
-  AbstractLauds, AbstractOfficeOfReadings, AbstractVespers,
+  AbstractInvitatory, AbstractLauds, AbstractOfficeOfReadings, AbstractVespers,
 } from "../types/hours.js";
 import type { LiturgicalFlags } from "../types/hours.js";
 import type {
@@ -43,6 +43,7 @@ import { withGabcHeader } from "./gabcHeader.js";
 import type { DayChoices } from "../types/options.js";
 import type { HourKey } from "../options/slotTable.js";
 import { slotPath } from "../options/slotTable.js";
+import { resolveInvitatoryPsalmody } from "./invitatory.js";
 import {
   htmlAntiphon,
   htmlComplineBlessing,
@@ -259,11 +260,11 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const opt = (slot: string) => slotOpts(choices, "officeOfReadings", slot);
     const body: MaybeNode[] = [htmlHourHeading(repo, "officeOfReadings", hour.liturgicalDay)];
 
-    body.push(
-      hour.isFirstHour
-        ? this.htmlInvitatoryVerseBlock(repo, hour.liturgicalDay, choices)
-        : this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "officeOfReadings"),
-    );
+    if (hour.invitatory) {
+      body.push(...this.htmlInvitatoryBlocks(hour.invitatory, repo, choices));
+    } else {
+      body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "officeOfReadings"));
+    }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
     if (hymn) body.push(this.htmlHymnBlock(hymn));
@@ -322,7 +323,9 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const opt = (slot: string) => slotOpts(choices, "lauds", slot);
     const body: MaybeNode[] = [htmlHourHeading(repo, "lauds", hour.liturgicalDay)];
 
-    if (!hour.suppressIntroVerse) {
+    if (hour.invitatory) {
+      body.push(...this.htmlInvitatoryBlocks(hour.invitatory, repo, choices));
+    } else if (!hour.suppressIntroVerse) {
       body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "lauds"));
     }
 
@@ -579,6 +582,26 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
       slotPath("invitatory", "verse"), ["versicle", "response"],
       htmlInvitatoryVerse(repo),
     );
+  }
+
+  /** office-spec §3.1 — invitatory verse + psalm with antiphon. */
+  private htmlInvitatoryBlocks(
+    invitatory: AbstractInvitatory,
+    repo: DataRepository,
+    choices?: DayChoices,
+  ): MaybeNode[] {
+    const parts: MaybeNode[] = [
+      this.htmlInvitatoryVerseBlock(repo, invitatory.liturgicalDay, choices),
+    ];
+    const psalmody = resolveInvitatoryPsalmody(
+      invitatory, repo, invitatory.liturgicalDay, choices,
+    );
+    if (psalmody) {
+      parts.push(this.htmlPsalmAssignment(
+        psalmody.assignment, psalmody.psalmText, invitatory.flags, repo,
+      ));
+    }
+    return parts;
   }
 
   private htmlLordsPrayerBlock(
