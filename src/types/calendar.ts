@@ -98,9 +98,15 @@ export type ComplineFollows =
 export interface AssemblyContext {
   /** Which Daytime Hours are being said today. Affects complementary psalmody. */
   daytimeHoursSaid: Array<"terce" | "sext" | "none">;
-  /** If true, the Invitatory precedes the Office of Readings. */
+  /**
+   * If true, the Invitatory precedes the Office of Readings.
+   * If false, the Invitatory precedes Lauds (OoR omitted or said earlier).
+   */
   oorIsFirstHour: boolean;
-  /** If true AND oorIsFirstHour, suppresses Lauds' introductory verse. */
+  /**
+   * If true AND oorIsFirstHour, Lauds follows OoR immediately so its
+   * introductory verse is suppressed (the Invitatory was already said).
+   */
   laudsFollowsOorDirectly: boolean;
   /** Selects the night vs. day hymn for the Office of Readings in Ordinary Time. */
   oorSaidAtNight: boolean;

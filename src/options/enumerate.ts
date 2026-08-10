@@ -181,7 +181,11 @@ export function enumerateDayOptions(
     for (const hourKey of introHours) {
       collect(fixed.introductoryVerse, slotPath(hourKey, "introVerse"));
     }
-    if (abstractDay.officeOfReadings.isFirstHour) {
+    // Invitatory verse melodies appear on whichever hour begins the day.
+    if (
+      abstractDay.officeOfReadings.invitatory ||
+      abstractDay.lauds.invitatory
+    ) {
       collect(fixed.invitatoryVerse, slotPath("invitatory", "verse"));
     }
     for (const hourKey of ["lauds", vespersKey] as const) {
