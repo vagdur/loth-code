@@ -11,7 +11,9 @@ import { loadRepository } from "../../src/data/repositoryNode.js";
 import type { AssemblyContext } from "../../src/types/calendar.js";
 import { dataRoot } from "../helpers/paths.js";
 
-const day = resolveDay(new Date("2026-05-10T00:00:00Z"), "general");
+function sampleDay() {
+  return resolveDay(new Date("2026-05-10T00:00:00Z"), "general");
+}
 
 function ctx(overrides: Partial<AssemblyContext> = {}): AssemblyContext {
   return {
@@ -27,26 +29,26 @@ function ctx(overrides: Partial<AssemblyContext> = {}): AssemblyContext {
 
 describe("Invitatory on the first Hour", () => {
   test("OoR receives the Invitatory when it begins the day", () => {
-    const oor = buildOfficeOfReadings(day, ctx({ oorIsFirstHour: true }));
+    const oor = buildOfficeOfReadings(sampleDay(), ctx({ oorIsFirstHour: true }));
     expect(oor.isFirstHour).toBe(true);
     expect(oor.invitatory?.kind).toBe("invitatory");
     expect(oor.invitatory?.psalmRef).toMatchObject({ kind: "psalm", id: "psalm_94" });
   });
 
   test("OoR omits the Invitatory when it is not the first Hour", () => {
-    const oor = buildOfficeOfReadings(day, ctx({ oorIsFirstHour: false }));
+    const oor = buildOfficeOfReadings(sampleDay(), ctx({ oorIsFirstHour: false }));
     expect(oor.isFirstHour).toBe(false);
     expect(oor.invitatory).toBeUndefined();
   });
 
   test("Lauds receives the Invitatory when OoR is not first", () => {
-    const lauds = buildLauds(day, ctx({ oorIsFirstHour: false }));
+    const lauds = buildLauds(sampleDay(), ctx({ oorIsFirstHour: false }));
     expect(lauds.invitatory?.kind).toBe("invitatory");
     expect(lauds.suppressIntroVerse).toBe(true);
   });
 
   test("Lauds omits Invitatory when OoR began the day, but suppresses intro when following directly", () => {
-    const lauds = buildLauds(day, ctx({
+    const lauds = buildLauds(sampleDay(), ctx({
       oorIsFirstHour: true,
       laudsFollowsOorDirectly: true,
     }));
@@ -55,7 +57,7 @@ describe("Invitatory on the first Hour", () => {
   });
 
   test("Lauds keeps intro verse when said separately after OoR", () => {
-    const lauds = buildLauds(day, ctx({
+    const lauds = buildLauds(sampleDay(), ctx({
       oorIsFirstHour: true,
       laudsFollowsOorDirectly: false,
     }));
@@ -65,7 +67,7 @@ describe("Invitatory on the first Hour", () => {
 
   test("plain assembler emits invitatory verse and psalm antiphon on Lauds when first", async () => {
     const repo = await loadRepository(dataRoot, "en");
-    const lauds = buildLauds(day, ctx({ oorIsFirstHour: false }));
+    const lauds = buildLauds(sampleDay(), ctx({ oorIsFirstHour: false }));
     const text = new PlainTextAssembler().assembleLauds(lauds, repo);
 
     expect(text).toMatch(/Lord, open our lips/i);
@@ -77,7 +79,7 @@ describe("Invitatory on the first Hour", () => {
 
   test("plain assembler emits invitatory on OoR when first, not the intro verse", async () => {
     const repo = await loadRepository(dataRoot, "en");
-    const oor = buildOfficeOfReadings(day, ctx({ oorIsFirstHour: true }));
+    const oor = buildOfficeOfReadings(sampleDay(), ctx({ oorIsFirstHour: true }));
     const text = new PlainTextAssembler().assembleOfficeOfReadings(oor, repo);
 
     expect(text).toMatch(/Lord, open our lips/i);
