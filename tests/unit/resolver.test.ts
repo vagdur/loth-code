@@ -296,6 +296,32 @@ describe("psalmAssignmentRef", () => {
     const src = psalmAssignmentRef(ctx, "officeOfReadings.psalmAssignments[0]", true);
     expect(flattenSources(src).map((s) => s.kind)).toEqual(["saint", "common", "psalter"]);
   });
+
+  // office-spec §5.4 / data-structure.md §9.1: memoria psalmody is the ferial
+  // day unless the saint has proper antiphons — never from the Common.
+  test("office-spec §5.4 — memoria Vespers psalmody: saint then feria, no Common", () => {
+    const ctx = baseCtx(obligatoryMemoria());
+    const src = psalmAssignmentRef(ctx, "vespers.psalmAssignments[0]", true);
+    expect(flattenSources(src).map((s) => s.kind)).toEqual([
+      "saint", "seasonal", "psalter",
+    ]);
+    expect(flattenSources(src).some((s) => s.kind === "common")).toBe(false);
+  });
+
+  test("office-spec §5.4 — memoria without seasonal key: saint then psalter only", () => {
+    const ctx = baseCtx({
+      type: "obligatory_memoria",
+      source: "saint",
+      saintId: "st_francis",
+      applicableCommons: ["pastors"],
+      memoriaFullySuppressed: false,
+      memoriaReducedToOptional: false,
+      allowMemoriaAddendum: false,
+      isTriduum: false,
+    });
+    const src = psalmAssignmentRef(ctx, "vespers.psalmAssignments[1]", true);
+    expect(flattenSources(src).map((s) => s.kind)).toEqual(["saint", "psalter"]);
+  });
 });
 
 describe("daytimeProperAntiphonsRef", () => {

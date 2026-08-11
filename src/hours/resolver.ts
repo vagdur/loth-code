@@ -170,6 +170,18 @@ export function psalmAssignmentRef(
   const { celebration: c, psalterWeek: w, psalterDay: d } = ctx;
 
   if (allowSaintProper && c.source === "saint" && c.saintId) {
+    // Memorias: ferial psalmody unless the saint has proper antiphons/psalms
+    // (office-spec §5.4 / data-structure.md §9.1). The Common supplies
+    // psalmody for solemnities and feasts only — never for a memoria.
+    // Keep any ferial seasonal key (e.g. Eastertide weekday antiphons) ahead
+    // of the psalter; memorials carry that key for exactly this reason.
+    if (isMemoria(c)) {
+      return chain(
+        saintSrc(c.saintId, hourField),
+        ...(c.seasonalKey ? [seasonalSrc(c.seasonalKey, hourField)] : []),
+        psalterSrc(w, d, hourField),
+      );
+    }
     return chain(
       saintSrc(c.saintId, hourField),
       ...commonSources(c.applicableCommons, 0, hourField),

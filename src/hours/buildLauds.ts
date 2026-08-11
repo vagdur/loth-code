@@ -11,7 +11,8 @@ import type { AbstractLauds, PsalmSlot } from "../types/hours.js";
 import { buildInvitatory } from "./buildInvitatory.js";
 import {
   antiphonRef, concludingPrayerRef, hymnRef, intercessionsRef,
-  psalmAssignmentRef, shortReadingRef, shortResponsoryRef, SlotContext,
+  isMemoriaCelebration, psalmAssignmentRef, shortReadingRef,
+  shortResponsoryRef, SlotContext,
 } from "./resolver.js";
 import { makeCtx, makeFlags } from "./shared.js";
 
@@ -26,6 +27,8 @@ import { makeCtx, makeFlags } from "./shared.js";
  * On all other days: current psalter.
  * On solemnities and feasts with proper antiphons: proper antiphons overlay
  * the psalter assignment (handled via the antiphonRef inside psalmAssignmentRef).
+ * On memorias: ferial psalmody unless the saint has proper antiphons
+ * (office-spec §5.4) — Common psalmody is never used.
  *
  * Note: the antiphon is embedded in the PsalmAssignment, so a proper antiphon
  * means fetching the whole PsalmAssignment from the proper rather than the psalter.
@@ -47,6 +50,7 @@ function buildPsalmSlots(
 
   // Proper antiphons may overlay psalter assignments on feasts/solemnities.
   // We encode the potential proper as the first source in the chain.
+  // Memorias also consult the saint proper (then feria), never the Common.
   const hasProperAntiphons =
     c.type === "solemnity" ||
     c.type === "feast" ||
@@ -54,11 +58,12 @@ function buildPsalmSlots(
     // Proper antiphons in privileged seasons (GILH 116); Triduum included:
     (["holy_week", "easter_triduum", "eastertide", "advent", "christmas"].includes(day.season) &&
       c.type !== "ordinary_ferial");
+  const allowSaintPsalmody = hasProperAntiphons || isMemoriaCelebration(c);
 
   return [
-    { assignmentRef: psalmAssignmentRef(hasProperAntiphons ? ctx : psalmCtx, "lauds.psalmAssignments[0]", hasProperAntiphons) },
-    { assignmentRef: psalmAssignmentRef(hasProperAntiphons ? ctx : psalmCtx, "lauds.psalmAssignments[1]", hasProperAntiphons) },
-    { assignmentRef: psalmAssignmentRef(hasProperAntiphons ? ctx : psalmCtx, "lauds.psalmAssignments[2]", hasProperAntiphons) },
+    { assignmentRef: psalmAssignmentRef(allowSaintPsalmody ? ctx : psalmCtx, "lauds.psalmAssignments[0]", allowSaintPsalmody) },
+    { assignmentRef: psalmAssignmentRef(allowSaintPsalmody ? ctx : psalmCtx, "lauds.psalmAssignments[1]", allowSaintPsalmody) },
+    { assignmentRef: psalmAssignmentRef(allowSaintPsalmody ? ctx : psalmCtx, "lauds.psalmAssignments[2]", allowSaintPsalmody) },
   ];
 }
 
