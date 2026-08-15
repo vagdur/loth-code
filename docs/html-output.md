@@ -76,6 +76,18 @@ however your host resolves modules — a bundler, or an import map:
 off when a bundler is doing the work). `exsurgeModulePath()` in
 `src/tools/htmlAssets.ts` locates the file to serve.
 
+## Drop caps
+
+Each lyric score is handed to exsurge with `useDropCap` on, matching Gregorio's
+default (and the PDF path): the first letter sits to the left of the staff as a
+large initial, and the remaining lyrics start under the staff. Psalm tones leave
+it off — they have no lyrics to take an initial from. Hosts calling `renderScore`
+can override with `useDropCap` on the options.
+
+Gregorio also places a `mode:` header above that initial automatically. Exsurge
+does not yet: a `mode:` or `annotation:` field in the GABC is stripped at parse
+time, and the mode stays a `loth-melody-rubric` caption until it does.
+
 ## Fonts
 
 exsurge draws ℣, ℟ and similar glyphs in a font family named

@@ -34,17 +34,22 @@ export interface RenderOptions {
   player?: Partial<exsurge.ChantPlayerOptions>;
   /** Re-run line breaking when the container width changes. Default true. */
   autoResize?: boolean;
-  /** Render the first letter as a drop cap. Default false. */
+  /**
+   * Render the first letter as a drop cap, spanning staff and lyrics, as
+   * Gregorio does. Defaults to on except for psalm tones (no lyrics to take
+   * an initial from).
+   */
   useDropCap?: boolean;
   /** Used when the spec carries no language of its own. */
   language?: ScoreSpec["language"];
   /**
-   * A single line printed above the clef of the first staff — `℣`, `Ant.`, a
-   * mode number — as Gregorio prints one.
+   * A single line printed above the drop cap — `℣`, `Ant.`, a mode number —
+   * as Gregorio prints one.
    *
    * It has to be an option rather than something the gabc carries: exsurge's
-   * parser strips the header, so an `annotation:` field in the source never
-   * reaches the score.
+   * parser strips the header, so a `mode:` or `annotation:` field in the
+   * source never reaches the score. Gregorio places `mode:` above the initial
+   * automatically; exsurge does not (yet).
    */
   annotation?: string;
   /**
@@ -184,9 +189,9 @@ export function renderScore(
   ctxt.defaultLanguage = exsurgeLanguage(spec.language ?? options?.language);
   ctxt.noteIdPrefix = options?.noteIdPrefix ?? `note-${spec.id}-`;
 
-  // exsurge defaults this to true, which suits a book opening rather than the
-  // score fragments an hour is made of.
-  const useDropCap = options?.useDropCap ?? false;
+  // Gregorio's default (and the PDF path): a drop cap on lyric scores, none
+  // on psalm tones. Hosts can still force either way.
+  const useDropCap = options?.useDropCap ?? !spec.psalmTone;
 
   try {
     exsurge.createPlayableChant(

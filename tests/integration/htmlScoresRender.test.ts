@@ -75,14 +75,18 @@ function parenBalance(gabc: string): string {
 interface RenderResult {
   svgChildren: number;
   playbackEvents: number;
+  hasDropCap: boolean;
 }
 
-/** Parse → layout → SVG tree → playback timeline, exactly as the browser does. */
-async function renderHeadless(source: string): Promise<RenderResult> {
+/** Parse → layout → SVG tree → playback timeline, matching the browser path. */
+async function renderHeadless(spec: {
+  gabc: string;
+  psalmTone?: boolean;
+}): Promise<RenderResult> {
   // One context per score: parsing mutates ctxt.activeClef.
   const ctxt = new exsurge.ChantContext();
-  const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, source);
-  const score = new exsurge.ChantScore(ctxt, mappings, false);
+  const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, spec.gabc);
+  const score = new exsurge.ChantScore(ctxt, mappings, !spec.psalmTone);
   score.performLayout(ctxt);
 
   const tree = await new Promise<exsurge.SvgTreeNode>((resolve) => {
@@ -93,6 +97,7 @@ async function renderHeadless(source: string): Promise<RenderResult> {
   return {
     svgChildren: tree.children?.length ?? 0,
     playbackEvents: exsurge.createPlaybackEvents(score, {}).events.length,
+    hasDropCap: Boolean(score.dropCap),
   };
 }
 
@@ -101,12 +106,14 @@ test.each(matrix)(
   async ({ locale, mode, render }) => {
     const repo = await loadSampleRepo(locale);
     const assembler = new HtmlAssembler({ outputMode: mode });
-    const html = render(assembler, buildSampleAbstractDay(), repo).html();
+    const assembled = render(assembler, buildSampleAbstractDay(), repo);
+    const html = assembled.html();
     const mounts = extractMounts(html);
 
     // The markup and the side-channel must agree: this is what proves the
     // attribute escaping round-trips a GABC body without corrupting it.
     expect(mounts.map((m) => m.id)).toEqual([...assembler.getScores().keys()]);
+    expect(assembled.scores.map((s) => s.id)).toEqual(mounts.map((m) => m.id));
     for (const mount of mounts) {
       expect(mount.gabc).toBe(assembler.getScores().get(mount.id));
     }
@@ -116,13 +123,19 @@ test.each(matrix)(
     // sing.
     expect(mounts.length).toBeGreaterThan(0);
 
-    for (const mount of mounts) {
-      expect(mount.gabc, `${mount.id} lacks a GABC header`).toContain("\n%%\n");
-      expect(parenBalance(mount.gabc), `${mount.id} GABC parens`).toBe("");
+    for (const spec of assembled.scores) {
+      expect(spec.gabc, `${spec.id} lacks a GABC header`).toContain("\n%%\n");
+      expect(parenBalance(spec.gabc), `${spec.id} GABC parens`).toBe("");
 
-      const result = await renderHeadless(mount.gabc);
-      expect(result.svgChildren, `${mount.id} rendered no notation`).toBeGreaterThan(0);
-      expect(result.playbackEvents, `${mount.id} has no playable notes`).toBeGreaterThan(0);
+      const result = await renderHeadless(spec);
+      expect(result.svgChildren, `${spec.id} rendered no notation`).toBeGreaterThan(0);
+      expect(result.playbackEvents, `${spec.id} has no playable notes`).toBeGreaterThan(0);
+
+      if (spec.psalmTone) {
+        expect(result.hasDropCap, `${spec.id} psalm tone grew a drop cap`).toBe(false);
+      } else {
+        expect(result.hasDropCap, `${spec.id} missing drop cap`).toBe(true);
+      }
     }
   },
   60_000,
