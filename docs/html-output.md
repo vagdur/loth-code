@@ -84,9 +84,12 @@ large initial, and the remaining lyrics start under the staff. Psalm tones leave
 it off — they have no lyrics to take an initial from. Hosts calling `renderScore`
 can override with `useDropCap` on the options.
 
-Gregorio also places a `mode:` header above that initial automatically. Exsurge
-does not yet: a `mode:` or `annotation:` field in the GABC is stripped at parse
-time, and the mode stays a `loth-melody-rubric` caption until it does.
+Gregorio places a `mode:` header above that initial automatically; exsurge
+(≥ 1.29.4) does the same. The assemblers write `mode: N;` into the GABC when
+the melody has a mode, and omit the `loth-melody-rubric` "Mode N" caption so
+the number is not printed twice. Psalm tones and header-less dialogues stay
+caption-free. Hosts calling `renderScore` can still override the derived
+annotation with `annotation` on the options.
 
 ## Fonts
 

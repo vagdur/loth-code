@@ -26,6 +26,7 @@ test("plain mode emits plain macros and no GABC scores", async () => {
   expect(tex).toMatch(/\\dismissal\{/);
   expect(tex).toContain("\\psalmText{");
   expect(tex).toContain("\\gospelCanticle{");
+  expect(tex).toMatch(/\\melodyRubric\{Mode /);
   expect(assembler.getGabcFiles().size).toBe(0);
 });
 
@@ -47,7 +48,9 @@ test("scored mode emits scores only for sung slots", async () => {
   expect(tex).toContain("\\sectionHeading{");
   expect(tex).not.toMatch(/\\shortReading\{/);
   expect(tex).not.toMatch(/\\concludingPrayer\{/);
+  expect(tex).not.toMatch(/\\melodyRubric\{Mode /);
   expect(assembler.getGabcFiles().size).toBeGreaterThan(0);
+  expect([...assembler.getGabcFiles().values()].some((g) => /^mode:/m.test(g))).toBe(true);
 });
 
 test("scored mode emits each psalmody antiphon at most once", async () => {
@@ -75,4 +78,5 @@ test("default constructor preserves hybrid behaviour", async () => {
   expect(tex).toContain("\\lothScore{");
   expect(tex).not.toMatch(/\\antiphon\{/);
   expect(tex).toContain("\\psalmText{");
+  expect(tex).not.toMatch(/\\melodyRubric\{Mode /);
 });

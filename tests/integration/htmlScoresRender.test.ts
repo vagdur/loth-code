@@ -76,7 +76,10 @@ interface RenderResult {
   svgChildren: number;
   playbackEvents: number;
   hasDropCap: boolean;
+  annotation: string | undefined;
 }
+
+const MODE_ROMAN = ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii"];
 
 /** Parse → layout → SVG tree → playback timeline, matching the browser path. */
 async function renderHeadless(spec: {
@@ -85,8 +88,7 @@ async function renderHeadless(spec: {
 }): Promise<RenderResult> {
   // One context per score: parsing mutates ctxt.activeClef.
   const ctxt = new exsurge.ChantContext();
-  const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, spec.gabc);
-  const score = new exsurge.ChantScore(ctxt, mappings, !spec.psalmTone);
+  const score = exsurge.Gabc.createScoreFromSource(ctxt, spec.gabc, !spec.psalmTone);
   score.performLayout(ctxt);
 
   const tree = await new Promise<exsurge.SvgTreeNode>((resolve) => {
@@ -94,10 +96,15 @@ async function renderHeadless(spec: {
   });
 
   expect(tree.name).toBe("svg");
+  const annotation =
+    score.annotation instanceof exsurge.Annotation
+      ? score.annotation.sourceGabc
+      : undefined;
   return {
     svgChildren: tree.children?.length ?? 0,
     playbackEvents: exsurge.createPlaybackEvents(score, {}).events.length,
     hasDropCap: Boolean(score.dropCap),
+    annotation,
   };
 }
 
@@ -118,11 +125,16 @@ test.each(matrix)(
       expect(mount.gabc).toBe(assembler.getScores().get(mount.id));
     }
 
+    // Mode lives on the GABC header (drawn above the drop cap), not as a
+    // caption above the score.
+    expect(html).not.toMatch(/loth-melody-rubric">Mode /);
+
     // Every sample locale carries melodies, so a run with no mounts at all
     // means the refs stopped resolving rather than that there is nothing to
     // sing.
     expect(mounts.length).toBeGreaterThan(0);
 
+    let modeHeaders = 0;
     for (const spec of assembled.scores) {
       expect(spec.gabc, `${spec.id} lacks a GABC header`).toContain("\n%%\n");
       expect(parenBalance(spec.gabc), `${spec.id} GABC parens`).toBe("");
@@ -133,10 +145,23 @@ test.each(matrix)(
 
       if (spec.psalmTone) {
         expect(result.hasDropCap, `${spec.id} psalm tone grew a drop cap`).toBe(false);
+        expect(spec.gabc, `${spec.id} psalm tone carried mode:`).not.toMatch(/^mode:/m);
+        expect(result.annotation, `${spec.id} psalm tone grew an annotation`).toBeUndefined();
       } else {
         expect(result.hasDropCap, `${spec.id} missing drop cap`).toBe(true);
+        const modeMatch = spec.gabc.match(/^mode:\s*(\d+);$/m);
+        if (modeMatch) {
+          modeHeaders += 1;
+          const n = Number(modeMatch[1]);
+          expect(result.annotation, `${spec.id} missing mode annotation`).toBe(
+            MODE_ROMAN[n],
+          );
+        } else {
+          expect(result.annotation, `${spec.id} invented an annotation`).toBeUndefined();
+        }
       }
     }
+    expect(modeHeaders, "no lyric score received a mode: header").toBeGreaterThan(0);
   },
   60_000,
 );

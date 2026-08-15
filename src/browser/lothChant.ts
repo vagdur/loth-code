@@ -43,13 +43,12 @@ export interface RenderOptions {
   /** Used when the spec carries no language of its own. */
   language?: ScoreSpec["language"];
   /**
-   * A single line printed above the drop cap — `℣`, `Ant.`, a mode number —
-   * as Gregorio prints one.
+   * A single line printed above the drop cap — `℣`, `Ant.`, a caption the
+   * host chooses — as Gregorio prints one.
    *
-   * It has to be an option rather than something the gabc carries: exsurge's
-   * parser strips the header, so a `mode:` or `annotation:` field in the
-   * source never reaches the score. Gregorio places `mode:` above the initial
-   * automatically; exsurge does not (yet).
+   * Hosts rarely need this: a `mode:` or `annotation:` field in the GABC is
+   * already read by exsurge (≥ 1.29.4) and drawn above the initial. This
+   * option overrides that derived annotation.
    */
   annotation?: string;
   /**
@@ -101,14 +100,14 @@ function exsurgeLanguage(
 }
 
 /**
- * A score built here rather than by exsurge, so its annotation is in place
- * before layout runs.
+ * A score built here rather than by exsurge, so a host-supplied annotation
+ * is in place before layout runs.
  *
- * This is the one thing `createPlayableChant` cannot be told: it constructs the
- * `ChantScore` from the gabc itself, and `annotation` is read during layout, so
- * the score handed to `onReady` is already too late to set it on. exsurge takes
- * a prebuilt score for exactly this (vagdur/exsurge#15) — construction is the
- * two lines it would have run anyway, and everything after it is still theirs.
+ * `createPlayableChant` with a string already populates `score.annotation`
+ * from the GABC header (vagdur/exsurge#24). This path is only for the
+ * `options.annotation` override: exsurge takes a prebuilt score for that
+ * (vagdur/exsurge#15), and construction is the one line it would have run
+ * anyway.
  */
 function annotatedScore(
   ctxt: exsurge.ChantContext,
@@ -116,11 +115,7 @@ function annotatedScore(
   annotation: string,
   useDropCap: boolean,
 ): exsurge.ChantScore {
-  const score = new exsurge.ChantScore(
-    ctxt,
-    exsurge.Gabc.createMappingsFromSource(ctxt, source),
-    useDropCap,
-  );
+  const score = exsurge.Gabc.createScoreFromSource(ctxt, source, useDropCap);
   score.annotation = new exsurge.Annotation(ctxt, annotation);
   return score;
 }
