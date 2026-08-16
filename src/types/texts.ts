@@ -37,7 +37,9 @@ export interface Melody {
 
 /**
  * Multi-part melody for the short responsory (R / R-second-half / V / Gloria).
- * Each field is a GABC body. Any part may be absent when not notated.
+ * Each field is a GABC body matching the logical structure; assemblers
+ * reassemble the parts into the printed presentation (full R., V.+repeat,
+ * V. Gloria + expanded R.). Any part may be absent when not notated.
  */
 export interface ShortResponsoryMelody {
   /** Store id when hydrated from `melodyRefs`. */

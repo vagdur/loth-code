@@ -160,7 +160,9 @@ StoredMelody {
     antiphon_paschal?: string,                               // Eastertide body, when notated
     first_verse?: string,                                    // pointed first verse (gospel_antiphon)
     responsory?: string, responsory_second?: string,         // short responsory
-    versicle?: string,   gloria?: string
+    versicle?: string,   gloria?: string,
+    // dialogue: versicle, response, gloria?, alleluia?, blessing?, amen?, ...
+    // Assemblers merge dialogue / short-responsory parts into one display score.
   }
   text?:        string         // de-hyphenated text recovered from GABC lyrics
   incipit?:     string         // from raw metadata; cross-check for `text`
@@ -252,7 +254,11 @@ ShortResponsory {
 }
 
 ShortResponsoryMelody {
-  // The short responsory is notated in up to four GABC sections.
+  // Logical GABC sections (not the printed layout). Assemblers reassemble
+  // them for display as:
+  //   ℟. first + second
+  //   ℣. versicle + second
+  //   ℣. Gloria Patri  ℟. first + second   (the final ℟. written out)
   mode?: int
   note?: string
   responsory?:        string   // R., first half

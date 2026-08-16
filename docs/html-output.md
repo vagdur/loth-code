@@ -61,6 +61,10 @@ so an assembled page is self-contained. `assembler.getScores()` returns the same
 GABC keyed by score id, for hosts that would rather pre-render server-side with
 exsurge's `createSvgTree` than mount in the browser.
 
+Split GABC (hour openings, short responsories, closings) is merged into one
+score per slot before it is inlined, so the page matches the printed layout
+rather than the storage sections.
+
 ## Loading exsurge
 
 `dist/browser/lothChant.js` keeps a bare `@vagdur/exsurge` specifier. Resolve it

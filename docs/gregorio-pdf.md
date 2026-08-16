@@ -4,6 +4,8 @@ The [`TexAssembler`](../src/assemblers/texAssembler.ts) builds a UTF-8 `.tex` fi
 
 When a slot carries GABC scores, sung lyrics render via Gregorio only; redundant plain macros for that slot are omitted so lyrics are not duplicated in the PDF.
 
+Split GABC (introductory verse, short responsory, blessings, dismissals) is stored as named sections and **merged into one score** for display: openings and closings become a single block with ℣./℟. labels, and the short responsory is reassembled into the printed R. / V.+repeat / V. Gloria + full R. layout. See [`gabcDisplay.ts`](../src/assemblers/gabcDisplay.ts).
+
 GABC from the data model (`Melody.gabc`, `Antiphon.psalmTone`, canticle melodies) is embedded with the LaTeX `filecontents` environment so Gregorio can read sibling `.gabc` files when you run **LuaLaTeX**.
 
 `npm run build` does **not** require TeX. Producing a PDF is optional and needs a working **LuaLaTeX** installation plus **Gregorio** (GregorioTeX).
