@@ -42,7 +42,7 @@ Defined in `loth.sty` and emitted from [`liturgicalTex.ts`](../src/assemblers/li
 | `\examinationOfConscience{text}` | Compline examination of conscience |
 | `\complineBlessing{text}` | Compline blessing |
 | `\dismissal{verse}{response}` | Dismissal |
-| `\melodyRubric{text}` | Mode / editorial note |
+| `\melodyRubric{text}` | Editorial note (the mode is the GABC `mode:` header when a score is present) |
 | `\lothScore{basename}` / `\psalmToneScore{basename}` | Gregorio scores |
 
 ## Integration tests (LaTeX + PDF)

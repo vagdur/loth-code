@@ -75,14 +75,20 @@ function parenBalance(gabc: string): string {
 interface RenderResult {
   svgChildren: number;
   playbackEvents: number;
+  hasDropCap: boolean;
+  annotation: string | undefined;
 }
 
-/** Parse → layout → SVG tree → playback timeline, exactly as the browser does. */
-async function renderHeadless(source: string): Promise<RenderResult> {
+const MODE_ROMAN = ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii"];
+
+/** Parse → layout → SVG tree → playback timeline, matching the browser path. */
+async function renderHeadless(spec: {
+  gabc: string;
+  psalmTone?: boolean;
+}): Promise<RenderResult> {
   // One context per score: parsing mutates ctxt.activeClef.
   const ctxt = new exsurge.ChantContext();
-  const mappings = exsurge.Gabc.createMappingsFromSource(ctxt, source);
-  const score = new exsurge.ChantScore(ctxt, mappings, false);
+  const score = exsurge.Gabc.createScoreFromSource(ctxt, spec.gabc, !spec.psalmTone);
   score.performLayout(ctxt);
 
   const tree = await new Promise<exsurge.SvgTreeNode>((resolve) => {
@@ -90,9 +96,15 @@ async function renderHeadless(source: string): Promise<RenderResult> {
   });
 
   expect(tree.name).toBe("svg");
+  const annotation =
+    score.annotation instanceof exsurge.Annotation
+      ? score.annotation.sourceGabc
+      : undefined;
   return {
     svgChildren: tree.children?.length ?? 0,
     playbackEvents: exsurge.createPlaybackEvents(score, {}).events.length,
+    hasDropCap: Boolean(score.dropCap),
+    annotation,
   };
 }
 
@@ -101,29 +113,55 @@ test.each(matrix)(
   async ({ locale, mode, render }) => {
     const repo = await loadSampleRepo(locale);
     const assembler = new HtmlAssembler({ outputMode: mode });
-    const html = render(assembler, buildSampleAbstractDay(), repo).html();
+    const assembled = render(assembler, buildSampleAbstractDay(), repo);
+    const html = assembled.html();
     const mounts = extractMounts(html);
 
     // The markup and the side-channel must agree: this is what proves the
     // attribute escaping round-trips a GABC body without corrupting it.
     expect(mounts.map((m) => m.id)).toEqual([...assembler.getScores().keys()]);
+    expect(assembled.scores.map((s) => s.id)).toEqual(mounts.map((m) => m.id));
     for (const mount of mounts) {
       expect(mount.gabc).toBe(assembler.getScores().get(mount.id));
     }
+
+    // Mode lives on the GABC header (drawn above the drop cap), not as a
+    // caption above the score.
+    expect(html).not.toMatch(/loth-melody-rubric">Mode /);
 
     // Every sample locale carries melodies, so a run with no mounts at all
     // means the refs stopped resolving rather than that there is nothing to
     // sing.
     expect(mounts.length).toBeGreaterThan(0);
 
-    for (const mount of mounts) {
-      expect(mount.gabc, `${mount.id} lacks a GABC header`).toContain("\n%%\n");
-      expect(parenBalance(mount.gabc), `${mount.id} GABC parens`).toBe("");
+    let modeHeaders = 0;
+    for (const spec of assembled.scores) {
+      expect(spec.gabc, `${spec.id} lacks a GABC header`).toContain("\n%%\n");
+      expect(parenBalance(spec.gabc), `${spec.id} GABC parens`).toBe("");
 
-      const result = await renderHeadless(mount.gabc);
-      expect(result.svgChildren, `${mount.id} rendered no notation`).toBeGreaterThan(0);
-      expect(result.playbackEvents, `${mount.id} has no playable notes`).toBeGreaterThan(0);
+      const result = await renderHeadless(spec);
+      expect(result.svgChildren, `${spec.id} rendered no notation`).toBeGreaterThan(0);
+      expect(result.playbackEvents, `${spec.id} has no playable notes`).toBeGreaterThan(0);
+
+      if (spec.psalmTone) {
+        expect(result.hasDropCap, `${spec.id} psalm tone grew a drop cap`).toBe(false);
+        expect(spec.gabc, `${spec.id} psalm tone carried mode:`).not.toMatch(/^mode:/m);
+        expect(result.annotation, `${spec.id} psalm tone grew an annotation`).toBeUndefined();
+      } else {
+        expect(result.hasDropCap, `${spec.id} missing drop cap`).toBe(true);
+        const modeMatch = spec.gabc.match(/^mode:\s*(\d+);$/m);
+        if (modeMatch) {
+          modeHeaders += 1;
+          const n = Number(modeMatch[1]);
+          expect(result.annotation, `${spec.id} missing mode annotation`).toBe(
+            MODE_ROMAN[n],
+          );
+        } else {
+          expect(result.annotation, `${spec.id} invented an annotation`).toBeUndefined();
+        }
+      }
     }
+    expect(modeHeaders, "no lyric score received a mode: header").toBeGreaterThan(0);
   },
   60_000,
 );

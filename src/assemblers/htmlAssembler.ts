@@ -60,6 +60,7 @@ import {
   htmlLongResponsory,
   htmlLordsPrayerSection,
   htmlMelodyRubric,
+  htmlScoredMelodyRubric,
   htmlOorAcclamation,
   htmlPlainProse,
   htmlPsalmText,
@@ -536,22 +537,20 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
       return fallback ?? null;
     }
 
-    const chunks: MaybeNode[] = [htmlMelodyRubric(melody)];
-    let scored = false;
+    const scores: LothScoreNode[] = [];
     for (const key of parts) {
       const gabc = melody[key];
       if (typeof gabc !== "string") continue;
-      const line = this.emitScore(gabc, "antiphon", melody.language, melody.id);
-      if (line) {
-        chunks.push(line);
-        scored = true;
-      }
+      // Mode sits on the first part's GABC header (above that drop cap).
+      const mode = scores.length === 0 ? melody.mode : undefined;
+      const line = this.emitScore(gabc, "antiphon", melody.language, melody.id, mode);
+      if (line) scores.push(line);
     }
-    if (!scored) {
+    if (scores.length === 0) {
       if (this.isScoredOnly()) return null;
-      chunks.push(fallback);
+      return fragment([htmlMelodyRubric(melody), fallback], "\n\n");
     }
-    return fragment(chunks, "\n\n");
+    return fragment([htmlScoredMelodyRubric(melody), ...scores], "\n\n");
   }
 
   private htmlIntroVerseBlock(
@@ -661,6 +660,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     kind: "antiphon" | "psalmTone" = "antiphon",
     language?: ChantLanguage,
     melodyId?: string,
+    mode: number | undefined = undefined,
   ): LothScoreNode | null {
     if (!this.shouldEmitScores()) return null;
     const trimmed = gabc?.trim();
@@ -669,7 +669,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const id = `${this.scorePrefix}-score-${++this.scoreCounter}`;
     const spec: ScoreSpec = {
       id,
-      gabc: withGabcHeader(trimmed, id),
+      gabc: withGabcHeader(trimmed, id, mode !== undefined ? { mode } : undefined),
       ...(language ? { language } : {}),
       ...(melodyId ? { melodyId } : {}),
       ...(kind === "psalmTone" ? { psalmTone: true } : {}),
@@ -754,17 +754,23 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     flags: LiturgicalFlags,
     includePsalmTone: boolean,
   ): LothNode | null {
-    const rubric = htmlMelodyRubric(a.melody);
-
     let scoreLine: LothScoreNode | null = null;
     if (this.shouldEmitScores() && a.melody?.gabc) {
-      scoreLine = this.emitScore(a.melody.gabc, "antiphon", a.melody.language, a.melody.id);
+      scoreLine = this.emitScore(
+        a.melody.gabc, "antiphon", a.melody.language, a.melody.id, a.melody.mode,
+      );
     }
 
     let toneLine: LothScoreNode | null = null;
     if (this.shouldEmitScores() && includePsalmTone && a.psalmTone?.trim()) {
       toneLine = this.emitScore(a.psalmTone, "psalmTone", a.melody?.language, a.melody?.id);
     }
+
+    // Mode sits on the antiphon GABC header (above that drop cap), not the
+    // psalm tone and not a caption, whenever a lyric score was emitted.
+    const rubric = scoreLine
+      ? htmlScoredMelodyRubric(a.melody)
+      : htmlMelodyRubric(a.melody);
 
     if (this.isScoredOnly()) {
       if (!scoreLine && !toneLine) return null;
@@ -782,12 +788,16 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
   }
 
   private htmlHymnBlock(hymn: Hymn): LothNode | null {
-    const rubric = htmlMelodyRubric(hymn.melody);
-
     let scoreLine: LothScoreNode | null = null;
     if (this.shouldEmitScores() && hymn.melody?.gabc) {
-      scoreLine = this.emitScore(hymn.melody.gabc, "antiphon", hymn.melody.language, hymn.melody.id);
+      scoreLine = this.emitScore(
+        hymn.melody.gabc, "antiphon", hymn.melody.language, hymn.melody.id, hymn.melody.mode,
+      );
     }
+
+    const rubric = scoreLine
+      ? htmlScoredMelodyRubric(hymn.melody)
+      : htmlMelodyRubric(hymn.melody);
 
     if (this.isScoredOnly()) {
       if (!scoreLine) return null;
@@ -813,9 +823,12 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     if (this.shouldEmitScores()) {
       const canticle = repo.getCanticle(assignment.psalmOrCanticleId);
       if (canticle?.melody?.gabc?.trim()) {
-        canticleMelody.push(htmlMelodyRubric(canticle.melody));
+        canticleMelody.push(htmlScoredMelodyRubric(canticle.melody));
         canticleMelody.push(
-          this.emitScore(canticle.melody.gabc, "antiphon", canticle.melody.language, canticle.melody.id),
+          this.emitScore(
+            canticle.melody.gabc, "antiphon",
+            canticle.melody.language, canticle.melody.id, canticle.melody.mode,
+          ),
         );
       }
     }
@@ -825,7 +838,6 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
   }
 
   private htmlShortResponsoryBlock(repo: DataRepository, r: ShortResponsory): LothNode | null {
-    const rubric = htmlMelodyRubric(r.melody);
     const scoreLines: LothScoreNode[] = [];
     if (this.shouldEmitScores()) {
       for (const gabc of [
@@ -834,10 +846,14 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
         r.melody?.versicle,
         r.melody?.gloria,
       ]) {
-        const line = this.emitScore(gabc, "antiphon", r.melody?.language, r.melody?.id);
+        const mode = scoreLines.length === 0 ? r.melody?.mode : undefined;
+        const line = this.emitScore(gabc, "antiphon", r.melody?.language, r.melody?.id, mode);
         if (line) scoreLines.push(line);
       }
     }
+    const rubric = scoreLines.length > 0
+      ? htmlScoredMelodyRubric(r.melody)
+      : htmlMelodyRubric(r.melody);
 
     if (this.isScoredOnly()) {
       if (scoreLines.length === 0) return null;

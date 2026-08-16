@@ -145,6 +145,14 @@ export function htmlMelodyRubric(m?: { mode?: number; note?: string }): LothElem
   return p("loth-melody-rubric", parts.join(" — "));
 }
 
+/**
+ * Editorial note only. When a score is mounted, the mode is the GABC `mode:`
+ * header (drawn above the drop cap) rather than a caption.
+ */
+export function htmlScoredMelodyRubric(m?: { note?: string }): LothElement | null {
+  return m?.note ? htmlMelodyRubric({ note: m.note }) : null;
+}
+
 /** The psalm-tone label, and the tone's score under it. */
 export function htmlPsalmToneBlock(repo: DataRepository, scoreLine: MaybeNode): LothNode | null {
   if (!scoreLine) return null;

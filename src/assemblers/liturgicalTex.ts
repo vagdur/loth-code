@@ -80,6 +80,14 @@ export function texMelodyRubric(m?: { mode?: number; note?: string }): string {
   return `\\melodyRubric{${escapeTexPlain(parts.join(" — "))}}`;
 }
 
+/**
+ * Editorial note only. When a score is emitted, the mode is the GABC `mode:`
+ * header (drawn above the drop cap) rather than a `\melodyRubric` caption.
+ */
+export function texScoredMelodyRubric(m?: { note?: string }): string {
+  return m?.note ? texMelodyRubric({ note: m.note }) : "";
+}
+
 export function texPsalmToneBlock(scoreLine: string): string {
   if (!scoreLine) return "";
   return `\\psalmToneLabel\n${scoreLine}`;
