@@ -36,6 +36,17 @@ import {
 } from "./types.js";
 import { hydrateMelodies } from "../data/melodyResolver.js";
 import { withGabcHeader } from "./gabcHeader.js";
+import {
+  assembleDialogueGabc,
+  assembleShortResponsoryGabc,
+  COMPLINE_BLESSING_PARTS,
+  DISMISSAL_PARTS,
+  INTRO_VERSE_PARTS,
+  INVITATORY_VERSE_PARTS,
+  OOR_ACCLAMATION_PARTS,
+  PRAYER_PARTS,
+  type DialoguePartSpec,
+} from "./gabcDisplay.js";
 import type { DayChoices } from "../types/options.js";
 import type { HourKey } from "../options/slotTable.js";
 import { slotPath } from "../options/slotTable.js";
@@ -441,9 +452,9 @@ export class TexAssembler implements Assembler<string> {
   }
 
   /**
-   * Hydrate a fixed-text slot's melody refs and emit its score lines
-   * (rubric + one score per listed part, in liturgical order). Plain text
-   * markup is omitted when any score was emitted — GABC lyrics are authoritative.
+   * Hydrate a fixed-text slot's melody refs and emit one merged score for
+   * the listed parts (openings, closings, through-sung prayers). Plain text
+   * markup is omitted when a score was emitted — GABC lyrics are authoritative.
    */
   private texFixedPartBlock<T extends { melody?: DialogueMelody }>(
     fixed: T | undefined,
@@ -451,7 +462,7 @@ export class TexAssembler implements Assembler<string> {
     day: LiturgicalDay,
     choices: DayChoices | undefined,
     path: string,
-    parts: (keyof DialogueMelody)[],
+    parts: readonly DialoguePartSpec[],
     text: string,
   ): string {
     if (!fixed) {
@@ -479,15 +490,9 @@ export class TexAssembler implements Assembler<string> {
       return text;
     }
 
-    const scores: string[] = [];
-    for (const key of parts) {
-      const gabc = melody[key];
-      if (typeof gabc !== "string") continue;
-      const mode = scores.length === 0 ? melody.mode : undefined;
-      const line = this.emitScore(gabc, "antiphon", mode);
-      if (line) scores.push(line);
-    }
-    if (scores.length === 0) {
+    const merged = assembleDialogueGabc(melody, parts);
+    const line = this.emitScore(merged, "antiphon", melody.mode);
+    if (!line) {
       if (this.isScoredOnly()) return "";
       const chunks: string[] = [];
       const rubric = texMelodyRubric(melody);
@@ -498,7 +503,7 @@ export class TexAssembler implements Assembler<string> {
     const chunks: string[] = [];
     const rubric = texScoredMelodyRubric(melody);
     if (rubric) chunks.push(rubric);
-    chunks.push(...scores);
+    chunks.push(line);
     return chunks.join("\n\n");
   }
 
@@ -510,9 +515,9 @@ export class TexAssembler implements Assembler<string> {
     hourKey: HourKey,
   ): string {
     // The concluding Halleluja is omitted in Lent, score included.
-    const parts: (keyof DialogueMelody)[] = flags.alleluiaInIntroVerse
-      ? ["versicle", "response", "gloria", "alleluia"]
-      : ["versicle", "response", "gloria"];
+    const parts = flags.alleluiaInIntroVerse
+      ? INTRO_VERSE_PARTS
+      : INTRO_VERSE_PARTS.filter((p) => p.key !== "alleluia");
     return this.texFixedPartBlock(
       repo.getFixedTexts()?.introductoryVerse, repo, day, choices,
       slotPath(hourKey, "introVerse"), parts,
@@ -527,7 +532,7 @@ export class TexAssembler implements Assembler<string> {
   ): string {
     return this.texFixedPartBlock(
       repo.getFixedTexts()?.invitatoryVerse, repo, day, choices,
-      slotPath("invitatory", "verse"), ["versicle", "response"],
+      slotPath("invitatory", "verse"), INVITATORY_VERSE_PARTS,
       texInvitatoryVerse(repo),
     );
   }
@@ -560,7 +565,7 @@ export class TexAssembler implements Assembler<string> {
   ): string {
     return this.texFixedPartBlock(
       repo.getFixedTexts()?.lordsPrayer, repo, day, choices,
-      slotPath(hourKey, "lordsPrayer"), ["gabc"],
+      slotPath(hourKey, "lordsPrayer"), PRAYER_PARTS,
       texLordsPrayerSection(repo),
     );
   }
@@ -573,7 +578,7 @@ export class TexAssembler implements Assembler<string> {
   ): string {
     return this.texFixedPartBlock(
       repo.getFixedTexts()?.oorAcclamation, repo, day, choices,
-      slotPath(hourKey, "acclamation"), ["versicle", "response"],
+      slotPath(hourKey, "acclamation"), OOR_ACCLAMATION_PARTS,
       texOorAcclamation(repo),
     );
   }
@@ -585,7 +590,7 @@ export class TexAssembler implements Assembler<string> {
   ): string {
     return this.texFixedPartBlock(
       repo.getFixedTexts()?.complineBlessing, repo, day, choices,
-      slotPath("compline", "blessing"), ["versicle", "response"],
+      slotPath("compline", "blessing"), COMPLINE_BLESSING_PARTS,
       texComplineBlessing(repo),
     );
   }
@@ -598,7 +603,7 @@ export class TexAssembler implements Assembler<string> {
   ): string {
     return this.texFixedPartBlock(
       repo.getFixedTexts()?.dismissalWithoutMinister, repo, day, choices,
-      slotPath(hourKey, "dismissal"), ["blessing", "amen"],
+      slotPath(hourKey, "dismissal"), DISMISSAL_PARTS,
       texDismissal(repo),
     );
   }
@@ -788,34 +793,27 @@ export class TexAssembler implements Assembler<string> {
   }
 
   private texShortResponsoryBlock(repo: DataRepository, r: ShortResponsory): string {
-    const scoreLines: string[] = [];
-    if (this.shouldEmitScores()) {
-      for (const gabc of [
-        r.melody?.responsory,
-        r.melody?.responsorySecond,
-        r.melody?.versicle,
-        r.melody?.gloria,
-      ]) {
-        const mode = scoreLines.length === 0 ? r.melody?.mode : undefined;
-        const line = this.emitScore(gabc, "antiphon", mode);
-        if (line) scoreLines.push(line);
-      }
+    let scoreLine = "";
+    if (this.shouldEmitScores() && r.melody) {
+      scoreLine = this.emitScore(
+        assembleShortResponsoryGabc(r.melody), "antiphon", r.melody.mode,
+      );
     }
-    const rubric = scoreLines.length > 0
+    const rubric = scoreLine
       ? texScoredMelodyRubric(r.melody)
       : texMelodyRubric(r.melody);
 
     if (this.isScoredOnly()) {
-      if (scoreLines.length === 0) return "";
+      if (!scoreLine) return "";
       const chunks: string[] = [];
       if (rubric) chunks.push(rubric);
-      chunks.push(...scoreLines);
+      chunks.push(scoreLine);
       return chunks.join("\n\n");
     }
 
     const chunks: string[] = [];
     if (rubric) chunks.push(rubric);
-    if (scoreLines.length > 0) chunks.push(...scoreLines);
+    if (scoreLine) chunks.push(scoreLine);
     else chunks.push(texShortResponsory(repo, r));
     return chunks.join("\n\n");
   }

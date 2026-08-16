@@ -135,6 +135,21 @@ The backtick **`` ` ``** (grave accent), written as `` (`) ``, produces a **quar
 
 ---
 
+## Special characters (V., R., crosses)
+
+Gregorio's `<sp>…</sp>` tags produce the liturgical glyphs that sit to the left of a syllable:
+
+| Tag | Glyph |
+|-----|-------|
+| `<sp>V/</sp>` | ℣ |
+| `<sp>R/</sp>` | ℟ |
+| `<sp>+</sp>` | † (Latin cross) |
+| `<sp>*</sp>` | * |
+
+A literal `+` in the lyrics (not inside `<sp>`) is the plus sign the printed books put at the split of a short responsory. Assemblers insert `<sp>V/</sp>` / `<sp>R/</sp>` when they merge stored dialogue parts into one score.
+
+---
+
 ## Neume grouping and spacing
 
 Notes within a single `( )` group are sung together as one neume. The transcriber writes them as a sequence of note letters, uppercase where a descent takes puncta inclinata (see above):

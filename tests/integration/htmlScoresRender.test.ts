@@ -81,6 +81,12 @@ interface RenderResult {
 
 const MODE_ROMAN = ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii"];
 
+/** After the header and clef, is the first lyric a letter a drop cap can take? */
+function gabcStartsWithLetter(gabc: string): boolean {
+  const body = gabc.split(/\n%%\s*\n/)[1] ?? "";
+  return /^\([^)]+\)\s*[A-Za-zÀ-ÖØ-öø-ÿ]/.test(body.trim());
+}
+
 /** Parse → layout → SVG tree → playback timeline, matching the browser path. */
 async function renderHeadless(spec: {
   gabc: string;
@@ -148,7 +154,11 @@ test.each(matrix)(
         expect(spec.gabc, `${spec.id} psalm tone carried mode:`).not.toMatch(/^mode:/m);
         expect(result.annotation, `${spec.id} psalm tone grew an annotation`).toBeUndefined();
       } else {
-        expect(result.hasDropCap, `${spec.id} missing drop cap`).toBe(true);
+        // Merged dialogues start with `<sp>V/</sp>` / `<sp>R/</sp>`; exsurge
+        // has no letter to take as an initial, so no drop cap is drawn.
+        expect(result.hasDropCap, `${spec.id} drop cap`).toBe(
+          gabcStartsWithLetter(spec.gabc),
+        );
         const modeMatch = spec.gabc.match(/^mode:\s*(\d+);$/m);
         if (modeMatch) {
           modeHeaders += 1;

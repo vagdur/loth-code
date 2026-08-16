@@ -40,6 +40,17 @@ import {
 } from "./types.js";
 import { hydrateMelodies } from "../data/melodyResolver.js";
 import { withGabcHeader } from "./gabcHeader.js";
+import {
+  assembleDialogueGabc,
+  assembleShortResponsoryGabc,
+  COMPLINE_BLESSING_PARTS,
+  DISMISSAL_PARTS,
+  INTRO_VERSE_PARTS,
+  INVITATORY_VERSE_PARTS,
+  OOR_ACCLAMATION_PARTS,
+  PRAYER_PARTS,
+  type DialoguePartSpec,
+} from "./gabcDisplay.js";
 import type { DayChoices } from "../types/options.js";
 import type { HourKey } from "../options/slotTable.js";
 import { slotPath } from "../options/slotTable.js";
@@ -502,9 +513,9 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
   }
 
   /**
-   * Hydrate a fixed-text slot's melody refs and emit its score mounts
-   * (rubric + one score per listed part, in liturgical order). Plain markup is
-   * omitted when any score was emitted — GABC lyrics are authoritative.
+   * Hydrate a fixed-text slot's melody refs and emit one merged score for
+   * the listed parts. Plain markup is omitted when a score was emitted —
+   * GABC lyrics are authoritative.
    */
   private htmlFixedPartBlock<T extends { melody?: DialogueMelody }>(
     fixed: T | undefined,
@@ -512,7 +523,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     day: LiturgicalDay,
     choices: DayChoices | undefined,
     path: string,
-    parts: (keyof DialogueMelody)[],
+    parts: readonly DialoguePartSpec[],
     fallback: MaybeNode,
   ): LothNode | null {
     if (!fixed) {
@@ -537,20 +548,16 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
       return fallback ?? null;
     }
 
-    const scores: LothScoreNode[] = [];
-    for (const key of parts) {
-      const gabc = melody[key];
-      if (typeof gabc !== "string") continue;
-      // Mode sits on the first part's GABC header (above that drop cap).
-      const mode = scores.length === 0 ? melody.mode : undefined;
-      const line = this.emitScore(gabc, "antiphon", melody.language, melody.id, mode);
-      if (line) scores.push(line);
-    }
-    if (scores.length === 0) {
+    // Mode sits on the merged score's GABC header (above that drop cap).
+    const merged = assembleDialogueGabc(melody, parts);
+    const line = this.emitScore(
+      merged, "antiphon", melody.language, melody.id, melody.mode,
+    );
+    if (!line) {
       if (this.isScoredOnly()) return null;
       return fragment([htmlMelodyRubric(melody), fallback], "\n\n");
     }
-    return fragment([htmlScoredMelodyRubric(melody), ...scores], "\n\n");
+    return fragment([htmlScoredMelodyRubric(melody), line], "\n\n");
   }
 
   private htmlIntroVerseBlock(
@@ -561,9 +568,9 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     hourKey: HourKey,
   ): LothNode | null {
     // The concluding Halleluja is omitted in Lent, score included.
-    const parts: (keyof DialogueMelody)[] = flags.alleluiaInIntroVerse
-      ? ["versicle", "response", "gloria", "alleluia"]
-      : ["versicle", "response", "gloria"];
+    const parts = flags.alleluiaInIntroVerse
+      ? INTRO_VERSE_PARTS
+      : INTRO_VERSE_PARTS.filter((p) => p.key !== "alleluia");
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.introductoryVerse, repo, day, choices,
       slotPath(hourKey, "introVerse"), parts,
@@ -578,7 +585,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
   ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.invitatoryVerse, repo, day, choices,
-      slotPath("invitatory", "verse"), ["versicle", "response"],
+      slotPath("invitatory", "verse"), INVITATORY_VERSE_PARTS,
       htmlInvitatoryVerse(repo),
     );
   }
@@ -611,7 +618,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
   ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.lordsPrayer, repo, day, choices,
-      slotPath(hourKey, "lordsPrayer"), ["gabc"],
+      slotPath(hourKey, "lordsPrayer"), PRAYER_PARTS,
       htmlLordsPrayerSection(repo),
     );
   }
@@ -624,7 +631,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
   ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.oorAcclamation, repo, day, choices,
-      slotPath(hourKey, "acclamation"), ["versicle", "response"],
+      slotPath(hourKey, "acclamation"), OOR_ACCLAMATION_PARTS,
       htmlOorAcclamation(repo),
     );
   }
@@ -636,7 +643,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
   ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.complineBlessing, repo, day, choices,
-      slotPath("compline", "blessing"), ["versicle", "response"],
+      slotPath("compline", "blessing"), COMPLINE_BLESSING_PARTS,
       htmlComplineBlessing(repo),
     );
   }
@@ -649,7 +656,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
   ): LothNode | null {
     return this.htmlFixedPartBlock(
       repo.getFixedTexts()?.dismissalWithoutMinister, repo, day, choices,
-      slotPath(hourKey, "dismissal"), ["blessing", "amen"],
+      slotPath(hourKey, "dismissal"), DISMISSAL_PARTS,
       htmlDismissal(repo),
     );
   }
@@ -838,32 +845,27 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
   }
 
   private htmlShortResponsoryBlock(repo: DataRepository, r: ShortResponsory): LothNode | null {
-    const scoreLines: LothScoreNode[] = [];
-    if (this.shouldEmitScores()) {
-      for (const gabc of [
-        r.melody?.responsory,
-        r.melody?.responsorySecond,
-        r.melody?.versicle,
-        r.melody?.gloria,
-      ]) {
-        const mode = scoreLines.length === 0 ? r.melody?.mode : undefined;
-        const line = this.emitScore(gabc, "antiphon", r.melody?.language, r.melody?.id, mode);
-        if (line) scoreLines.push(line);
-      }
+    let scoreLine: LothScoreNode | null = null;
+    if (this.shouldEmitScores() && r.melody) {
+      scoreLine = this.emitScore(
+        assembleShortResponsoryGabc(r.melody),
+        "antiphon",
+        r.melody.language,
+        r.melody.id,
+        r.melody.mode,
+      );
     }
-    const rubric = scoreLines.length > 0
+    const rubric = scoreLine
       ? htmlScoredMelodyRubric(r.melody)
       : htmlMelodyRubric(r.melody);
 
     if (this.isScoredOnly()) {
-      if (scoreLines.length === 0) return null;
-      return fragment([rubric, ...scoreLines], "\n\n");
+      if (!scoreLine) return null;
+      return fragment([rubric, scoreLine], "\n\n");
     }
 
     return fragment(
-      scoreLines.length > 0
-        ? [rubric, ...scoreLines]
-        : [rubric, htmlShortResponsory(repo, r)],
+      scoreLine ? [rubric, scoreLine] : [rubric, htmlShortResponsory(repo, r)],
       "\n\n",
     );
   }

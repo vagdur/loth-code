@@ -61,6 +61,10 @@ so an assembled page is self-contained. `assembler.getScores()` returns the same
 GABC keyed by score id, for hosts that would rather pre-render server-side with
 exsurge's `createSvgTree` than mount in the browser.
 
+Split GABC (hour openings, short responsories, closings) is merged into one
+score per slot before it is inlined, so the page matches the printed layout
+rather than the storage sections.
+
 ## Loading exsurge
 
 `dist/browser/lothChant.js` keeps a bare `@vagdur/exsurge` specifier. Resolve it
@@ -81,8 +85,10 @@ off when a bundler is doing the work). `exsurgeModulePath()` in
 Each lyric score is handed to exsurge with `useDropCap` on, matching Gregorio's
 default (and the PDF path): the first letter sits to the left of the staff as a
 large initial, and the remaining lyrics start under the staff. Psalm tones leave
-it off — they have no lyrics to take an initial from. Hosts calling `renderScore`
-can override with `useDropCap` on the options.
+it off — they have no lyrics to take an initial from. Merged dialogues whose
+first lyric is a ℣/℟ glyph (`<sp>V/</sp>`) likewise have nothing to take, so
+none is drawn. Hosts calling `renderScore` can override with `useDropCap` on
+the options.
 
 Gregorio places a `mode:` header above that initial automatically; exsurge
 (≥ 1.29.4) does the same. The assemblers write `mode: N;` into the GABC when

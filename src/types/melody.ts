@@ -75,7 +75,9 @@ export type MelodyKind =
  *   antiphon         → { antiphon, psalmTone, antiphonPaschal? }
  *   gospel_antiphon  → { antiphon, psalmTone, firstVerse }
  *   short_responsory → { responsory, responsorySecond, versicle, gloria }
+ *                    (logical sections; display joins them — see gabcDisplay.ts)
  *   dialogue         → { versicle, response, gloria?, alleluia?, ... } — see below
+ *                    (stored split; openings/closings emit as one score)
  *   recitation_tone  → cadence formulas ({ flexa, metrum, punctum } or
  *                      { cadence1..3 }); single-formula tones use plain `gabc`
  */
