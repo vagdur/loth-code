@@ -80,6 +80,23 @@ however your host resolves modules — a bundler, or an import map:
 off when a bundler is doing the work). `exsurgeModulePath()` in
 `src/tools/htmlAssets.ts` locates the file to serve.
 
+## Drop caps
+
+Each lyric score is handed to exsurge with `useDropCap` on, matching Gregorio's
+default (and the PDF path): the first letter sits to the left of the staff as a
+large initial, and the remaining lyrics start under the staff. Psalm tones leave
+it off — they have no lyrics to take an initial from. Merged dialogues whose
+first lyric is a ℣/℟ glyph (`<sp>V/</sp>`) likewise have nothing to take, so
+none is drawn. Hosts calling `renderScore` can override with `useDropCap` on
+the options.
+
+Gregorio places a `mode:` header above that initial automatically; exsurge
+(≥ 1.29.4) does the same. The assemblers write `mode: N;` into the GABC when
+the melody has a mode, and omit the `loth-melody-rubric` "Mode N" caption so
+the number is not printed twice. Psalm tones and header-less dialogues stay
+caption-free. Hosts calling `renderScore` can still override the derived
+annotation with `annotation` on the options.
+
 ## Fonts
 
 exsurge draws ℣, ℟ and similar glyphs in a font family named

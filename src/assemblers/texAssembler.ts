@@ -66,6 +66,7 @@ import {
   texLongResponsory,
   texLordsPrayerSection,
   texMelodyRubric,
+  texScoredMelodyRubric,
   texOorAcclamation,
   texPsalmText,
   texPsalmToneBlock,
@@ -489,18 +490,20 @@ export class TexAssembler implements Assembler<string> {
       return text;
     }
 
-    const chunks: string[] = [];
-    const rubric = texMelodyRubric(melody);
-    if (rubric) chunks.push(rubric);
     const merged = assembleDialogueGabc(melody, parts);
-    const line = this.emitScore(merged);
-    if (line) {
-      chunks.push(line);
-    } else if (this.isScoredOnly()) {
-      return "";
-    } else {
+    const line = this.emitScore(merged, "antiphon", melody.mode);
+    if (!line) {
+      if (this.isScoredOnly()) return "";
+      const chunks: string[] = [];
+      const rubric = texMelodyRubric(melody);
+      if (rubric) chunks.push(rubric);
       chunks.push(text);
+      return chunks.join("\n\n");
     }
+    const chunks: string[] = [];
+    const rubric = texScoredMelodyRubric(melody);
+    if (rubric) chunks.push(rubric);
+    chunks.push(line);
     return chunks.join("\n\n");
   }
 
@@ -609,6 +612,7 @@ export class TexAssembler implements Assembler<string> {
   private emitScore(
     gabc: string | undefined,
     kind: "antiphon" | "psalmTone" = "antiphon",
+    mode: number | undefined = undefined,
   ): string {
     if (!this.shouldEmitScores()) return "";
     const trimmed = gabc?.trim();
@@ -616,7 +620,7 @@ export class TexAssembler implements Assembler<string> {
 
     const base = `${this.scorePrefix}-score-${++this.scoreCounter}`;
     const filename = `${base}.gabc`;
-    this.gabcFiles.set(filename, withGabcHeader(trimmed, base));
+    this.gabcFiles.set(filename, withGabcHeader(trimmed, base, mode !== undefined ? { mode } : undefined));
     return kind === "psalmTone" ? texPsalmToneScoreLine(base) : texScoreLine(base);
   }
 
@@ -700,17 +704,22 @@ export class TexAssembler implements Assembler<string> {
     flags: LiturgicalFlags,
     includePsalmTone: boolean,
   ): string {
-    const rubric = texMelodyRubric(a.melody);
-
     let scoreLine = "";
     if (this.shouldEmitScores() && a.melody?.gabc) {
-      scoreLine = this.emitScore(a.melody.gabc);
+      scoreLine = this.emitScore(a.melody.gabc, "antiphon", a.melody.mode);
     }
 
     let toneLine = "";
     if (this.shouldEmitScores() && includePsalmTone && a.psalmTone?.trim()) {
       toneLine = this.emitScore(a.psalmTone, "psalmTone");
     }
+
+    // Mode sits on the antiphon GABC header (above that drop cap), not the
+    // psalm tone and not a \melodyRubric caption, whenever a lyric score
+    // was emitted.
+    const rubric = scoreLine
+      ? texScoredMelodyRubric(a.melody)
+      : texMelodyRubric(a.melody);
 
     const hasScore = Boolean(scoreLine || toneLine);
 
@@ -732,12 +741,14 @@ export class TexAssembler implements Assembler<string> {
   }
 
   private texHymnBlock(hymn: Hymn): string {
-    const rubric = texMelodyRubric(hymn.melody);
-
     let scoreLine = "";
     if (this.shouldEmitScores() && hymn.melody?.gabc) {
-      scoreLine = this.emitScore(hymn.melody.gabc);
+      scoreLine = this.emitScore(hymn.melody.gabc, "antiphon", hymn.melody.mode);
     }
+
+    const rubric = scoreLine
+      ? texScoredMelodyRubric(hymn.melody)
+      : texMelodyRubric(hymn.melody);
 
     if (this.isScoredOnly()) {
       if (!scoreLine) return "";
@@ -770,9 +781,9 @@ export class TexAssembler implements Assembler<string> {
     if (this.shouldEmitScores()) {
       const canticle = repo.getCanticle(assignment.psalmOrCanticleId);
       if (canticle?.melody?.gabc?.trim()) {
-        const rub = texMelodyRubric(canticle.melody);
+        const rub = texScoredMelodyRubric(canticle.melody);
         if (rub) canticleMelody.push(rub);
-        const line = this.emitScore(canticle.melody.gabc);
+        const line = this.emitScore(canticle.melody.gabc, "antiphon", canticle.melody.mode);
         if (line) canticleMelody.push(line);
       }
     }
@@ -782,11 +793,15 @@ export class TexAssembler implements Assembler<string> {
   }
 
   private texShortResponsoryBlock(repo: DataRepository, r: ShortResponsory): string {
-    const rubric = texMelodyRubric(r.melody);
     let scoreLine = "";
     if (this.shouldEmitScores() && r.melody) {
-      scoreLine = this.emitScore(assembleShortResponsoryGabc(r.melody));
+      scoreLine = this.emitScore(
+        assembleShortResponsoryGabc(r.melody), "antiphon", r.melody.mode,
+      );
     }
+    const rubric = scoreLine
+      ? texScoredMelodyRubric(r.melody)
+      : texMelodyRubric(r.melody);
 
     if (this.isScoredOnly()) {
       if (!scoreLine) return "";

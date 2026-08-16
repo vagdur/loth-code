@@ -6,9 +6,14 @@ GABC is the plain-text notation format used by [Gregorio](https://gregorio-proje
 
 ```
 name: Antiphon title;
+mode: 8;
 %%
 (clef) syl(notes)la(notes)ble(notes) (,) next(notes)word.(notes)
 ```
+
+`mode:` (1–8) is what Gregorio and exsurge draw above the drop cap. The
+assemblers write it when the melody record has a mode; a body that already
+carries its own `%%` header is left alone.
 
 Each syllable of the text is written immediately before the parenthesised note group that belongs to it. A `( )` token with no preceding text is a standalone element (barline, rest, or psalm-tone pitch token).
 

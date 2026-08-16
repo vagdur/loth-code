@@ -1,6 +1,6 @@
 {
   "name": "@vagdur/loth",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "Liturgy of the Hours assembler",
   "license": "MIT",
   "author": "Vilhelm Agdur",
@@ -70,7 +70,7 @@
     "build:calendars": "python scripts/build-sanctoral-calendars.py"
   },
   "dependencies": {
-    "@vagdur/exsurge": "^1.29.3",
+    "@vagdur/exsurge": "^1.29.4",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
