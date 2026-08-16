@@ -84,6 +84,7 @@ export function applyPrefix(body: string, prefix: GabcPrefix | undefined): strin
   return `${prefixTag(prefix)}${trimmed}`;
 }
 
+/** Insert the ℣./℟. special after a leading clef, not before it. */
 function applyPrefixToScore(gabc: string, prefix: GabcPrefix | undefined): string {
   const { clef, body } = splitClef(gabc);
   const prefixed = applyPrefix(body, prefix);
@@ -112,6 +113,7 @@ function glueLine(prev: string, next: string): string {
  * Concatenate GABC segments into one body.
  *
  * The first segment's clef is kept; later segments lose a matching clef.
+ * A change of clef is kept, with the ℣./℟. special after that token.
  * `attach: "line"` starts a new staff (`(::) (Z)`); `"inline"` continues the
  * current staff, inserting `(:)` when the previous part has no bar.
  */
@@ -142,7 +144,7 @@ export function joinGabc(segments: readonly GabcSegment[]): string {
 
   for (const seg of prepared.slice(1)) {
     const stripped = stripMatchingClef(seg.gabc, clef);
-    const piece = applyPrefix(stripped, seg.prefix);
+    const piece = applyPrefixToScore(stripped, seg.prefix);
     acc = seg.attach === "inline" ? glueInline(acc, piece) : glueLine(acc, piece);
   }
   return ensureFinalBar(acc);
@@ -198,7 +200,7 @@ export function joinGloriaWithResponse(
   if (!r) return g;
   const { clef, body } = splitClef(g);
   const head = ensureDoubleBar(body);
-  const resp = applyPrefix(stripMatchingClef(r, clef), "R");
+  const resp = applyPrefixToScore(stripMatchingClef(r, clef), "R");
   const joined = `${head} ${resp}`;
   return clef ? `${clef} ${joined}` : joined;
 }

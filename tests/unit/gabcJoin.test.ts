@@ -81,6 +81,31 @@ describe("joinGabc", () => {
     expect(stripMatchingClef("(c4) Help.(f)", "(c4)")).toBe("Help.(f)");
   });
 
+  test("a later clef that differs from the first is kept", () => {
+    expect(stripMatchingClef("(c3) Help.(f)", "(c4)")).toBe("(c3) Help.(f)");
+  });
+
+  test("a later change of clef keeps the ℣./℟. special after that clef", () => {
+    const out = joinGabc([
+      { gabc: "(c4) O(f)pen.(f)", prefix: "V" },
+      { gabc: "(c3) Help.(f)", prefix: "R", attach: "line" },
+    ]);
+    expect(out).toBe(
+      "(c4) <sp>V/</sp>O(f)pen.(f) (::) (Z)\n(c3) <sp>R/</sp>Help.(f) (::)",
+    );
+    expect(out).not.toMatch(/<sp>R\/<\/sp>\(c3\)/);
+  });
+
+  test("inline attach also puts the prefix after a change of clef", () => {
+    const out = joinGabc([
+      { gabc: "(c4) O(f)pen.(f)", prefix: "V" },
+      { gabc: "(c3) Praise.(f)", prefix: "R", attach: "inline" },
+    ]);
+    expect(out).toBe(
+      "(c4) <sp>V/</sp>O(f)pen.(f) (:) (c3) <sp>R/</sp>Praise.(f) (::)",
+    );
+  });
+
   test("empty segments are skipped", () => {
     expect(joinGabc([
       { gabc: "  " },
@@ -115,6 +140,17 @@ describe("short responsory joins", () => {
     expect(out).toContain("<sp>R/</sp>Her(f)ren(g) är(h) min(g) klip(f)pa.(e) +(:)");
     expect(out.startsWith("(c4) Ä(f)ra")).toBe(true);
     expect(out).toContain("(::) <sp>R/</sp>");
+  });
+
+  test("a Gloria and response in different clefs keep ℟. after the new clef", () => {
+    const out = joinGloriaWithResponse(
+      gloria,
+      "(c3) Her(f)ren(g) är(h) min(g) klip(f)pa.(e) (::)",
+    );
+    expect(out).toBe(
+      "(c4) Ä(f)ra(g) va(h)re(g) Fa(f)dern.(e) (::) (c3) <sp>R/</sp>Her(f)ren(g) är(h) min(g) klip(f)pa.(e) (::)",
+    );
+    expect(out).not.toMatch(/<sp>R\/<\/sp>\(c3\)/);
   });
 
   test("applyPrefix writes V. immediately before the first syllable", () => {
