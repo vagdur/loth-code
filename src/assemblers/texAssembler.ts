@@ -638,13 +638,26 @@ export class TexAssembler implements Assembler<string> {
         const block = this.texAntiphonBlock(repo, antiphon, flags, true);
         if (block) parts.push(block);
       }
+      const incipit = this.texGospelIncipit(antiphon);
+      if (incipit) parts.push(incipit);
       return parts;
     }
 
     if (antiphon) parts.push(this.texAntiphonBlock(repo, antiphon, flags, true));
+    const incipit = this.texGospelIncipit(antiphon);
+    if (incipit) parts.push(incipit);
     parts.push(texGospelCanticle(repo, canticleKind));
     if (antiphon) parts.push(this.texAntiphonBlock(repo, antiphon, flags, false));
     return parts;
+  }
+
+  /**
+   * Pointed first verse of the gospel canticle (data-structure.md §2.1).
+   * Score only: the lyrics are the canticle's opening line, so a prose
+   * rendering would duplicate `\gospelCanticle`.
+   */
+  private texGospelIncipit(antiphon: Antiphon | undefined): string {
+    return this.emitScore(antiphon?.firstVerse, "antiphon");
   }
 
   /**

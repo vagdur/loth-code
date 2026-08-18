@@ -6,7 +6,7 @@ When a slot carries GABC scores, sung lyrics render via Gregorio only; redundant
 
 Split GABC (introductory verse, short responsory, blessings, dismissals) is stored as named sections and **merged into one score** for display: openings and closings become a single block with ℣./℟. labels, and the short responsory is reassembled into the printed R. / V.+repeat / V. Gloria + full R. layout. See [`gabcDisplay.ts`](../src/assemblers/gabcDisplay.ts).
 
-GABC from the data model (`Melody.gabc`, `Antiphon.psalmTone`, canticle melodies) is embedded with the LaTeX `filecontents` environment so Gregorio can read sibling `.gabc` files when you run **LuaLaTeX**.
+GABC from the data model (`Melody.gabc`, `Antiphon.psalmTone`, the gospel-canticle `Antiphon.firstVerse` incipit, canticle melodies) is embedded with the LaTeX `filecontents` environment so Gregorio can read sibling `.gabc` files when you run **LuaLaTeX**. The first-verse score is omitted in text-only output: its lyrics are the canticle's opening line.
 
 `npm run build` does **not** require TeX. Producing a PDF is optional and needs a working **LuaLaTeX** installation plus **Gregorio** (GregorioTeX).
 

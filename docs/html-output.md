@@ -63,7 +63,10 @@ exsurge's `createSvgTree` than mount in the browser.
 
 Split GABC (hour openings, short responsories, closings) is merged into one
 score per slot before it is inlined, so the page matches the printed layout
-rather than the storage sections.
+rather than the storage sections. Gospel-canticle antiphons that carry a
+pointed first-verse GABC part emit that score between the psalm tone and the
+canticle text; it is omitted in `plain` mode, where the lyrics would only
+repeat the canticle's opening line.
 
 ## Loading exsurge
 

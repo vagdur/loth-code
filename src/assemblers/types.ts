@@ -113,8 +113,8 @@ function resolveChain(
  * ad-lib source choice on chains marked with `adLibFrom` (see ResolveOptions).
  *
  * When a LiturgicalDay is supplied, melody references on the resolved value
- * are hydrated into inline `melody`/`psalmTone` fields (a copy is returned;
- * repository-cached data is never mutated).
+ * are hydrated into inline `melody`/`psalmTone`/`firstVerse` fields (a copy
+ * is returned; repository-cached data is never mutated).
  */
 export function resolveSource(
   source: SlotSource,

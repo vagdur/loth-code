@@ -3,8 +3,9 @@
  *
  * Data-tree slots carry ordered `melodyRefs` lists (see types/melody.ts).
  * Resolution picks the first ref whose condition matches the LiturgicalDay
- * and hydrates the slot's inline `melody` (and `psalmTone`) fields from the
- * stored melody, so assemblers keep consuming the plain `Melody` shape.
+ * and hydrates the slot's inline `melody` (and `psalmTone` / `firstVerse`)
+ * fields from the stored melody, so assemblers keep consuming the plain
+ * `Melody` shape.
  * When refs are present they are authoritative; an inline melody survives
  * only as the fallback when no ref matches or a ref dangles.
  */
@@ -160,6 +161,7 @@ interface MelodyRefCarrier {
   melodyRefs?: MelodyRef[];
   melody?: unknown;
   psalmTone?: string;
+  firstVerse?: string;
   text?: string;
   versicle?: string;
   stanzas?: string[];
@@ -187,6 +189,7 @@ function hydrateCarrier(
   } else {
     out.melody = toInlineMelody(stored, ref, day);
     if (stored.parts?.psalmTone) out.psalmTone = stored.parts.psalmTone;
+    if (stored.parts?.firstVerse) out.firstVerse = stored.parts.firstVerse;
   }
 
   // A CONDITIONED variant may carry its own sung text (e.g. the Eastertide
