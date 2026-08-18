@@ -95,6 +95,12 @@ export interface Antiphon {
   melody?: Melody;
   /** GABC notation for the psalm tone used with this antiphon's psalm/canticle. */
   psalmTone?: string;
+  /**
+   * Pointed first verse of the gospel canticle (`gospel_antiphon` `firstVerse`
+   * part). The lyrics are the canticle's opening line, so assemblers emit this
+   * as a score only — never as prose (data-structure.md §2.1).
+   */
+  firstVerse?: string;
   melodyRefs?: MelodyRef[];
 }
 

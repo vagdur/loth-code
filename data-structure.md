@@ -176,7 +176,8 @@ StoredMelody {
 Resolution: `melody_refs` is authoritative when present; an inline `melody` is
 the terminal unconditioned fallback (and the hydrated output shape). A text
 with neither field simply has no recorded melody yet — legal, and surfaced by
-the coverage report rather than the schema.
+the coverage report rather than the schema. Antiphon hydration also copies
+`parts.psalm_tone` onto `psalm_tone` and `parts.first_verse` onto `first_verse`.
 
 Text override: when a **conditioned** variant wins, its stored `text` (the
 de-hyphenated GABC lyrics) replaces the slot's display text during hydration —
@@ -194,6 +195,10 @@ Antiphon {
   // GABC notation for the psalm tone used with this antiphon's psalm/canticle.
   // Kept as raw GABC for now; can be promoted to a structured type later.
   psalm_tone?: string
+  // Pointed first verse of the gospel canticle (`gospel_antiphon` part).
+  // Hydrated from the store; assemblers emit it as a score only — the lyrics
+  // are the canticle's opening line, so a prose rendering would duplicate it.
+  first_verse?: string
   melody_refs?: MelodyRef[]   // references into the melody store (§2.1)
 }
 

@@ -80,6 +80,21 @@ const STORE: Record<string, StoredMelody> = {
       page: 1, sectionLabel: "Kort responsorium", filename: "f",
     },
   },
+  "kln/a/gospel-antifon": {
+    id: "kln/a/gospel-antifon",
+    kind: "gospel_antiphon",
+    mode: 7,
+    parts: {
+      antiphon: "(c3) Ben(e)e(e)dic(g)tus.(h)",
+      firstVerse: "(c3) Bles(e)sed(hg) be(i) the(h) Lord.(g)",
+      psalmTone: "(c3) (g) (h) (ir0)",
+    },
+    contentHash: "eeee",
+    source: {
+      index: "i", pdf: "p", sourceCategory: "c",
+      page: 1, sectionLabel: "Benedictusantifon", filename: "f",
+    },
+  },
 };
 
 const repo = {
@@ -212,6 +227,21 @@ describe("hydrateMelodies", () => {
     expect(hydrated.psalmTone).toBe("(c4) (f) (gR)");
     // Original untouched.
     expect(antiphon.melody).toBeUndefined();
+  });
+
+  test("gospel_antiphon: firstVerse is filled from the store", () => {
+    const antiphon: Antiphon = {
+      text: "Benedictus.",
+      melodyRefs: [{ ref: "kln/a/gospel-antifon" }],
+    };
+    const hydrated = hydrateMelodies(antiphon, repo, makeDay());
+    expect(hydrated.melody).toEqual({
+      id: "kln/a/gospel-antifon",
+      mode: 7,
+      gabc: "(c3) Ben(e)e(e)dic(g)tus.(h)",
+    });
+    expect(hydrated.psalmTone).toBe("(c3) (g) (h) (ir0)");
+    expect(hydrated.firstVerse).toBe("(c3) Bles(e)sed(hg) be(i) the(h) Lord.(g)");
   });
 
   test("paschal antiphon body is used during Eastertide", () => {

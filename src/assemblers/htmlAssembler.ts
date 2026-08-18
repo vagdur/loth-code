@@ -696,13 +696,27 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
 
     if (this.isScoredOnly()) {
       if (antiphon) parts.push(this.htmlAntiphonBlock(repo, antiphon, flags, true));
+      parts.push(this.htmlGospelIncipit(antiphon));
       return parts;
     }
 
     if (antiphon) parts.push(this.htmlAntiphonBlock(repo, antiphon, flags, true));
+    parts.push(this.htmlGospelIncipit(antiphon));
     parts.push(htmlGospelCanticle(repo, canticleKind));
     if (antiphon) parts.push(this.htmlAntiphonBlock(repo, antiphon, flags, false));
     return parts;
+  }
+
+  /**
+   * Pointed first verse of the gospel canticle (data-structure.md §2.1).
+   * Score only: the lyrics are the canticle's opening line, so a prose
+   * rendering would duplicate the canticle block.
+   */
+  private htmlGospelIncipit(antiphon: Antiphon | undefined): LothScoreNode | null {
+    return this.emitScore(
+      antiphon?.firstVerse, "antiphon",
+      antiphon?.melody?.language, antiphon?.melody?.id,
+    );
   }
 
   /**
