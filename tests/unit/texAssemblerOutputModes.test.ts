@@ -22,7 +22,7 @@ test("plain mode emits plain macros and no GABC scores", async () => {
   expect(tex).toMatch(/\\antiphon\{/);
   expect(tex).toMatch(/\\hymn\{/);
   expect(tex).toMatch(/\\shortResponsory\{/);
-  expect(tex).toMatch(/\\lordsPrayerSection\{/);
+  expect(tex).toMatch(/\\lordsPrayer\{/);
   expect(tex).toMatch(/\\dismissal\{/);
   expect(tex).toContain("\\psalmText{");
   expect(tex).toContain("\\gospelCanticle{");
@@ -40,7 +40,7 @@ test("scored mode emits scores only for sung slots", async () => {
   expect(tex).not.toMatch(/\\antiphon\{/);
   expect(tex).not.toMatch(/\\hymn\{/);
   expect(tex).not.toMatch(/\\shortResponsory\{/);
-  expect(tex).not.toMatch(/\\lordsPrayerSection\{/);
+  expect(tex).not.toMatch(/\\lordsPrayer\{/);
   expect(tex).not.toMatch(/\\dismissal\{/);
   expect(tex).not.toContain("\\psalmText{");
   expect(tex).not.toContain("\\gospelCanticle{");

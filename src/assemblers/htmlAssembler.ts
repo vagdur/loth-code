@@ -62,6 +62,7 @@ import {
   htmlDismissal,
   htmlExaminationOfConscience,
   htmlGospelCanticle,
+  htmlHeadedSection,
   htmlHourFragment,
   htmlHourHeading,
   htmlHymn,
@@ -273,24 +274,33 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const body: MaybeNode[] = [htmlHourHeading(repo, "officeOfReadings", hour.liturgicalDay)];
 
     if (hour.invitatory) {
-      body.push(...this.htmlInvitatoryBlocks(hour.invitatory, repo, choices));
+      body.push(htmlHeadedSection(
+        repo, "invitatory", ...this.htmlInvitatoryBlocks(hour.invitatory, repo, choices),
+      ));
     } else {
-      body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "officeOfReadings"));
+      body.push(htmlHeadedSection(
+        repo, "introductoryVerse",
+        this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "officeOfReadings"),
+      ));
     }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.htmlHymnBlock(hymn));
+    if (hymn) body.push(htmlHeadedSection(repo, "hymn", this.htmlHymnBlock(hymn)));
 
+    const psalmody: MaybeNode[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        body.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
+        psalmody.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
+    body.push(htmlHeadedSection(repo, "psalmody", ...psalmody));
 
     const versicle = resolveVersicle(hour.versicleRef, repo, hour.liturgicalDay, opt("versicle"));
-    if (versicle && this.includePlainProse()) body.push(htmlVersicle(repo, versicle));
+    if (versicle && this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "versicle", htmlVersicle(repo, versicle)));
+    }
 
     const biblical = resolveBiblicalReading(hour.biblicalReadingRef, repo, undefined, opt("biblicalReading"));
     if (biblical && this.includePlainProse()) {
@@ -323,9 +333,16 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     }
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(htmlConcludingPrayer(repo, prayer.text, "officeOfReadings"));
+    if (prayer && this.includePlainProse()) {
+      body.push(htmlHeadedSection(
+        repo, "concludingPrayer", htmlConcludingPrayer(repo, prayer.text, "officeOfReadings"),
+      ));
+    }
 
-    body.push(this.htmlOorAcclamationBlock(repo, hour.liturgicalDay, choices, "officeOfReadings"));
+    body.push(htmlHeadedSection(
+      repo, "acclamation",
+      this.htmlOorAcclamationBlock(repo, hour.liturgicalDay, choices, "officeOfReadings"),
+    ));
     return this.joinBody(body);
   }
 
@@ -336,28 +353,37 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const body: MaybeNode[] = [htmlHourHeading(repo, "lauds", hour.liturgicalDay)];
 
     if (hour.invitatory) {
-      body.push(...this.htmlInvitatoryBlocks(hour.invitatory, repo, choices));
+      body.push(htmlHeadedSection(
+        repo, "invitatory", ...this.htmlInvitatoryBlocks(hour.invitatory, repo, choices),
+      ));
     } else if (!hour.suppressIntroVerse) {
-      body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "lauds"));
+      body.push(htmlHeadedSection(
+        repo, "introductoryVerse",
+        this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "lauds"),
+      ));
     }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.htmlHymnBlock(hymn));
+    if (hymn) body.push(htmlHeadedSection(repo, "hymn", this.htmlHymnBlock(hymn)));
 
+    const psalmody: MaybeNode[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        body.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
+        psalmody.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
+    body.push(htmlHeadedSection(repo, "psalmody", ...psalmody));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading && this.includePlainProse()) body.push(htmlShortReading(reading));
+    if (reading && this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "reading", htmlShortReading(reading)));
+    }
 
     if (hour.shortResponsoryRef) {
       const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay, opt("shortResponsory"));
-      if (resp) body.push(this.htmlShortResponsoryBlock(repo, resp));
+      if (resp) body.push(htmlHeadedSection(repo, "responsory", this.htmlShortResponsoryBlock(repo, resp)));
     }
 
     const benAntiphon = resolveAntiphon(hour.benedictusAntiphonRef, repo, hour.liturgicalDay, opt("benedictusAntiphon"));
@@ -366,19 +392,28 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
     if (intercessions && this.includePlainProse()) body.push(htmlIntercessions(repo, intercessions));
 
-    body.push(this.htmlLordsPrayerBlock(repo, hour.liturgicalDay, choices, "lauds"));
+    body.push(htmlHeadedSection(
+      repo, "ourFather", this.htmlLordsPrayerBlock(repo, hour.liturgicalDay, choices, "lauds"),
+    ));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(htmlConcludingPrayer(repo, prayer.text, "lauds"));
+    if (prayer && this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "concludingPrayer", htmlConcludingPrayer(repo, prayer.text, "lauds")));
+    }
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay, opt("memoriaAddendum.antiphon"));
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
-      if (addAntiphon) body.push(this.htmlAntiphonBlock(repo, addAntiphon, flags, true));
-      if (addPrayer && this.includePlainProse()) body.push(htmlPlainProse(addPrayer.text));
+      body.push(htmlHeadedSection(
+        repo, "memoriaAddendum",
+        addAntiphon ? this.htmlAntiphonBlock(repo, addAntiphon, flags, true) : null,
+        addPrayer && this.includePlainProse() ? htmlPlainProse(addPrayer.text) : null,
+      ));
     }
 
-    body.push(this.htmlDismissalBlock(repo, hour.liturgicalDay, choices, "lauds"));
+    body.push(htmlHeadedSection(
+      repo, "dismissal", this.htmlDismissalBlock(repo, hour.liturgicalDay, choices, "lauds"),
+    ));
     return this.joinBody(body);
   }
 
@@ -389,25 +424,35 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
     const body: MaybeNode[] = [htmlHourHeading(repo, hourKey, hour.liturgicalDay)];
 
-    body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
+    body.push(htmlHeadedSection(
+      repo, "introductoryVerse",
+      this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey),
+    ));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.htmlHymnBlock(hymn));
+    if (hymn) body.push(htmlHeadedSection(repo, "hymn", this.htmlHymnBlock(hymn)));
 
-    for (const part of this.htmlDaytimePsalmody(repo, hour, flags, choices)) {
-      body.push(part);
-    }
+    body.push(htmlHeadedSection(repo, "psalmody", ...this.htmlDaytimePsalmody(repo, hour, flags, choices)));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading && this.includePlainProse()) body.push(htmlShortReading(reading));
+    if (reading && this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "reading", htmlShortReading(reading)));
+    }
 
     const versicle = resolveVersicle(hour.versicleRef, repo, hour.liturgicalDay, opt("versicle"));
-    if (versicle && this.includePlainProse()) body.push(htmlVersicle(repo, versicle));
+    if (versicle && this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "versicle", htmlVersicle(repo, versicle)));
+    }
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(htmlConcludingPrayer(repo, prayer.text, hourKey));
+    if (prayer && this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "concludingPrayer", htmlConcludingPrayer(repo, prayer.text, hourKey)));
+    }
 
-    body.push(this.htmlOorAcclamationBlock(repo, hour.liturgicalDay, choices, hourKey));
+    body.push(htmlHeadedSection(
+      repo, "acclamation",
+      this.htmlOorAcclamationBlock(repo, hour.liturgicalDay, choices, hourKey),
+    ));
     return this.joinBody(body);
   }
 
@@ -418,25 +463,32 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
     const body: MaybeNode[] = [htmlHourHeading(repo, hourKey, hour.liturgicalDay)];
 
-    body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
+    body.push(htmlHeadedSection(
+      repo, "introductoryVerse",
+      this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey),
+    ));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.htmlHymnBlock(hymn));
+    if (hymn) body.push(htmlHeadedSection(repo, "hymn", this.htmlHymnBlock(hymn)));
 
+    const psalmody: MaybeNode[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        body.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
+        psalmody.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
+    body.push(htmlHeadedSection(repo, "psalmody", ...psalmody));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading && this.includePlainProse()) body.push(htmlShortReading(reading));
+    if (reading && this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "reading", htmlShortReading(reading)));
+    }
 
     if (hour.shortResponsoryRef) {
       const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay, opt("shortResponsory"));
-      if (resp) body.push(this.htmlShortResponsoryBlock(repo, resp));
+      if (resp) body.push(htmlHeadedSection(repo, "responsory", this.htmlShortResponsoryBlock(repo, resp)));
     }
 
     const magAntiphon = resolveAntiphon(hour.magnificatAntiphonRef, repo, hour.liturgicalDay, opt("magnificatAntiphon"));
@@ -445,19 +497,28 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
     if (intercessions && this.includePlainProse()) body.push(htmlIntercessions(repo, intercessions));
 
-    body.push(this.htmlLordsPrayerBlock(repo, hour.liturgicalDay, choices, hourKey));
+    body.push(htmlHeadedSection(
+      repo, "ourFather", this.htmlLordsPrayerBlock(repo, hour.liturgicalDay, choices, hourKey),
+    ));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(htmlConcludingPrayer(repo, prayer.text, hourKey));
+    if (prayer && this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "concludingPrayer", htmlConcludingPrayer(repo, prayer.text, hourKey)));
+    }
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay, opt("memoriaAddendum.antiphon"));
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
-      if (addAntiphon) body.push(this.htmlAntiphonBlock(repo, addAntiphon, flags, true));
-      if (addPrayer && this.includePlainProse()) body.push(htmlPlainProse(addPrayer.text));
+      body.push(htmlHeadedSection(
+        repo, "memoriaAddendum",
+        addAntiphon ? this.htmlAntiphonBlock(repo, addAntiphon, flags, true) : null,
+        addPrayer && this.includePlainProse() ? htmlPlainProse(addPrayer.text) : null,
+      ));
     }
 
-    body.push(this.htmlDismissalBlock(repo, hour.liturgicalDay, choices, hourKey));
+    body.push(htmlHeadedSection(
+      repo, "dismissal", this.htmlDismissalBlock(repo, hour.liturgicalDay, choices, hourKey),
+    ));
     return this.joinBody(body);
   }
 
@@ -467,22 +528,31 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     const opt = (slot: string) => slotOpts(choices, "compline", slot);
     const body: MaybeNode[] = [htmlHourHeading(repo, "compline", hour.liturgicalDay)];
 
-    body.push(this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "compline"));
-    if (this.includePlainProse()) body.push(htmlExaminationOfConscience(repo));
+    body.push(htmlHeadedSection(
+      repo, "introductoryVerse",
+      this.htmlIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "compline"),
+    ));
+    if (this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "examination", htmlExaminationOfConscience(repo)));
+    }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.htmlHymnBlock(hymn));
+    if (hymn) body.push(htmlHeadedSection(repo, "hymn", this.htmlHymnBlock(hymn)));
 
+    const psalmody: MaybeNode[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        body.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
+        psalmody.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
+    body.push(htmlHeadedSection(repo, "psalmody", ...psalmody));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading && this.includePlainProse()) body.push(htmlShortReading(reading));
+    if (reading && this.includePlainProse()) {
+      body.push(htmlHeadedSection(repo, "reading", htmlShortReading(reading)));
+    }
 
     const complineResp = getComplineResponsory(repo);
     if (complineResp) {
@@ -490,23 +560,30 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
         ...(choices ? { choices } : {}),
         path: slotPath("compline", "responsory"),
       });
-      body.push(this.htmlShortResponsoryBlock(repo, hydrated));
+      body.push(htmlHeadedSection(repo, "responsory", this.htmlShortResponsoryBlock(repo, hydrated)));
     } else if (this.includePlainProse()) {
-      body.push(htmlPlainProse(formatComplineResponsoryFallbackPlain()));
+      body.push(htmlHeadedSection(repo, "responsory", htmlPlainProse(formatComplineResponsoryFallbackPlain())));
     }
 
     const ndAntiphon = resolveAntiphon(hour.nuncDimittisAntiphonRef, repo, hour.liturgicalDay, opt("nuncDimittisAntiphon"));
     body.push(...this.htmlGospelCanticleSlot(repo, ndAntiphon, flags, "nuncDimittis", "nuncDimittis"));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(htmlConcludingPrayer(repo, prayer.text, "compline"));
+    if (prayer && this.includePlainProse()) {
+      body.push(htmlHeadedSection(
+        repo, "concludingPrayer", htmlConcludingPrayer(repo, prayer.text, "compline"),
+      ));
+    }
 
-    body.push(this.htmlComplineBlessingBlock(repo, hour.liturgicalDay, choices));
+    body.push(htmlHeadedSection(
+      repo, "blessing", this.htmlComplineBlessingBlock(repo, hour.liturgicalDay, choices),
+    ));
 
     const marianAntiphon = resolveAntiphon(hour.marianAntiphonRef, repo, hour.liturgicalDay, opt("marianAntiphon"));
     if (marianAntiphon) {
-      body.push(htmlSectionHeading(repo, "marianAntiphon"));
-      body.push(this.htmlAntiphonBlock(repo, marianAntiphon, flags, false));
+      body.push(htmlHeadedSection(
+        repo, "marianAntiphon", this.htmlAntiphonBlock(repo, marianAntiphon, flags, false),
+      ));
     }
 
     return this.joinBody(body);

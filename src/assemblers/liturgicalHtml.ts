@@ -113,10 +113,16 @@ export function htmlHourHeading(
 ): LothElement {
   const hour = getLabels(repo).hours[key];
   const ordoLabels = repo.getAssemblerLabels().ordo;
-  const title = liturgicalDay && ordoLabels
-    ? `${hour} - ${formatOrdoDayHeadline(liturgicalDay, ordoLabels, calendarId)}`
-    : hour;
-  return el("h1", { class: "loth-hour-heading" }, text(title));
+  const dayLine = liturgicalDay && ordoLabels
+    ? formatOrdoDayHeadline(liturgicalDay, ordoLabels, calendarId)
+    : undefined;
+  // Always has the h1, so the block cannot be empty.
+  return block(
+    "header",
+    { class: "loth-hour-header" },
+    el("h1", { class: "loth-hour-heading" }, text(hour)),
+    dayLine ? p("loth-day-heading", dayLine) : null,
+  )!;
 }
 
 export function htmlSectionHeading(repo: DataRepository, key: SectionLabelKey): LothElement {
@@ -125,6 +131,20 @@ export function htmlSectionHeading(repo: DataRepository, key: SectionLabelKey): 
     { class: "loth-section-heading" },
     text(getLabels(repo).sections[key]),
   );
+}
+
+/**
+ * A section heading plus its body. Nothing is emitted when every part is
+ * empty, so scored-only output never leaves a heading hanging over a gap.
+ */
+export function htmlHeadedSection(
+  repo: DataRepository,
+  key: SectionLabelKey,
+  ...parts: MaybeNode[]
+): LothNode | null {
+  const body = fragment(parts, "\n\n");
+  if (!body) return null;
+  return fragment([htmlSectionHeading(repo, key), body], "\n\n");
 }
 
 export function htmlAntiphon(
@@ -301,15 +321,10 @@ export function htmlGospelCanticle(
 }
 
 export function htmlLordsPrayerSection(repo: DataRepository): LothElement | null {
-  const plain = formatLordsPrayerPlain(repo);
-  const [, ...bodyParts] = plain.split("\n\n");
-  const title = getLabels(repo).sections.ourFather;
-  const body = bodyParts.join("\n\n");
   return wrap(
     "section",
     "loth-lords-prayer",
-    el("h2", { class: "loth-section-heading" }, text(title)),
-    prose("loth-prose", body),
+    prose("loth-prose", formatLordsPrayerPlain(repo)),
   );
 }
 

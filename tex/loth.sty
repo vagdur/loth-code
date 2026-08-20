@@ -1,11 +1,24 @@
 % loth.sty — Liturgy of the Hours presentation (semantic markup → layout)
-\ProvidesPackage{loth}[2026/05/20 LoTH liturgical markup]
+%
+% Colour follows the liturgical "do the red, say the black": rubrics and
+% labels (except the hour title) are red; spoken and sung text is black.
+% The HTML counterpart is html/loth.css; keep the two in visual agreement.
+\ProvidesPackage{loth}[2026/08/20 LoTH liturgical markup]
 
+\RequirePackage{xcolor}
+\RequirePackage[margin=2.4cm]{geometry}
 \RequirePackage{gregoriotex}
 % GregorioTeX 6.x defaults to \gre@compilegabc=0 (input .gtex only, no shell-escape).
 % LoTH keeps GABC in sibling `.gabc` files and compiles incrementally when they
 % are unchanged (`auto` skips stale `.gtex` regeneration).
 \gresetcompilegabc{auto}
+
+\definecolor{lothtext}{HTML}{1A1A1A}
+\definecolor{lothrubric}{HTML}{A4243B}
+
+\color{lothtext}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
 
 % Rubric strings (defaults; override via \LothRubrics* before \begin{document})
 \newcommand{\LothAntiphonPrefix}{Ant.}
@@ -24,50 +37,88 @@
 \newcommand{\LothVmed}{\par\medskip}
 \newcommand{\LothHymnStanzaSep}{\par\par}
 
-% Headings
-\newcommand{\hourHeading}[1]{\section*{#1}}
-\newcommand{\sectionHeading}[1]{\subsection*{#1}}
+\newcommand{\lothRubric}[1]{{\color{lothrubric}#1}}
+
+% Headings — hour title black; every other label red.
+\newcommand{\hourHeading}[1]{%
+  \vspace*{0.6em}%
+  {\centering\Large\bfseries\color{lothtext}#1\par}%
+  \vspace{0.15em}}
+\newcommand{\dayHeading}[1]{%
+  {\centering\large\color{lothtext}\textit{#1}\par}%
+  \vspace{1.15em}}
+\newcommand{\sectionHeading}[1]{%
+  \par\vspace{1.35em}%
+  {\noindent\small\bfseries\color{lothrubric}#1\par}%
+  \vspace{0.3em}}
 
 % Rubrics and dialogue
-\newcommand{\antiphon}[1]{\textbf{\LothAntiphonPrefix} #1}
-\newcommand{\versicle}[1]{\textbf{\LothVersicleSymbol} #1}
-\newcommand{\response}[1]{\textbf{\LothResponseSymbol} #1}
+\newcommand{\antiphon}[1]{\lothRubric{\LothAntiphonPrefix} \textit{#1}}
+\newcommand{\versicle}[1]{\lothRubric{\LothVersicleSymbol} #1}
+\newcommand{\response}[1]{\lothRubric{\LothResponseSymbol} #1}
 
-\newcommand{\melodyRubric}[1]{{\small\textit{#1}}\LothVsmall}
-\newcommand{\psalmToneLabel}{\small\textit{\LothPsalmToneLabel}\par}
+\newcommand{\melodyRubric}[1]{{\small\itshape\lothRubric{#1}}\LothVsmall}
+\newcommand{\psalmToneLabel}{{\small\itshape\lothRubric{\LothPsalmToneLabel}}\par}
 
 \newcommand{\shortResponsory}[3]{%
   \response{#1}\LothVsmall
   \versicle{#2}\LothVsmall
   \response{#3}}
 
-\newcommand{\shortReading}[2]{#1\LothVsmall #2}
+\newcommand{\shortReading}[2]{{\small\lothRubric{#1}}\LothVsmall #2}
 
 % Long reading (Office of Readings): attribution/reference then body.
-\newcommand{\reading}[2]{#1\LothVsmall #2}
+\newcommand{\reading}[2]{{\small\lothRubric{#1}}\LothVsmall #2}
 
 \newcommand{\teDeum}[1]{#1}
 \newcommand{\examinationOfConscience}[1]{#1}
 \newcommand{\complineBlessing}[1]{#1}
 
-\newcommand{\gospelCanticle}[2]{#1\LothVsmall #2}
+\newcommand{\gospelCanticle}[2]{{\small\lothRubric{#1}}\LothVsmall #2}
 
 \newcommand{\hymnStanza}[1]{#1}
-\newcommand{\hymn}[1]{#1}
+\newcommand{\hymn}[1]{\textit{#1}}
 
-\newcommand{\psalmText}[1]{#1}
+% Each verse is its own paragraph (assemblers join them with \par) so the
+% hanging indent matches html/loth.css `.loth-psalm-verse`.
+\newcommand{\psalmText}[1]{%
+  \par\begingroup
+  \setlength{\parskip}{0.2em}%
+  \setlength{\parindent}{0pt}%
+  \everypar{\hangindent=1.5em \hangafter=1}%
+  #1\par
+  \endgroup}
 
 \newcommand{\intercessionsIntro}[1]{#1\LothVmed}
 \newcommand{\intercessionsResponse}[1]{\response{#1}\LothVmed}
 \newcommand{\intention}[2]{\versicle{#1}\LothVsmall\response{#2}\LothVmed}
 
-\newcommand{\concludingPrayer}[2]{#1\LothVsmall #2}
+\newcommand{\concludingPrayer}[2]{%
+  \if\relax\detokenize{#1}\relax\else{\itshape\lothRubric{#1}}\LothVsmall\fi
+  #2}
 
-\newcommand{\lordsPrayerSection}[2]{\sectionHeading{#1}\LothVsmall #2}
+\newcommand{\lordsPrayer}[1]{#1}
+% Older two-argument form: heading is now emitted as \sectionHeading separately.
+\newcommand{\lordsPrayerSection}[2]{\sectionHeading{#1}\LothVsmall\lordsPrayer{#2}}
 
 \newcommand{\dismissal}[2]{#1\LothVsmall #2}
 
 \newcommand{\lothScore}[1]{\gregorioscore{#1}}
 \newcommand{\psalmToneScore}[1]{\gregorioscore{#1}}
+
+% Gregorio: mode annotation is a label (red); the drop cap is sung text (black).
+\grechangestyle{annotation}{\color{lothrubric}}
+
+% ℣ / ℟ in scores — same red as the prose prefixes, if Gregorio defined them.
+\makeatletter
+\AtBeginDocument{%
+  \@ifundefined{Vbar}{}{%
+    \let\loth@origVbar\Vbar
+    \renewcommand{\Vbar}{\textcolor{lothrubric}{\loth@origVbar}}}%
+  \@ifundefined{Rbar}{}{%
+    \let\loth@origRbar\Rbar
+    \renewcommand{\Rbar}{\textcolor{lothrubric}{\loth@origRbar}}}%
+}
+\makeatother
 
 \endinput
