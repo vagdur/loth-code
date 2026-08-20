@@ -787,8 +787,8 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
       toneLine = this.emitScore(a.psalmTone, "psalmTone", a.melody?.language, a.melody?.id);
     }
 
-    // Mode sits on the antiphon GABC header (above that drop cap), not the
-    // psalm tone and not a caption, whenever a lyric score was emitted.
+    // Mode sits on the antiphon GABC header (above that drop cap), never
+    // on a caption — it is a property of the melody.
     const rubric = scoreLine
       ? htmlScoredMelodyRubric(a.melody)
       : htmlMelodyRubric(a.melody);
