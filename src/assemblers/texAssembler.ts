@@ -806,9 +806,8 @@ export class TexAssembler implements Assembler<string> {
       toneLine = this.emitScore(a.psalmTone, "psalmTone");
     }
 
-    // Mode sits on the antiphon GABC header (above that drop cap), not the
-    // psalm tone and not a \melodyRubric caption, whenever a lyric score
-    // was emitted.
+    // Mode sits on the antiphon GABC header (above that drop cap), never
+    // on a \melodyRubric caption — it is a property of the melody.
     const rubric = scoreLine
       ? texScoredMelodyRubric(a.melody)
       : texMelodyRubric(a.melody);
