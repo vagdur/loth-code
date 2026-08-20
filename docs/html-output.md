@@ -95,10 +95,11 @@ the options.
 
 Gregorio places a `mode:` header above that initial automatically; exsurge
 (≥ 1.29.4) does the same. The assemblers write `mode: N;` into the GABC when
-the melody has a mode, and omit the `loth-melody-rubric` "Mode N" caption so
-the number is not printed twice. Psalm tones and header-less dialogues stay
-caption-free. Hosts calling `renderScore` can still override the derived
-annotation with `annotation` on the options.
+the melody has a mode. Mode is a property of the melody, not of the text, so
+it is never a `loth-melody-rubric` caption — including in `plain` (text-only)
+output, where there is no score to hang a mode number on. Psalm tones and
+header-less dialogues stay caption-free. Hosts calling `renderScore` can still
+override the derived annotation with `annotation` on the options.
 
 ## Fonts
 
