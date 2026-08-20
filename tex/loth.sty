@@ -109,7 +109,13 @@
 % Gregorio: mode annotation is a label (red); the drop cap is sung text (black).
 \grechangestyle{annotation}{\color{lothrubric}}
 
-% ℣ / ℟ in scores — same red as the prose prefixes, if Gregorio defined them.
+% Latin Modern has no ℣/℟; Gregorio's barred V/R are the traditional glyphs.
+% Map the Unicode letters (from fixed_texts.yaml) onto those, and colour the
+% same commands so score specials (`<sp>V/</sp>`) match the prose prefixes.
+\RequirePackage{newunicodechar}
+\newunicodechar{℣}{\Vbar{}}
+\newunicodechar{℟}{\Rbar{}}
+
 \makeatletter
 \AtBeginDocument{%
   \@ifundefined{Vbar}{}{%

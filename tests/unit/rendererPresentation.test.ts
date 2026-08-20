@@ -90,6 +90,7 @@ test("scored Lauds still heads the Our Father when the prayer is a score", async
 test("stylesheet and sty agree on rubric red, and keep the hour title black", () => {
   const css = readFileSync(path.join(repoRoot, "html/loth.css"), "utf-8");
   const sty = readFileSync(path.join(repoRoot, "tex/loth.sty"), "utf-8");
+  const chant = readFileSync(path.join(repoRoot, "src/browser/lothChant.ts"), "utf-8");
 
   expect(css).toMatch(/--loth-rubric:\s*#a4243b/i);
   expect(sty).toMatch(/\\definecolor\{lothrubric\}\{HTML\}\{A4243B\}/);
@@ -98,10 +99,18 @@ test("stylesheet and sty agree on rubric red, and keep the hour title black", ()
   expect(css).toMatch(/\.loth-section-heading[\s\S]*?color:\s*var\(--loth-rubric\)/);
   expect(css).toMatch(/\.loth-rubric[\s\S]*?color:\s*var\(--loth-rubric\)/);
   expect(css).toMatch(/\.loth-reference[\s\S]*?color:\s*var\(--loth-rubric\)/);
+  expect(css).toMatch(
+    /\.loth-rubric[\s\S]*?font-family:\s*"Georgia"[\s\S]*?"Exsurge Characters"/,
+  );
 
   expect(sty).toContain("\\newcommand{\\hourHeading}[1]");
   expect(sty).toContain("\\color{lothtext}");
   expect(sty).toContain("\\newcommand{\\sectionHeading}[1]");
   expect(sty).toContain("\\color{lothrubric}");
   expect(sty).toContain("\\newcommand{\\lothRubric}[1]");
+  expect(sty).toContain("\\newunicodechar{℣}{\\Vbar{}}");
+  expect(sty).toContain("\\newunicodechar{℟}{\\Rbar{}}");
+
+  expect(chant).toContain('ctxt.setRubricColor("#a4243b")');
+  expect(chant).toContain('ctxt.textStyles.annotation.color = "#a4243b"');
 });
