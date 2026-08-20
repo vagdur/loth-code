@@ -34,6 +34,7 @@ import {
   formatConcludingPrayerPlain,
   formatResponseLinePlain,
   formatVersicleLinePlain,
+  headedPlain,
   hourHeadingPlain,
   sectionHeadingPlain,
 } from "./labels.js";
@@ -81,24 +82,26 @@ export class PlainTextAssembler implements Assembler<string> {
     const lines: string[] = [hourHeadingPlain(repo, "officeOfReadings")];
 
     if (hour.invitatory) {
-      lines.push(...renderInvitatoryPlain(hour.invitatory, repo, choices));
+      lines.push(headedPlain(repo, "invitatory", ...renderInvitatoryPlain(hour.invitatory, repo, choices)));
     } else {
-      lines.push(formatIntroductoryVersePlain(repo, flags));
+      lines.push(headedPlain(repo, "introductoryVerse", formatIntroductoryVersePlain(repo, flags)));
     }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) lines.push(renderHymn(hymn));
+    if (hymn) lines.push(headedPlain(repo, "hymn", renderHymn(hymn)));
 
+    const psalmody: string[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        lines.push(renderPsalmAssignment(repo, assignment, psalmText, flags));
+        psalmody.push(renderPsalmAssignment(repo, assignment, psalmText, flags));
       }
     }
+    lines.push(headedPlain(repo, "psalmody", ...psalmody));
 
     const versicle = resolveVersicle(hour.versicleRef, repo, hour.liturgicalDay, opt("versicle"));
-    if (versicle) lines.push(renderVersicle(repo, versicle));
+    if (versicle) lines.push(headedPlain(repo, "versicle", renderVersicle(repo, versicle)));
 
     const biblical = resolveBiblicalReading(hour.biblicalReadingRef, repo, undefined, opt("biblicalReading"));
     if (biblical) {
@@ -131,10 +134,14 @@ export class PlainTextAssembler implements Assembler<string> {
     }
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, "officeOfReadings"));
+    if (prayer) {
+      lines.push(headedPlain(
+        repo, "concludingPrayer", formatConcludingPrayerPlain(repo, prayer.text, "officeOfReadings"),
+      ));
+    }
 
-    lines.push(formatOorAcclamationPlain(repo));
-    return lines.join("\n\n");
+    lines.push(headedPlain(repo, "acclamation", formatOorAcclamationPlain(repo)));
+    return lines.filter((s) => s.trim()).join("\n\n");
   }
 
   assembleLauds(hour: AbstractLauds, repo: DataRepository, choices?: DayChoices): string {
@@ -143,28 +150,30 @@ export class PlainTextAssembler implements Assembler<string> {
     const lines: string[] = [hourHeadingPlain(repo, "lauds")];
 
     if (hour.invitatory) {
-      lines.push(...renderInvitatoryPlain(hour.invitatory, repo, choices));
+      lines.push(headedPlain(repo, "invitatory", ...renderInvitatoryPlain(hour.invitatory, repo, choices)));
     } else if (!hour.suppressIntroVerse) {
-      lines.push(formatIntroductoryVersePlain(repo, flags));
+      lines.push(headedPlain(repo, "introductoryVerse", formatIntroductoryVersePlain(repo, flags)));
     }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) lines.push(renderHymn(hymn));
+    if (hymn) lines.push(headedPlain(repo, "hymn", renderHymn(hymn)));
 
+    const psalmody: string[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        lines.push(renderPsalmAssignment(repo, assignment, psalmText, flags));
+        psalmody.push(renderPsalmAssignment(repo, assignment, psalmText, flags));
       }
     }
+    lines.push(headedPlain(repo, "psalmody", ...psalmody));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading) lines.push(renderShortReading(reading));
+    if (reading) lines.push(headedPlain(repo, "reading", renderShortReading(reading)));
 
     if (hour.shortResponsoryRef) {
       const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay, opt("shortResponsory"));
-      if (resp) lines.push(renderShortResponsory(repo, resp));
+      if (resp) lines.push(headedPlain(repo, "responsory", renderShortResponsory(repo, resp)));
     }
 
     lines.push(sectionHeadingPlain(repo, "benedictus"));
@@ -176,20 +185,25 @@ export class PlainTextAssembler implements Assembler<string> {
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
     if (intercessions) lines.push(renderIntercessions(repo, intercessions));
 
-    lines.push(formatLordsPrayerPlain(repo));
+    lines.push(headedPlain(repo, "ourFather", formatLordsPrayerPlain(repo)));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, "lauds"));
+    if (prayer) {
+      lines.push(headedPlain(repo, "concludingPrayer", formatConcludingPrayerPlain(repo, prayer.text, "lauds")));
+    }
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay, opt("memoriaAddendum.antiphon"));
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
-      if (addAntiphon) lines.push(formatAntiphonPlain(repo, addAntiphon, flags));
-      if (addPrayer) lines.push(addPrayer.text);
+      lines.push(headedPlain(
+        repo, "memoriaAddendum",
+        addAntiphon ? formatAntiphonPlain(repo, addAntiphon, flags) : "",
+        addPrayer ? addPrayer.text : "",
+      ));
     }
 
-    lines.push(formatDismissalPlain(repo));
-    return lines.join("\n\n");
+    lines.push(headedPlain(repo, "dismissal", formatDismissalPlain(repo)));
+    return lines.filter((s) => s.trim()).join("\n\n");
   }
 
   assembleDaytimePrayer(hour: AbstractDaytimePrayer, repo: DataRepository, choices?: DayChoices): string {
@@ -198,26 +212,26 @@ export class PlainTextAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
     const lines: string[] = [hourHeadingPlain(repo, hourKey)];
 
-    lines.push(formatIntroductoryVersePlain(repo, flags));
+    lines.push(headedPlain(repo, "introductoryVerse", formatIntroductoryVersePlain(repo, flags)));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) lines.push(renderHymn(hymn));
+    if (hymn) lines.push(headedPlain(repo, "hymn", renderHymn(hymn)));
 
-    for (const line of renderDaytimePsalmodyPlain(repo, hour, flags, choices)) {
-      lines.push(line);
-    }
+    lines.push(headedPlain(repo, "psalmody", ...renderDaytimePsalmodyPlain(repo, hour, flags, choices)));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading) lines.push(renderShortReading(reading));
+    if (reading) lines.push(headedPlain(repo, "reading", renderShortReading(reading)));
 
     const versicle = resolveVersicle(hour.versicleRef, repo, hour.liturgicalDay, opt("versicle"));
-    if (versicle) lines.push(renderVersicle(repo, versicle));
+    if (versicle) lines.push(headedPlain(repo, "versicle", renderVersicle(repo, versicle)));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, hourKey));
+    if (prayer) {
+      lines.push(headedPlain(repo, "concludingPrayer", formatConcludingPrayerPlain(repo, prayer.text, hourKey)));
+    }
 
-    lines.push(formatOorAcclamationPlain(repo));
-    return lines.join("\n\n");
+    lines.push(headedPlain(repo, "acclamation", formatOorAcclamationPlain(repo)));
+    return lines.filter((s) => s.trim()).join("\n\n");
   }
 
   assembleVespers(hour: AbstractVespers, repo: DataRepository, choices?: DayChoices): string {
@@ -226,25 +240,27 @@ export class PlainTextAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
     const lines: string[] = [hourHeadingPlain(repo, hourKey)];
 
-    lines.push(formatIntroductoryVersePlain(repo, flags));
+    lines.push(headedPlain(repo, "introductoryVerse", formatIntroductoryVersePlain(repo, flags)));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) lines.push(renderHymn(hymn));
+    if (hymn) lines.push(headedPlain(repo, "hymn", renderHymn(hymn)));
 
+    const psalmody: string[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        lines.push(renderPsalmAssignment(repo, assignment, psalmText, flags));
+        psalmody.push(renderPsalmAssignment(repo, assignment, psalmText, flags));
       }
     }
+    lines.push(headedPlain(repo, "psalmody", ...psalmody));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading) lines.push(renderShortReading(reading));
+    if (reading) lines.push(headedPlain(repo, "reading", renderShortReading(reading)));
 
     if (hour.shortResponsoryRef) {
       const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay, opt("shortResponsory"));
-      if (resp) lines.push(renderShortResponsory(repo, resp));
+      if (resp) lines.push(headedPlain(repo, "responsory", renderShortResponsory(repo, resp)));
     }
 
     lines.push(sectionHeadingPlain(repo, "magnificat"));
@@ -256,20 +272,25 @@ export class PlainTextAssembler implements Assembler<string> {
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
     if (intercessions) lines.push(renderIntercessions(repo, intercessions));
 
-    lines.push(formatLordsPrayerPlain(repo));
+    lines.push(headedPlain(repo, "ourFather", formatLordsPrayerPlain(repo)));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, hourKey));
+    if (prayer) {
+      lines.push(headedPlain(repo, "concludingPrayer", formatConcludingPrayerPlain(repo, prayer.text, hourKey)));
+    }
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay, opt("memoriaAddendum.antiphon"));
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
-      if (addAntiphon) lines.push(formatAntiphonPlain(repo, addAntiphon, flags));
-      if (addPrayer) lines.push(addPrayer.text);
+      lines.push(headedPlain(
+        repo, "memoriaAddendum",
+        addAntiphon ? formatAntiphonPlain(repo, addAntiphon, flags) : "",
+        addPrayer ? addPrayer.text : "",
+      ));
     }
 
-    lines.push(formatDismissalPlain(repo));
-    return lines.join("\n\n");
+    lines.push(headedPlain(repo, "dismissal", formatDismissalPlain(repo)));
+    return lines.filter((s) => s.trim()).join("\n\n");
   }
 
   assembleCompline(hour: AbstractCompline, repo: DataRepository, choices?: DayChoices): string {
@@ -277,25 +298,29 @@ export class PlainTextAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, "compline", slot);
     const lines: string[] = [hourHeadingPlain(repo, "compline")];
 
-    lines.push(formatIntroductoryVersePlain(repo, flags));
-    lines.push(formatExaminationOfConsciencePlain(repo));
+    lines.push(headedPlain(repo, "introductoryVerse", formatIntroductoryVersePlain(repo, flags)));
+    lines.push(headedPlain(repo, "examination", formatExaminationOfConsciencePlain(repo)));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) lines.push(renderHymn(hymn));
+    if (hymn) lines.push(headedPlain(repo, "hymn", renderHymn(hymn)));
 
+    const psalmody: string[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        lines.push(renderPsalmAssignment(repo, assignment, psalmText, flags));
+        psalmody.push(renderPsalmAssignment(repo, assignment, psalmText, flags));
       }
     }
+    lines.push(headedPlain(repo, "psalmody", ...psalmody));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading) lines.push(renderShortReading(reading));
+    if (reading) lines.push(headedPlain(repo, "reading", renderShortReading(reading)));
 
     const complineResp = getComplineResponsory(repo);
-    lines.push(
+    lines.push(headedPlain(
+      repo,
+      "responsory",
       complineResp
         ? renderShortResponsory(
             repo,
@@ -305,7 +330,7 @@ export class PlainTextAssembler implements Assembler<string> {
             }),
           )
         : formatComplineResponsoryFallbackPlain(),
-    );
+    ));
 
     lines.push(sectionHeadingPlain(repo, "nuncDimittis"));
     const ndAntiphon = resolveAntiphon(hour.nuncDimittisAntiphonRef, repo, hour.liturgicalDay, opt("nuncDimittisAntiphon"));
@@ -314,17 +339,20 @@ export class PlainTextAssembler implements Assembler<string> {
     if (ndAntiphon) lines.push(formatAntiphonPlain(repo, ndAntiphon, flags));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer) lines.push(formatConcludingPrayerPlain(repo, prayer.text, "compline"));
+    if (prayer) {
+      lines.push(headedPlain(
+        repo, "concludingPrayer", formatConcludingPrayerPlain(repo, prayer.text, "compline"),
+      ));
+    }
 
-    lines.push(formatComplineBlessingPlain(repo));
+    lines.push(headedPlain(repo, "blessing", formatComplineBlessingPlain(repo)));
 
     const marianAntiphon = resolveAntiphon(hour.marianAntiphonRef, repo, hour.liturgicalDay, opt("marianAntiphon"));
     if (marianAntiphon) {
-      lines.push(sectionHeadingPlain(repo, "marianAntiphon"));
-      lines.push(formatAntiphonPlain(repo, marianAntiphon, flags));
+      lines.push(headedPlain(repo, "marianAntiphon", formatAntiphonPlain(repo, marianAntiphon, flags)));
     }
 
-    return lines.join("\n\n");
+    return lines.filter((s) => s.trim()).join("\n\n");
   }
 }
 

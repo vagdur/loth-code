@@ -21,7 +21,12 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 </head>
 <body>
 <article class="loth-hour" data-hour="officeOfReadings">
-  <h1 class="loth-hour-heading">OFFICE OF READINGS - 10 May. Sixth Sunday of Eastertide.</h1>
+  <header class="loth-hour-header">
+    <h1 class="loth-hour-heading">OFFICE OF READINGS</h1>
+    <p class="loth-day-heading">10 May. Sixth Sunday of Eastertide.</p>
+  </header>
+
+  <h2 class="loth-section-heading">INTRODUCTORY VERSE</h2>
 
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> [O God, come to our aid], alleluia.</p>
@@ -30,6 +35,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-dialogue-line">as it was in the beginning, is now, and ever shall be, world without end. Amen.] [Alleluia.]</p>
   </div>
 
+  <h2 class="loth-section-heading">HYMN</h2>
+
   <p class="loth-melody-rubric">Mode 1</p>
 
   <div class="loth-hymn">
@@ -37,6 +44,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-hymn-stanza">[Week 2 Sunday OoR day hymn, stanza 2]</p>
     <p class="loth-hymn-stanza">[Week 2 Sunday OoR day hymn, doxology]</p>
   </div>
+
+  <h2 class="loth-section-heading">PSALMODY</h2>
 
   <p class="loth-melody-rubric">Mode 8</p>
 
@@ -89,6 +98,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [OoR psalm 3] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">VERSICLE</h2>
+
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> Lord, open our lips.</p>
     <p class="loth-response"><span class="loth-rubric">℟.</span> And our mouth shall proclaim your praise.</p>
@@ -126,9 +137,11 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-prose">[Te Deum laudamus — full text]</p>
   </section>
 
+  <h2 class="loth-section-heading">ACCLAMATION</h2>
+
   <div class="loth-dialogue">
-    <p class="loth-dialogue-line">[℣. Let us praise the Lord.</p>
-    <p class="loth-dialogue-line">℟. Thanks be to God.]</p>
+    <p class="loth-dialogue-line">[<span class="loth-rubric">℣.</span> Let us praise the Lord.</p>
+    <p class="loth-dialogue-line"><span class="loth-rubric">℟.</span> Thanks be to God.]</p>
   </div>
 </article>
 </body>

@@ -21,7 +21,12 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 </head>
 <body>
 <article class="loth-hour" data-hour="lauds">
-  <h1 class="loth-hour-heading">LAUDS — MORNING PRAYER - 10 May. Sixth Sunday of Eastertide.</h1>
+  <header class="loth-hour-header">
+    <h1 class="loth-hour-heading">LAUDS — MORNING PRAYER</h1>
+    <p class="loth-day-heading">10 May. Sixth Sunday of Eastertide.</p>
+  </header>
+
+  <h2 class="loth-section-heading">INVITATORY</h2>
 
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> [Lord, open our lips.]</p>
@@ -45,6 +50,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [Week 2 Sunday invitatory] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">HYMN</h2>
+
   <p class="loth-melody-rubric">Mode 1</p>
 
   <div class="loth-hymn">
@@ -52,6 +59,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-hymn-stanza">[Week 2 Sunday Lauds hymn B, stanza 2]</p>
     <p class="loth-hymn-stanza">[Week 2 Sunday Lauds hymn B, doxology]</p>
   </div>
+
+  <h2 class="loth-section-heading">PSALMODY</h2>
 
   <p class="loth-melody-rubric">Mode 6</p>
 
@@ -104,10 +113,14 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [Lauds praise psalm] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">READING</h2>
+
   <section class="loth-short-reading">
     <p class="loth-reference">Rev 7:10, 12</p>
     <p class="loth-reading-text">[Short reading: Rev 7:10, 12]</p>
   </section>
+
+  <h2 class="loth-section-heading">RESPONSORY</h2>
 
   <p class="loth-melody-rubric">Mode 6</p>
 
@@ -150,16 +163,21 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     </div>
   </div>
 
+  <h2 class="loth-section-heading">OUR FATHER</h2>
+
   <p class="loth-melody-rubric">Mode 2</p>
 
   <section class="loth-lords-prayer">
-    <h2 class="loth-section-heading">OUR FATHER</h2>
     <p class="loth-prose">[Our Father — full text]</p>
   </section>
+
+  <h2 class="loth-section-heading">CONCLUDING PRAYER</h2>
 
   <section class="loth-concluding-prayer">
     <p class="loth-prose">[Week 2 Sunday Lauds concluding prayer]</p>
   </section>
+
+  <h2 class="loth-section-heading">DISMISSAL</h2>
 
   <section class="loth-dismissal">
     <p class="loth-prose">[The Lord bless us, protect us from all evil, and bring us to everlasting life.]<br>[Amen.]</p>

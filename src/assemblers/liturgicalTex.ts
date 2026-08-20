@@ -52,14 +52,30 @@ export function texHourHeading(
 ): string {
   const hour = getLabels(repo).hours[key];
   const ordoLabels = repo.getAssemblerLabels().ordo;
-  const title = liturgicalDay && ordoLabels
-    ? `${hour} - ${formatOrdoDayHeadline(liturgicalDay, ordoLabels, calendarId)}`
-    : hour;
-  return `\\hourHeading{${escapeTexPlain(title)}}`;
+  const heading = `\\hourHeading{${escapeTexPlain(hour)}}`;
+  const dayLine = liturgicalDay && ordoLabels
+    ? formatOrdoDayHeadline(liturgicalDay, ordoLabels, calendarId)
+    : undefined;
+  if (!dayLine) return heading;
+  return `${heading}\n\\dayHeading{${escapeTexPlain(dayLine)}}`;
 }
 
 export function texSectionHeading(repo: DataRepository, key: SectionLabelKey): string {
   return `\\sectionHeading{${escapeTexPlain(getLabels(repo).sections[key])}}`;
+}
+
+/**
+ * A section heading plus its body. Nothing is emitted when every part is
+ * empty, so scored-only output never leaves a heading hanging over a gap.
+ */
+export function texHeadedSection(
+  repo: DataRepository,
+  key: SectionLabelKey,
+  ...parts: string[]
+): string {
+  const body = parts.filter((s) => s.trim()).join("\n\n");
+  if (!body) return "";
+  return `${texSectionHeading(repo, key)}\n\n${body}`;
 }
 
 export function texAntiphon(
@@ -194,11 +210,7 @@ export function texGospelCanticle(
 }
 
 export function texLordsPrayerSection(repo: DataRepository): string {
-  const plain = formatLordsPrayerPlain(repo);
-  const [, ...bodyParts] = plain.split("\n\n");
-  const title = getLabels(repo).sections.ourFather;
-  const body = bodyParts.join("\n\n");
-  return `\\lordsPrayerSection{${escapeTexPlain(title)}}{${escapeTexPlain(body)}}`;
+  return `\\lordsPrayer{${escapeTexPlain(formatLordsPrayerPlain(repo))}}`;
 }
 
 export function texConcludingPrayer(
@@ -236,7 +248,12 @@ export function texIntercessions(repo: DataRepository, i: Intercessions): string
 }
 
 export function texPsalmText(text: string): string {
-  return `\\psalmText{${escapeTexPlain(text)}}`;
+  const verses = text
+    .split("\n")
+    .filter((line) => line.trim())
+    .map((line) => escapeTexPlain(line))
+    .join("\\par\n");
+  return `\\psalmText{${verses}}`;
 }
 
 export function texScoreLine(basename: string): string {

@@ -21,7 +21,12 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 </head>
 <body>
 <article class="loth-hour" data-hour="officeOfReadings">
-  <h1 class="loth-hour-heading">OFFICE OF READINGS - 10 May. Sixth Sunday of Eastertide.</h1>
+  <header class="loth-hour-header">
+    <h1 class="loth-hour-heading">OFFICE OF READINGS</h1>
+    <p class="loth-day-heading">10 May. Sixth Sunday of Eastertide.</p>
+  </header>
+
+  <h2 class="loth-section-heading">INTRODUCTORY VERSE</h2>
 
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> [O God, come to our aid], alleluia.</p>
@@ -30,6 +35,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-dialogue-line">as it was in the beginning, is now, and ever shall be, world without end. Amen.] [Alleluia.]</p>
   </div>
 
+  <h2 class="loth-section-heading">HYMN</h2>
+
   <p class="loth-melody-rubric">Mode 1</p>
 
   <div class="loth-hymn">
@@ -37,6 +44,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-hymn-stanza">[Week 2 Sunday OoR day hymn, stanza 2]</p>
     <p class="loth-hymn-stanza">[Week 2 Sunday OoR day hymn, doxology]</p>
   </div>
+
+  <h2 class="loth-section-heading">PSALMODY</h2>
 
   <p class="loth-melody-rubric">Mode 8</p>
 
@@ -89,6 +98,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [OoR psalm 3] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">VERSICLE</h2>
+
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> Lord, open our lips.</p>
     <p class="loth-response"><span class="loth-rubric">℟.</span> And our mouth shall proclaim your praise.</p>
@@ -126,14 +137,21 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-prose">[Te Deum laudamus — full text]</p>
   </section>
 
+  <h2 class="loth-section-heading">ACCLAMATION</h2>
+
   <div class="loth-dialogue">
-    <p class="loth-dialogue-line">[℣. Let us praise the Lord.</p>
-    <p class="loth-dialogue-line">℟. Thanks be to God.]</p>
+    <p class="loth-dialogue-line">[<span class="loth-rubric">℣.</span> Let us praise the Lord.</p>
+    <p class="loth-dialogue-line"><span class="loth-rubric">℟.</span> Thanks be to God.]</p>
   </div>
 </article>
 <hr class="loth-page-break">
 <article class="loth-hour" data-hour="lauds">
-  <h1 class="loth-hour-heading">LAUDS — MORNING PRAYER - 10 May. Sixth Sunday of Eastertide.</h1>
+  <header class="loth-hour-header">
+    <h1 class="loth-hour-heading">LAUDS — MORNING PRAYER</h1>
+    <p class="loth-day-heading">10 May. Sixth Sunday of Eastertide.</p>
+  </header>
+
+  <h2 class="loth-section-heading">INVITATORY</h2>
 
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> [Lord, open our lips.]</p>
@@ -157,6 +175,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [Week 2 Sunday invitatory] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">HYMN</h2>
+
   <p class="loth-melody-rubric">Mode 1</p>
 
   <div class="loth-hymn">
@@ -164,6 +184,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-hymn-stanza">[Week 2 Sunday Lauds hymn B, stanza 2]</p>
     <p class="loth-hymn-stanza">[Week 2 Sunday Lauds hymn B, doxology]</p>
   </div>
+
+  <h2 class="loth-section-heading">PSALMODY</h2>
 
   <p class="loth-melody-rubric">Mode 6</p>
 
@@ -216,10 +238,14 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [Lauds praise psalm] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">READING</h2>
+
   <section class="loth-short-reading">
     <p class="loth-reference">Rev 7:10, 12</p>
     <p class="loth-reading-text">[Short reading: Rev 7:10, 12]</p>
   </section>
+
+  <h2 class="loth-section-heading">RESPONSORY</h2>
 
   <p class="loth-melody-rubric">Mode 6</p>
 
@@ -262,16 +288,21 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     </div>
   </div>
 
+  <h2 class="loth-section-heading">OUR FATHER</h2>
+
   <p class="loth-melody-rubric">Mode 2</p>
 
   <section class="loth-lords-prayer">
-    <h2 class="loth-section-heading">OUR FATHER</h2>
     <p class="loth-prose">[Our Father — full text]</p>
   </section>
+
+  <h2 class="loth-section-heading">CONCLUDING PRAYER</h2>
 
   <section class="loth-concluding-prayer">
     <p class="loth-prose">[Week 2 Sunday Lauds concluding prayer]</p>
   </section>
+
+  <h2 class="loth-section-heading">DISMISSAL</h2>
 
   <section class="loth-dismissal">
     <p class="loth-prose">[The Lord bless us, protect us from all evil, and bring us to everlasting life.]<br>[Amen.]</p>
@@ -279,7 +310,12 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 </article>
 <hr class="loth-page-break">
 <article class="loth-hour" data-hour="sext">
-  <h1 class="loth-hour-heading">SEXT — MIDDAY - 10 May. Sixth Sunday of Eastertide.</h1>
+  <header class="loth-hour-header">
+    <h1 class="loth-hour-heading">SEXT — MIDDAY</h1>
+    <p class="loth-day-heading">10 May. Sixth Sunday of Eastertide.</p>
+  </header>
+
+  <h2 class="loth-section-heading">INTRODUCTORY VERSE</h2>
 
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> [O God, come to our aid], alleluia.</p>
@@ -288,6 +324,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-dialogue-line">as it was in the beginning, is now, and ever shall be, world without end. Amen.] [Alleluia.]</p>
   </div>
 
+  <h2 class="loth-section-heading">HYMN</h2>
+
   <p class="loth-melody-rubric">Mode 1</p>
 
   <div class="loth-hymn">
@@ -295,6 +333,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-hymn-stanza">[Week 2 Sunday Sext hymn, stanza 2]</p>
     <p class="loth-hymn-stanza">[Week 2 Sunday Sext hymn, doxology]</p>
   </div>
+
+  <h2 class="loth-section-heading">PSALMODY</h2>
 
   <p class="loth-melody-rubric">Mode 8</p>
 
@@ -347,29 +387,42 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [Sext psalm 3] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">READING</h2>
+
   <section class="loth-short-reading">
     <p class="loth-reference">Sext reading</p>
     <p class="loth-reading-text">[Short reading: Sext reading]</p>
   </section>
+
+  <h2 class="loth-section-heading">VERSICLE</h2>
 
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> [Sext versicle]</p>
     <p class="loth-response"><span class="loth-rubric">℟.</span> [Sext versicle response]</p>
   </div>
 
+  <h2 class="loth-section-heading">CONCLUDING PRAYER</h2>
+
   <section class="loth-concluding-prayer">
     <p class="loth-let-us-pray">Let us pray.</p>
     <p class="loth-prose">[Week 2 Sunday Sext concluding prayer]</p>
   </section>
 
+  <h2 class="loth-section-heading">ACCLAMATION</h2>
+
   <div class="loth-dialogue">
-    <p class="loth-dialogue-line">[℣. Let us praise the Lord.</p>
-    <p class="loth-dialogue-line">℟. Thanks be to God.]</p>
+    <p class="loth-dialogue-line">[<span class="loth-rubric">℣.</span> Let us praise the Lord.</p>
+    <p class="loth-dialogue-line"><span class="loth-rubric">℟.</span> Thanks be to God.]</p>
   </div>
 </article>
 <hr class="loth-page-break">
 <article class="loth-hour" data-hour="vespers">
-  <h1 class="loth-hour-heading">VESPERS — EVENING PRAYER - 10 May. Sixth Sunday of Eastertide.</h1>
+  <header class="loth-hour-header">
+    <h1 class="loth-hour-heading">VESPERS — EVENING PRAYER</h1>
+    <p class="loth-day-heading">10 May. Sixth Sunday of Eastertide.</p>
+  </header>
+
+  <h2 class="loth-section-heading">INTRODUCTORY VERSE</h2>
 
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> [O God, come to our aid], alleluia.</p>
@@ -378,6 +431,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-dialogue-line">as it was in the beginning, is now, and ever shall be, world without end. Amen.] [Alleluia.]</p>
   </div>
 
+  <h2 class="loth-section-heading">HYMN</h2>
+
   <p class="loth-melody-rubric">Mode 1</p>
 
   <div class="loth-hymn">
@@ -385,6 +440,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-hymn-stanza">[Week 2 Sunday Vespers hymn B, stanza 2]</p>
     <p class="loth-hymn-stanza">[Week 2 Sunday Vespers hymn B, doxology]</p>
   </div>
+
+  <h2 class="loth-section-heading">PSALMODY</h2>
 
   <p class="loth-melody-rubric">Mode 8</p>
 
@@ -437,10 +494,14 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [Vespers NT canticle] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">READING</h2>
+
   <section class="loth-short-reading">
     <p class="loth-reference">1 Pet 1:3-5</p>
     <p class="loth-reading-text">[Short reading: 1 Pet 1:3-5]</p>
   </section>
+
+  <h2 class="loth-section-heading">RESPONSORY</h2>
 
   <p class="loth-melody-rubric">Mode 6</p>
 
@@ -483,16 +544,21 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     </div>
   </div>
 
+  <h2 class="loth-section-heading">OUR FATHER</h2>
+
   <p class="loth-melody-rubric">Mode 2</p>
 
   <section class="loth-lords-prayer">
-    <h2 class="loth-section-heading">OUR FATHER</h2>
     <p class="loth-prose">[Our Father — full text]</p>
   </section>
+
+  <h2 class="loth-section-heading">CONCLUDING PRAYER</h2>
 
   <section class="loth-concluding-prayer">
     <p class="loth-prose">[Week 2 Sunday Vespers concluding prayer]</p>
   </section>
+
+  <h2 class="loth-section-heading">DISMISSAL</h2>
 
   <section class="loth-dismissal">
     <p class="loth-prose">[The Lord bless us, protect us from all evil, and bring us to everlasting life.]<br>[Amen.]</p>
@@ -500,7 +566,12 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 </article>
 <hr class="loth-page-break">
 <article class="loth-hour" data-hour="compline">
-  <h1 class="loth-hour-heading">COMPLINE — NIGHT PRAYER - 10 May. Sixth Sunday of Eastertide.</h1>
+  <header class="loth-hour-header">
+    <h1 class="loth-hour-heading">COMPLINE — NIGHT PRAYER</h1>
+    <p class="loth-day-heading">10 May. Sixth Sunday of Eastertide.</p>
+  </header>
+
+  <h2 class="loth-section-heading">INTRODUCTORY VERSE</h2>
 
   <div class="loth-dialogue">
     <p class="loth-versicle"><span class="loth-rubric">℣.</span> [O God, come to our aid], alleluia.</p>
@@ -509,9 +580,13 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-dialogue-line">as it was in the beginning, is now, and ever shall be, world without end. Amen.] [Alleluia.]</p>
   </div>
 
+  <h2 class="loth-section-heading">EXAMINATION OF CONSCIENCE</h2>
+
   <section class="loth-examination">
     <p class="loth-prose">[Examination of conscience — optional]</p>
   </section>
+
+  <h2 class="loth-section-heading">HYMN</h2>
 
   <p class="loth-melody-rubric">Mode 1</p>
 
@@ -520,6 +595,8 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
     <p class="loth-hymn-stanza">[Week 2 Sunday Compline hymn, stanza 2]</p>
     <p class="loth-hymn-stanza">[Week 2 Sunday Compline hymn, doxology]</p>
   </div>
+
+  <h2 class="loth-section-heading">PSALMODY</h2>
 
   <p class="loth-melody-rubric">Mode 1</p>
 
@@ -538,10 +615,14 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [Compline psalm 1] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">READING</h2>
+
   <section class="loth-short-reading">
     <p class="loth-reference">Rev 22:4-5</p>
     <p class="loth-reading-text">[Short reading: Rev 22:4-5]</p>
   </section>
+
+  <h2 class="loth-section-heading">RESPONSORY</h2>
 
   <p class="loth-melody-rubric">Mode 6</p>
 
@@ -566,13 +647,17 @@ for (const spec of JSON.parse(document.getElementById("loth-scores").textContent
 
   <p class="loth-antiphon"><span class="loth-rubric">Ant.</span> [Week 2 Sunday Nunc Dimittis antiphon] [Alleluia.]</p>
 
+  <h2 class="loth-section-heading">CONCLUDING PRAYER</h2>
+
   <section class="loth-concluding-prayer">
     <p class="loth-let-us-pray">Let us pray.</p>
     <p class="loth-prose">[Week 2 Sunday Compline concluding prayer]</p>
   </section>
 
+  <h2 class="loth-section-heading">BLESSING</h2>
+
   <section class="loth-compline-blessing">
-    <p class="loth-prose">[℣. The Lord grant us a quiet night and a perfect end. ℟. Amen.]</p>
+    <p class="loth-prose">[<span class="loth-rubric">℣.</span> The Lord grant us a quiet night and a perfect end. <span class="loth-rubric">℟.</span> Amen.]</p>
   </section>
 
   <h2 class="loth-section-heading">MARIAN ANTIPHON</h2>

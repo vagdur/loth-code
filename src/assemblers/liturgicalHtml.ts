@@ -57,9 +57,27 @@ import {
 // Low-level builders
 // ---------------------------------------------------------------------------
 
+/**
+ * Colour ℣/℟ wherever they land in prose. TeX does the same with
+ * `\newunicodechar` in `loth.sty`; HTML has to wrap the glyphs because CSS
+ * cannot target a character.
+ */
+function rubricGlyphNodes(content: string): LothNode[] {
+  const nodes: LothNode[] = [];
+  for (const part of content.split(/([℣℟]\.?)/u)) {
+    if (!part) continue;
+    if (/^[℣℟]\.?$/u.test(part)) {
+      nodes.push(el("span", { class: "loth-rubric" }, text(part)));
+    } else {
+      nodes.push(text(part));
+    }
+  }
+  return nodes.length > 0 ? nodes : [text("")];
+}
+
 /** One `<p class="…">text</p>`. */
 function p(className: string, content: string): LothElement {
-  return el("p", { class: className }, text(content));
+  return el("p", { class: className }, ...rubricGlyphNodes(content));
 }
 
 /**
@@ -79,7 +97,7 @@ function prose(className: string, source: string): LothNode | null {
       const parts: MaybeNode[] = [];
       lines.forEach((line, i) => {
         if (i > 0) parts.push(el("br", {}));
-        parts.push(text(line));
+        parts.push(...rubricGlyphNodes(line));
       });
       return el("p", { class: className }, ...parts);
     });
@@ -113,10 +131,16 @@ export function htmlHourHeading(
 ): LothElement {
   const hour = getLabels(repo).hours[key];
   const ordoLabels = repo.getAssemblerLabels().ordo;
-  const title = liturgicalDay && ordoLabels
-    ? `${hour} - ${formatOrdoDayHeadline(liturgicalDay, ordoLabels, calendarId)}`
-    : hour;
-  return el("h1", { class: "loth-hour-heading" }, text(title));
+  const dayLine = liturgicalDay && ordoLabels
+    ? formatOrdoDayHeadline(liturgicalDay, ordoLabels, calendarId)
+    : undefined;
+  // Always has the h1, so the block cannot be empty.
+  return block(
+    "header",
+    { class: "loth-hour-header" },
+    el("h1", { class: "loth-hour-heading" }, text(hour)),
+    dayLine ? p("loth-day-heading", dayLine) : null,
+  )!;
 }
 
 export function htmlSectionHeading(repo: DataRepository, key: SectionLabelKey): LothElement {
@@ -125,6 +149,20 @@ export function htmlSectionHeading(repo: DataRepository, key: SectionLabelKey): 
     { class: "loth-section-heading" },
     text(getLabels(repo).sections[key]),
   );
+}
+
+/**
+ * A section heading plus its body. Nothing is emitted when every part is
+ * empty, so scored-only output never leaves a heading hanging over a gap.
+ */
+export function htmlHeadedSection(
+  repo: DataRepository,
+  key: SectionLabelKey,
+  ...parts: MaybeNode[]
+): LothNode | null {
+  const body = fragment(parts, "\n\n");
+  if (!body) return null;
+  return fragment([htmlSectionHeading(repo, key), body], "\n\n");
 }
 
 export function htmlAntiphon(
@@ -220,8 +258,10 @@ export function htmlInvitatoryVerse(repo: DataRepository): LothElement | null {
 
 /**
  * The OoR closing acclamation is an opaque raw data string (its own ℣./℟.
- * glyphs baked in), so emit it as plain paragraphs rather than parsing it into
+ * glyphs baked in), so emit it as paragraphs rather than parsing it into
  * dialogue markup — matching PlainTextAssembler, which treats it as raw text.
+ * ℣/℟ still go red via `rubricGlyphNodes`, as TeX colours them via
+ * `\newunicodechar`.
  */
 export function htmlOorAcclamation(repo: DataRepository): LothElement | null {
   const lines = formatOorAcclamationPlain(repo)
@@ -301,15 +341,10 @@ export function htmlGospelCanticle(
 }
 
 export function htmlLordsPrayerSection(repo: DataRepository): LothElement | null {
-  const plain = formatLordsPrayerPlain(repo);
-  const [, ...bodyParts] = plain.split("\n\n");
-  const title = getLabels(repo).sections.ourFather;
-  const body = bodyParts.join("\n\n");
   return wrap(
     "section",
     "loth-lords-prayer",
-    el("h2", { class: "loth-section-heading" }, text(title)),
-    prose("loth-prose", body),
+    prose("loth-prose", formatLordsPrayerPlain(repo)),
   );
 }
 

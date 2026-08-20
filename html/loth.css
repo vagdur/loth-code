@@ -4,6 +4,9 @@
  * only, and everything visual lives here. Hosts are meant to override or
  * replace this file; the class names are the contract.
  *
+ * Colour follows the liturgical "do the red, say the black": rubrics and
+ * labels (except the hour title) are red; spoken and sung text is black.
+ *
  * Ships alongside ExsurgeChar.otf — exsurge draws ℣, ℟ and similar glyphs in a
  * font family named "Exsurge Characters". `copyLothCss` (src/tools/htmlAssets.ts)
  * copies both files into a target directory.
@@ -18,10 +21,9 @@
 :root {
   --loth-text: #1a1a1a;
   --loth-rubric: #a4243b;
-  --loth-muted: #5a5a5a;
   --loth-rule: #d8d4cc;
   --loth-measure: 42rem;
-  --loth-gap: 1rem;
+  --loth-gap: 1.1rem;
 }
 
 body {
@@ -29,9 +31,9 @@ body {
   padding: 2rem 1.25rem 4rem;
   color: var(--loth-text);
   background: #fdfcfa;
-  font-family: "Georgia", "Palatino Linotype", serif;
+  font-family: "Georgia", "Palatino Linotype", Palatino, "Times New Roman", serif;
   font-size: 1.0625rem;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 /* Hours ------------------------------------------------------------------- */
@@ -39,6 +41,7 @@ body {
 .loth-hour {
   max-width: var(--loth-measure);
   margin: 0 auto;
+  color: var(--loth-text);
 }
 
 .loth-page-break {
@@ -48,33 +51,64 @@ body {
   border-top: 1px solid var(--loth-rule);
 }
 
-.loth-hour-heading {
-  margin: 0 0 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.25;
+/*
+ * The hour title is the one label that stays black: it names the office,
+ * not a rubric inside it. The liturgical day sits under it as a subtitle.
+ */
+.loth-hour-header {
+  margin: 0 0 2rem;
+  text-align: center;
+  color: var(--loth-text);
 }
 
-.loth-section-heading {
-  margin: 2rem 0 0.5rem;
-  font-size: 1rem;
+.loth-hour-heading {
+  margin: 0;
+  font-size: 1.7rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--loth-text);
+}
+
+.loth-day-heading {
+  margin: 0.4rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--loth-text);
+}
+
+/* Section labels: red, smaller than the hour title, meant for scanning. */
+.loth-section-heading {
+  margin: 2.1rem 0 0.55rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--loth-muted);
+  color: var(--loth-rubric);
 }
 
 .loth-hour > * + * {
   margin-top: var(--loth-gap);
 }
 
+.loth-hour > .loth-section-heading {
+  margin-bottom: 0.35rem;
+}
+
+.loth-hour > .loth-section-heading + * {
+  margin-top: 0.35rem;
+}
+
 /* Rubrics and dialogue ---------------------------------------------------- */
 
-/* ℣. ℟. Ant. — the red letters. Falls back gracefully if the font is absent. */
+/* ℣. ℟. Ant. — red, not louder than the words they introduce. */
 .loth-rubric {
-  font-family: "Exsurge Characters", "Georgia", serif;
+  /* Georgia first so "Ant." stays letters; ℣/℟ fall back per character. */
+  font-family: "Georgia", "Palatino Linotype", Palatino, "Times New Roman", "Exsurge Characters", serif;
   color: var(--loth-rubric);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .loth-antiphon,
@@ -88,30 +122,30 @@ body {
 .loth-intercessions-intro,
 .loth-intercessions-response {
   margin: 0 0 0.5rem;
+  color: var(--loth-text);
 }
 
 .loth-antiphon {
   font-style: italic;
 }
 
-.loth-melody-rubric {
-  margin: 0 0 0.25rem;
+.loth-melody-rubric,
+.loth-psalm-tone-label,
+.loth-reference,
+.loth-let-us-pray {
+  margin: 0 0 0.35rem;
   font-size: 0.85rem;
   font-style: italic;
-  color: var(--loth-muted);
+  color: var(--loth-rubric);
 }
 
 .loth-psalm-tone-label {
   margin: 0.75rem 0 0.25rem;
-  font-size: 0.85rem;
-  font-style: italic;
-  color: var(--loth-muted);
 }
 
 .loth-let-us-pray {
   margin: 0 0 0.5rem;
-  font-style: italic;
-  color: var(--loth-rubric);
+  font-size: inherit;
 }
 
 .loth-dialogue,
@@ -127,10 +161,8 @@ body {
 /* Text blocks ------------------------------------------------------------- */
 
 .loth-reference {
-  margin: 0 0 0.35rem;
-  font-size: 0.9rem;
   font-weight: 600;
-  color: var(--loth-muted);
+  font-style: normal;
 }
 
 .loth-psalm-verse {
@@ -163,6 +195,11 @@ body {
   height: auto;
 }
 
+/* ℣ / ℟ and other specials in the chant (exsurge class="rubric"). */
+.loth-score svg .rubric {
+  fill: var(--loth-rubric);
+}
+
 /* Playback highlights the sounding note itself (ChantPlayer injects scoped CSS
  * for `.playing` unless you pass `injectStyle: false`), so nothing here. */
 
@@ -187,5 +224,19 @@ body {
   .loth-page-break {
     border: 0;
     break-after: page;
+  }
+
+  /* Keep rubric red on paper; browsers otherwise grey it out. */
+  .loth-section-heading,
+  .loth-rubric,
+  .loth-melody-rubric,
+  .loth-psalm-tone-label,
+  .loth-reference,
+  .loth-let-us-pray,
+  .loth-score svg .rubric {
+    color: var(--loth-rubric);
+    fill: var(--loth-rubric);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

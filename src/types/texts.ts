@@ -370,16 +370,29 @@ export interface AssemblerLabels {
     compline: string;
   };
   sections: {
+    invitatory: string;
+    introductoryVerse: string;
+    hymn: string;
+    psalmody: string;
+    reading: string;
     firstReading: string;
     secondReading: string;
     saintReading: string;
+    responsory: string;
+    versicle: string;
     teDeum: string;
     benedictus: string;
     magnificat: string;
     nuncDimittis: string;
-    marianAntiphon: string;
     intercessions: string;
     ourFather: string;
+    concludingPrayer: string;
+    dismissal: string;
+    examination: string;
+    blessing: string;
+    acclamation: string;
+    marianAntiphon: string;
+    memoriaAddendum: string;
   };
   rubrics: {
     letUsPray: string;

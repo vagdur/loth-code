@@ -25,7 +25,7 @@ test("lauds omits plain macros when GABC scores are present", async () => {
   expect(tex).not.toMatch(/\\antiphon\{/);
   expect(tex).not.toMatch(/\\hymn\{/);
   expect(tex).not.toMatch(/\\shortResponsory\{/);
-  expect(tex).not.toMatch(/\\lordsPrayerSection\{/);
+  expect(tex).not.toMatch(/\\lordsPrayer\{/);
   expect(tex).not.toMatch(/\\dismissal\{/);
   // Psalm and canticle prose are not sung-score duplicates.
   expect(tex).toContain("\\psalmText{");

@@ -15,7 +15,7 @@ not part of the library.
 | --- | --- | --- |
 | Markup | `src/assemblers/htmlAssembler.ts` | `HtmlAssembler implements Assembler<string>` — the mirror of `TexAssembler`. Pure string generation; runs anywhere. |
 | Runtime | `src/browser/lothChant.ts` → `dist/browser/lothChant.js` | `mountScores` / `renderHour` — the only DOM-touching code. Hands each score to exsurge. |
-| Presentation | `html/loth.css` | The mirror of `tex/loth.sty`: the assembler emits semantic class names, this file decides how they look. |
+| Presentation | `html/loth.css` | The mirror of `tex/loth.sty`: the assembler emits semantic class names, this file decides how they look. Rubrics and labels (except the hour title) are red; spoken text is black. |
 
 ```ts
 import { HtmlAssembler } from "loth/dist/assemblers/htmlAssembler.js";
@@ -82,6 +82,25 @@ however your host resolves modules — a bundler, or an import map:
 `wrapLothHtmlDocument` emits that map by default (`importMap: false` turns it
 off when a bundler is doing the work). `exsurgeModulePath()` in
 `src/tools/htmlAssets.ts` locates the file to serve.
+
+## Presentation
+
+`html/loth.css` is the counterpart of `tex/loth.sty`. The two should move
+together: same colour split, same heading hierarchy, each in the idiom of its
+format (a web column vs. a printed page).
+
+- **Do the red, say the black.** `.loth-section-heading`, `.loth-rubric`
+  (`Ant.`, ℣., ℟.), `.loth-reference`, `.loth-let-us-pray`,
+  `.loth-melody-rubric` and `.loth-psalm-tone-label` are `--loth-rubric`.
+  Spoken and sung text is `--loth-text`. The hour title (`.loth-hour-heading`
+  and `.loth-day-heading`) is the exception among labels: it stays black.
+- **Section headings** (`HYMN`, `PSALMODY`, `READING`, …) come from
+  `fixed_texts.yaml` `labels.sections` and are emitted by all three assemblers.
+  A heading is omitted when its body would be empty (scored-only slots with no
+  melody).
+- Chant ℣./℟. and the GABC mode annotation use the same rubric colour
+  (`ChantContext.setRubricColor` in `lothChant.ts`; `\grechangestyle{annotation}`
+  and `\Vbar`/`\Rbar` in `loth.sty`).
 
 ## Drop caps
 

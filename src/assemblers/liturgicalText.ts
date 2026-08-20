@@ -8,7 +8,6 @@ import type { GospelCanticleKind } from "../types/texts.js";
 import {
   alleluiaIntroEndPunct,
   alleluiaIntroTail,
-  formatOurFatherHeadingPlain,
   formatTextNotLoaded,
 } from "./labels.js";
 const FALLBACK = {
@@ -59,8 +58,7 @@ export function formatTeDeumPlain(repo: DataRepository): string {
 }
 
 export function formatLordsPrayerPlain(repo: DataRepository): string {
-  const text = repo.getFixedTexts()?.lordsPrayer?.text ?? FALLBACK.lordsPrayer;
-  return `${formatOurFatherHeadingPlain(repo)}\n\n${text}`;
+  return repo.getFixedTexts()?.lordsPrayer?.text ?? FALLBACK.lordsPrayer;
 }
 
 /** The structured compline responsory, or undefined when fixed texts are absent. */
