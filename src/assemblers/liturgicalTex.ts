@@ -87,21 +87,19 @@ export function texAntiphon(
   return `\\antiphon{${escapeTexPlain(a.text + alleluia)}}`;
 }
 
+/**
+ * Editorial note. Mode is a property of the melody — written as a GABC
+ * `mode:` header above the drop cap when a score is emitted — not of the
+ * text, so it is never a `\melodyRubric` caption.
+ */
 export function texMelodyRubric(m?: { mode?: number; note?: string }): string {
-  if (!m) return "";
-  const parts: string[] = [];
-  if (m.mode !== undefined) parts.push(`Mode ${m.mode}`);
-  if (m.note) parts.push(m.note);
-  if (parts.length === 0) return "";
-  return `\\melodyRubric{${escapeTexPlain(parts.join(" — "))}}`;
+  if (!m?.note) return "";
+  return `\\melodyRubric{${escapeTexPlain(m.note)}}`;
 }
 
-/**
- * Editorial note only. When a score is emitted, the mode is the GABC `mode:`
- * header (drawn above the drop cap) rather than a `\melodyRubric` caption.
- */
+/** Same as `texMelodyRubric`; named so scored call sites stay explicit. */
 export function texScoredMelodyRubric(m?: { note?: string }): string {
-  return m?.note ? texMelodyRubric({ note: m.note }) : "";
+  return texMelodyRubric(m);
 }
 
 export function texPsalmToneBlock(scoreLine: string): string {
