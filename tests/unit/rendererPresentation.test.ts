@@ -87,6 +87,16 @@ test("scored Lauds still heads the Our Father when the prayer is a score", async
   expect(tex).not.toMatch(/\\lordsPrayer\{/);
 });
 
+test("HTML wraps ℣/℟ that land in ordinary prose, matching TeX unicode mapping", async () => {
+  const repo = await loadSampleRepo();
+  const day = buildSampleAbstractDay();
+  const html = new HtmlAssembler({ outputMode: "plain" })
+    .assembleOfficeOfReadings(day.officeOfReadings, repo)
+    .html();
+  expect(html).toContain('<span class="loth-rubric">℣.</span>');
+  expect(html).toContain('<span class="loth-rubric">℟.</span>');
+});
+
 test("stylesheet and sty agree on rubric red, and keep the hour title black", () => {
   const css = readFileSync(path.join(repoRoot, "html/loth.css"), "utf-8");
   const sty = readFileSync(path.join(repoRoot, "tex/loth.sty"), "utf-8");

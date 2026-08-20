@@ -57,9 +57,27 @@ import {
 // Low-level builders
 // ---------------------------------------------------------------------------
 
+/**
+ * Colour ℣/℟ wherever they land in prose. TeX does the same with
+ * `\newunicodechar` in `loth.sty`; HTML has to wrap the glyphs because CSS
+ * cannot target a character.
+ */
+function rubricGlyphNodes(content: string): LothNode[] {
+  const nodes: LothNode[] = [];
+  for (const part of content.split(/([℣℟]\.?)/u)) {
+    if (!part) continue;
+    if (/^[℣℟]\.?$/u.test(part)) {
+      nodes.push(el("span", { class: "loth-rubric" }, text(part)));
+    } else {
+      nodes.push(text(part));
+    }
+  }
+  return nodes.length > 0 ? nodes : [text("")];
+}
+
 /** One `<p class="…">text</p>`. */
 function p(className: string, content: string): LothElement {
-  return el("p", { class: className }, text(content));
+  return el("p", { class: className }, ...rubricGlyphNodes(content));
 }
 
 /**
@@ -79,7 +97,7 @@ function prose(className: string, source: string): LothNode | null {
       const parts: MaybeNode[] = [];
       lines.forEach((line, i) => {
         if (i > 0) parts.push(el("br", {}));
-        parts.push(text(line));
+        parts.push(...rubricGlyphNodes(line));
       });
       return el("p", { class: className }, ...parts);
     });
@@ -240,8 +258,10 @@ export function htmlInvitatoryVerse(repo: DataRepository): LothElement | null {
 
 /**
  * The OoR closing acclamation is an opaque raw data string (its own ℣./℟.
- * glyphs baked in), so emit it as plain paragraphs rather than parsing it into
+ * glyphs baked in), so emit it as paragraphs rather than parsing it into
  * dialogue markup — matching PlainTextAssembler, which treats it as raw text.
+ * ℣/℟ still go red via `rubricGlyphNodes`, as TeX colours them via
+ * `\newunicodechar`.
  */
 export function htmlOorAcclamation(repo: DataRepository): LothElement | null {
   const lines = formatOorAcclamationPlain(repo)
