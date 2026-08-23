@@ -183,6 +183,10 @@ export function renderScore(
   const ctxt = new exsurge.ChantContext();
   ctxt.defaultLanguage = exsurgeLanguage(spec.language ?? options?.language);
   ctxt.noteIdPrefix = options?.noteIdPrefix ?? `note-${spec.id}-`;
+  // Match html/loth.css --loth-rubric / tex/loth.sty lothrubric: ℣, ℟, and
+  // the GABC mode annotation are labels, not sung text.
+  ctxt.setRubricColor("#a4243b");
+  if (ctxt.textStyles.annotation) ctxt.textStyles.annotation.color = "#a4243b";
 
   // Gregorio's default (and the PDF path): a drop cap on lyric scores, none
   // on psalm tones. Hosts can still force either way.

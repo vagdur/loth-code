@@ -58,6 +58,7 @@ import {
   texDismissal,
   texExaminationOfConscience,
   texGospelCanticle,
+  texHeadedSection,
   texHourHeading,
   texHymn,
   texIntroductoryVerse,
@@ -212,24 +213,33 @@ export class TexAssembler implements Assembler<string> {
     const body: string[] = [texHourHeading(repo, "officeOfReadings", hour.liturgicalDay)];
 
     if (hour.invitatory) {
-      body.push(...this.texInvitatoryBlocks(hour.invitatory, repo, choices));
+      body.push(texHeadedSection(
+        repo, "invitatory", ...this.texInvitatoryBlocks(hour.invitatory, repo, choices),
+      ));
     } else {
-      body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "officeOfReadings"));
+      body.push(texHeadedSection(
+        repo, "introductoryVerse",
+        this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "officeOfReadings"),
+      ));
     }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.texHymnBlock(hymn));
+    if (hymn) body.push(texHeadedSection(repo, "hymn", this.texHymnBlock(hymn)));
 
+    const psalmody: string[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        body.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
+        psalmody.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
+    body.push(texHeadedSection(repo, "psalmody", ...psalmody));
 
     const versicle = resolveVersicle(hour.versicleRef, repo, hour.liturgicalDay, opt("versicle"));
-    if (versicle && this.includePlainProse()) body.push(texVersicle(repo, versicle));
+    if (versicle && this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "versicle", texVersicle(repo, versicle)));
+    }
 
     const biblical = resolveBiblicalReading(hour.biblicalReadingRef, repo, undefined, opt("biblicalReading"));
     if (biblical && this.includePlainProse()) {
@@ -262,9 +272,16 @@ export class TexAssembler implements Assembler<string> {
     }
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, "officeOfReadings"));
+    if (prayer && this.includePlainProse()) {
+      body.push(texHeadedSection(
+        repo, "concludingPrayer", texConcludingPrayer(repo, prayer.text, "officeOfReadings"),
+      ));
+    }
 
-    body.push(this.texOorAcclamationBlock(repo, hour.liturgicalDay, choices, "officeOfReadings"));
+    body.push(texHeadedSection(
+      repo, "acclamation",
+      this.texOorAcclamationBlock(repo, hour.liturgicalDay, choices, "officeOfReadings"),
+    ));
     return this.joinBody(body);
   }
 
@@ -275,28 +292,37 @@ export class TexAssembler implements Assembler<string> {
     const body: string[] = [texHourHeading(repo, "lauds", hour.liturgicalDay)];
 
     if (hour.invitatory) {
-      body.push(...this.texInvitatoryBlocks(hour.invitatory, repo, choices));
+      body.push(texHeadedSection(
+        repo, "invitatory", ...this.texInvitatoryBlocks(hour.invitatory, repo, choices),
+      ));
     } else if (!hour.suppressIntroVerse) {
-      body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "lauds"));
+      body.push(texHeadedSection(
+        repo, "introductoryVerse",
+        this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "lauds"),
+      ));
     }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.texHymnBlock(hymn));
+    if (hymn) body.push(texHeadedSection(repo, "hymn", this.texHymnBlock(hymn)));
 
+    const psalmody: string[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        body.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
+        psalmody.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
+    body.push(texHeadedSection(repo, "psalmody", ...psalmody));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading && this.includePlainProse()) body.push(texShortReading(reading));
+    if (reading && this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "reading", texShortReading(reading)));
+    }
 
     if (hour.shortResponsoryRef) {
       const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay, opt("shortResponsory"));
-      if (resp) body.push(this.texShortResponsoryBlock(repo, resp));
+      if (resp) body.push(texHeadedSection(repo, "responsory", this.texShortResponsoryBlock(repo, resp)));
     }
 
     const benAntiphon = resolveAntiphon(hour.benedictusAntiphonRef, repo, hour.liturgicalDay, opt("benedictusAntiphon"));
@@ -305,19 +331,28 @@ export class TexAssembler implements Assembler<string> {
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
     if (intercessions && this.includePlainProse()) body.push(texIntercessions(repo, intercessions));
 
-    body.push(this.texLordsPrayerBlock(repo, hour.liturgicalDay, choices, "lauds"));
+    body.push(texHeadedSection(
+      repo, "ourFather", this.texLordsPrayerBlock(repo, hour.liturgicalDay, choices, "lauds"),
+    ));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, "lauds"));
+    if (prayer && this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "concludingPrayer", texConcludingPrayer(repo, prayer.text, "lauds")));
+    }
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay, opt("memoriaAddendum.antiphon"));
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
-      if (addAntiphon) body.push(this.texAntiphonBlock(repo, addAntiphon, flags, true));
-      if (addPrayer && this.includePlainProse()) body.push(escapeTexPlain(addPrayer.text));
+      body.push(texHeadedSection(
+        repo, "memoriaAddendum",
+        addAntiphon ? this.texAntiphonBlock(repo, addAntiphon, flags, true) : "",
+        addPrayer && this.includePlainProse() ? escapeTexPlain(addPrayer.text) : "",
+      ));
     }
 
-    body.push(this.texDismissalBlock(repo, hour.liturgicalDay, choices, "lauds"));
+    body.push(texHeadedSection(
+      repo, "dismissal", this.texDismissalBlock(repo, hour.liturgicalDay, choices, "lauds"),
+    ));
     return this.joinBody(body);
   }
 
@@ -328,25 +363,35 @@ export class TexAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
     const body: string[] = [texHourHeading(repo, hourKey, hour.liturgicalDay)];
 
-    body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
+    body.push(texHeadedSection(
+      repo, "introductoryVerse",
+      this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey),
+    ));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.texHymnBlock(hymn));
+    if (hymn) body.push(texHeadedSection(repo, "hymn", this.texHymnBlock(hymn)));
 
-    for (const part of this.texDaytimePsalmody(repo, hour, flags, choices)) {
-      body.push(part);
-    }
+    body.push(texHeadedSection(repo, "psalmody", ...this.texDaytimePsalmody(repo, hour, flags, choices)));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading && this.includePlainProse()) body.push(texShortReading(reading));
+    if (reading && this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "reading", texShortReading(reading)));
+    }
 
     const versicle = resolveVersicle(hour.versicleRef, repo, hour.liturgicalDay, opt("versicle"));
-    if (versicle && this.includePlainProse()) body.push(texVersicle(repo, versicle));
+    if (versicle && this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "versicle", texVersicle(repo, versicle)));
+    }
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, hourKey));
+    if (prayer && this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "concludingPrayer", texConcludingPrayer(repo, prayer.text, hourKey)));
+    }
 
-    body.push(this.texOorAcclamationBlock(repo, hour.liturgicalDay, choices, hourKey));
+    body.push(texHeadedSection(
+      repo, "acclamation",
+      this.texOorAcclamationBlock(repo, hour.liturgicalDay, choices, hourKey),
+    ));
     return this.joinBody(body);
   }
 
@@ -357,25 +402,32 @@ export class TexAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, hourKey, slot);
     const body: string[] = [texHourHeading(repo, hourKey, hour.liturgicalDay)];
 
-    body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey));
+    body.push(texHeadedSection(
+      repo, "introductoryVerse",
+      this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, hourKey),
+    ));
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.texHymnBlock(hymn));
+    if (hymn) body.push(texHeadedSection(repo, "hymn", this.texHymnBlock(hymn)));
 
+    const psalmody: string[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        body.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
+        psalmody.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
+    body.push(texHeadedSection(repo, "psalmody", ...psalmody));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading && this.includePlainProse()) body.push(texShortReading(reading));
+    if (reading && this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "reading", texShortReading(reading)));
+    }
 
     if (hour.shortResponsoryRef) {
       const resp = resolveShortResponsory(hour.shortResponsoryRef, repo, hour.liturgicalDay, opt("shortResponsory"));
-      if (resp) body.push(this.texShortResponsoryBlock(repo, resp));
+      if (resp) body.push(texHeadedSection(repo, "responsory", this.texShortResponsoryBlock(repo, resp)));
     }
 
     const magAntiphon = resolveAntiphon(hour.magnificatAntiphonRef, repo, hour.liturgicalDay, opt("magnificatAntiphon"));
@@ -384,19 +436,28 @@ export class TexAssembler implements Assembler<string> {
     const intercessions = resolveIntercessions(hour.intercessionsRef, repo, undefined, opt("intercessions"));
     if (intercessions && this.includePlainProse()) body.push(texIntercessions(repo, intercessions));
 
-    body.push(this.texLordsPrayerBlock(repo, hour.liturgicalDay, choices, hourKey));
+    body.push(texHeadedSection(
+      repo, "ourFather", this.texLordsPrayerBlock(repo, hour.liturgicalDay, choices, hourKey),
+    ));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, hourKey));
+    if (prayer && this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "concludingPrayer", texConcludingPrayer(repo, prayer.text, hourKey)));
+    }
 
     if (hour.memoriaAddendum) {
       const addAntiphon = resolveAntiphon(hour.memoriaAddendum.antiphonRef, repo, hour.liturgicalDay, opt("memoriaAddendum.antiphon"));
       const addPrayer = resolveConcludingPrayer(hour.memoriaAddendum.concludingPrayerRef, repo, undefined, opt("memoriaAddendum.concludingPrayer"));
-      if (addAntiphon) body.push(this.texAntiphonBlock(repo, addAntiphon, flags, true));
-      if (addPrayer && this.includePlainProse()) body.push(escapeTexPlain(addPrayer.text));
+      body.push(texHeadedSection(
+        repo, "memoriaAddendum",
+        addAntiphon ? this.texAntiphonBlock(repo, addAntiphon, flags, true) : "",
+        addPrayer && this.includePlainProse() ? escapeTexPlain(addPrayer.text) : "",
+      ));
     }
 
-    body.push(this.texDismissalBlock(repo, hour.liturgicalDay, choices, hourKey));
+    body.push(texHeadedSection(
+      repo, "dismissal", this.texDismissalBlock(repo, hour.liturgicalDay, choices, hourKey),
+    ));
     return this.joinBody(body);
   }
 
@@ -406,22 +467,31 @@ export class TexAssembler implements Assembler<string> {
     const opt = (slot: string) => slotOpts(choices, "compline", slot);
     const body: string[] = [texHourHeading(repo, "compline", hour.liturgicalDay)];
 
-    body.push(this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "compline"));
-    if (this.includePlainProse()) body.push(texExaminationOfConscience(repo));
+    body.push(texHeadedSection(
+      repo, "introductoryVerse",
+      this.texIntroVerseBlock(repo, hour.liturgicalDay, flags, choices, "compline"),
+    ));
+    if (this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "examination", texExaminationOfConscience(repo)));
+    }
 
     const hymn = resolveHymn(hour.hymnRef, repo, hour.liturgicalDay, opt("hymn"));
-    if (hymn) body.push(this.texHymnBlock(hymn));
+    if (hymn) body.push(texHeadedSection(repo, "hymn", this.texHymnBlock(hymn)));
 
+    const psalmody: string[] = [];
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
         const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
-        body.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
+        psalmody.push(this.texPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
+    body.push(texHeadedSection(repo, "psalmody", ...psalmody));
 
     const reading = resolveShortReading(hour.shortReadingRef, repo, undefined, opt("shortReading"));
-    if (reading && this.includePlainProse()) body.push(texShortReading(reading));
+    if (reading && this.includePlainProse()) {
+      body.push(texHeadedSection(repo, "reading", texShortReading(reading)));
+    }
 
     const complineResp = getComplineResponsory(repo);
     if (complineResp) {
@@ -429,23 +499,32 @@ export class TexAssembler implements Assembler<string> {
         ...(choices ? { choices } : {}),
         path: slotPath("compline", "responsory"),
       });
-      body.push(this.texShortResponsoryBlock(repo, hydrated));
+      body.push(texHeadedSection(repo, "responsory", this.texShortResponsoryBlock(repo, hydrated)));
     } else if (this.includePlainProse()) {
-      body.push(escapeTexPlain(formatComplineResponsoryFallbackPlain()));
+      body.push(texHeadedSection(
+        repo, "responsory", escapeTexPlain(formatComplineResponsoryFallbackPlain()),
+      ));
     }
 
     const ndAntiphon = resolveAntiphon(hour.nuncDimittisAntiphonRef, repo, hour.liturgicalDay, opt("nuncDimittisAntiphon"));
     body.push(...this.texGospelCanticleSlot(repo, ndAntiphon, flags, "nuncDimittis", "nuncDimittis"));
 
     const prayer = resolveConcludingPrayer(hour.concludingPrayerRef, repo, undefined, opt("concludingPrayer"));
-    if (prayer && this.includePlainProse()) body.push(texConcludingPrayer(repo, prayer.text, "compline"));
+    if (prayer && this.includePlainProse()) {
+      body.push(texHeadedSection(
+        repo, "concludingPrayer", texConcludingPrayer(repo, prayer.text, "compline"),
+      ));
+    }
 
-    body.push(this.texComplineBlessingBlock(repo, hour.liturgicalDay, choices));
+    body.push(texHeadedSection(
+      repo, "blessing", this.texComplineBlessingBlock(repo, hour.liturgicalDay, choices),
+    ));
 
     const marianAntiphon = resolveAntiphon(hour.marianAntiphonRef, repo, hour.liturgicalDay, opt("marianAntiphon"));
     if (marianAntiphon) {
-      body.push(texSectionHeading(repo, "marianAntiphon"));
-      body.push(this.texAntiphonBlock(repo, marianAntiphon, flags, false));
+      body.push(texHeadedSection(
+        repo, "marianAntiphon", this.texAntiphonBlock(repo, marianAntiphon, flags, false),
+      ));
     }
 
     return this.joinBody(body);

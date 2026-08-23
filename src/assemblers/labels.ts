@@ -70,10 +70,15 @@ export function formatConcludingPrayerPlain(
   return `${getLabels(repo).rubrics.letUsPray}\n\n${text}`;
 }
 
-export function formatOurFatherHeadingPlain(repo: DataRepository): string {
-  const title = getLabels(repo).sections.ourFather;
-  const pad = Math.max(0, 40 - title.length);
-  return `── ${title} ${"─".repeat(pad)}`;
+/** Section heading plus body, or empty when there is nothing to head. */
+export function headedPlain(
+  repo: DataRepository,
+  key: SectionLabelKey,
+  ...content: string[]
+): string {
+  const body = content.filter((s) => s.trim()).join("\n\n");
+  if (!body) return "";
+  return `${sectionHeadingPlain(repo, key)}\n\n${body}`;
 }
 
 export function formatVersicleLinePlain(

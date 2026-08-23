@@ -15,9 +15,11 @@ GABC from the data model (`Melody.gabc`, `Antiphon.psalmTone`, the gospel-cantic
 | Layer | Location | Responsibility |
 | ----- | -------- | ---------------- |
 | Content | Generated `.tex` | Liturgical text, structure, GABC `filecontents`, semantic macros |
-| Style | `tex/loth.sty` | Fonts, spacing, bold rubric symbols, Gregorio score rendering |
+| Style | `tex/loth.sty` | Fonts, spacing, **rubric red**, Gregorio score rendering |
 
 Locale-specific rubric strings (e.g. `Ant.`, `℣.`, `℟.`) come from [`fixed_texts.yaml`](../data/en/fixed_texts.yaml) and are injected at the top of the document via `\LothRubrics*` commands. To change how an antiphon *looks*, edit `loth.sty`; to change the prefix *word*, edit the data labels.
+
+Colour follows the liturgical **do the red, say the black**: `\sectionHeading`, `\antiphon` prefixes, ℣./℟., scripture references, "Let us pray.", and melody captions are `lothrubric` (`#A4243B`); spoken and sung text, and the hour title (`\hourHeading` / `\dayHeading`), are `lothtext`. The same split is in [`html/loth.css`](../html/loth.css).
 
 **Compile requirement:** copy `tex/loth.sty` into the same directory as the `.tex` file (the integration test does this automatically via [`copyLothSty`](../src/tools/compileTex.ts)).
 
@@ -27,8 +29,9 @@ Defined in `loth.sty` and emitted from [`liturgicalTex.ts`](../src/assemblers/li
 
 | Macro | Role |
 | ----- | ---- |
-| `\hourHeading{title}` | Hour title |
-| `\sectionHeading{title}` | Section title |
+| `\hourHeading{title}` | Hour title (black) |
+| `\dayHeading{text}` | Liturgical-day line under the hour title |
+| `\sectionHeading{title}` | Section title (red) |
 | `\antiphon{text}` | Antiphon (prefix from rubrics) |
 | `\versicle{text}` / `\response{text}` | Dialogue lines |
 | `\hymn` / `\hymnStanza` | Hymn stanzas |
@@ -39,7 +42,7 @@ Defined in `loth.sty` and emitted from [`liturgicalTex.ts`](../src/assemblers/li
 | `\gospelCanticle{ref}{text}` | Gospel canticle |
 | `\teDeum{text}` | Te Deum |
 | `\intercessionsIntro`, `\intercessionsResponse`, `\intention{V}{R}` | Intercessions |
-| `\lordsPrayerSection{title}{text}` | Our Father block |
+| `\lordsPrayer{text}` | Our Father body (`\sectionHeading` is emitted separately) |
 | `\concludingPrayer{rubric}{text}` | Concluding prayer |
 | `\examinationOfConscience{text}` | Compline examination of conscience |
 | `\complineBlessing{text}` | Compline blessing |
