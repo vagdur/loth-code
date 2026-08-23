@@ -78,5 +78,8 @@ test.each(SAMPLE_LOCALES)("[%s] plain mode emits no scores in either renderer", 
     const tex = readFileSync(fixture(job, locale, "-plain", "tex"), "utf-8");
     expect(html, `${job} HTML`).not.toContain("data-loth-score");
     expect(tex, `${job} TeX`).not.toContain("Score{");
+    // Mode belongs on the score, not next to the text.
+    expect(html, `${job} HTML`).not.toMatch(/loth-melody-rubric">Mode /);
+    expect(tex, `${job} TeX`).not.toMatch(/\\melodyRubric\{Mode /);
   }
 });

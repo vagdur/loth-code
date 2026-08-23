@@ -174,21 +174,19 @@ export function htmlAntiphon(
   return rubricLine("loth-antiphon", getLabels(repo).rubrics.antiphonPrefix, a.text + alleluia);
 }
 
-export function htmlMelodyRubric(m?: { mode?: number; note?: string }): LothElement | null {
-  if (!m) return null;
-  const parts: string[] = [];
-  if (m.mode !== undefined) parts.push(`Mode ${m.mode}`);
-  if (m.note) parts.push(m.note);
-  if (parts.length === 0) return null;
-  return p("loth-melody-rubric", parts.join(" — "));
+/**
+ * Editorial note only. Mode is a property of the melody (the GABC `mode:`
+ * header when a score is mounted), not of the text, so it is never a caption.
+ */
+export function htmlMelodyRubric(m?: { note?: string }): LothElement | null {
+  return m?.note ? p("loth-melody-rubric", m.note) : null;
 }
 
 /**
- * Editorial note only. When a score is mounted, the mode is the GABC `mode:`
- * header (drawn above the drop cap) rather than a caption.
+ * Same as {@link htmlMelodyRubric}; used at scored call sites.
  */
 export function htmlScoredMelodyRubric(m?: { note?: string }): LothElement | null {
-  return m?.note ? htmlMelodyRubric({ note: m.note }) : null;
+  return htmlMelodyRubric(m);
 }
 
 /** The psalm-tone label, and the tone's score under it. */

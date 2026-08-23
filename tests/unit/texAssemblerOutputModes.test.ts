@@ -26,7 +26,8 @@ test("plain mode emits plain macros and no GABC scores", async () => {
   expect(tex).toMatch(/\\dismissal\{/);
   expect(tex).toContain("\\psalmText{");
   expect(tex).toContain("\\gospelCanticle{");
-  expect(tex).toMatch(/\\melodyRubric\{Mode /);
+  // Mode is a property of the melody, not of the text.
+  expect(tex).not.toMatch(/\\melodyRubric\{Mode /);
   expect(assembler.getGabcFiles().size).toBe(0);
 });
 
