@@ -92,15 +92,24 @@
   \endgroup}
 
 % Semantic verse command: \psalmVerse[number][marker]{first}{second}[{third}]
+%                     or: \psalmVerse*[marker]{first}{second}[{third}]
 % Optional verse number shown as small red superscript.
 % Optional marker: 'flex' (†) or 'mediant' (*), defaults to 'mediant'.
 % Two or three arguments for the cola.
+% Star form skips verse number but still accepts marker.
 \makeatletter
-\newcommand{\psalmVerse}[1][]{%
+\newcommand{\psalmVerse}{\@ifstar\loth@psalmVerseStar\loth@psalmVerseNoStar}
+% Non-star form: \psalmVerse[number][marker]{first}{second}[{third}]
+\newcommand{\loth@psalmVerseNoStar}[1][]{%
   \par
   \ifx\relax#1\relax\else
     {\textsuperscript{\scriptsize\color{lothrubric}#1}}%
   \fi
+  \loth@psalmVerseMarker
+}
+% Star form: \psalmVerse*[marker]{first}{second}[{third}]
+\newcommand{\loth@psalmVerseStar}{%
+  \par
   \loth@psalmVerseMarker
 }
 % Parse optional marker argument, default to 'mediant'

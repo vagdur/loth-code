@@ -371,26 +371,42 @@ export function texPsalmText(text: string): string {
 
 // Helper to format a single verse as a \psalmVerse command
 function formatPsalmVerse(verse: { num?: string; cola: Array<{ text: string; marker?: "flex" | "mediant" }> }): string {
-  const numArg = verse.num ? `[${verse.num}]` : "";
   const escapedCola = verse.cola.map((c) => escapeTexPlain(c.text));
   
   if (escapedCola.length === 0) return "";
   
   if (escapedCola.length === 1) {
     // Single colon verse (shouldn't happen normally but handle it)
-    return `\\psalmVerse${numArg}{${escapedCola[0]!}}{}`;
+    if (verse.num) {
+      return `\\psalmVerse[${verse.num}]{${escapedCola[0]!}}{}`;
+    } else {
+      return `\\psalmVerse{${escapedCola[0]!}}{}`;
+    }
   } else if (escapedCola.length === 2) {
     // Two cola - determine if it's flex or mediant
     const marker = verse.cola[0]?.marker === "flex" ? "flex" : "mediant";
-    return `\\psalmVerse${numArg}[${marker}]{${escapedCola[0]!}}{${escapedCola[1]!}}`;
+    if (verse.num) {
+      return `\\psalmVerse[${verse.num}][${marker}]{${escapedCola[0]!}}{${escapedCola[1]!}}`;
+    } else {
+      // No verse number - use star form to pass marker without number
+      return `\\psalmVerse*[${marker}]{${escapedCola[0]!}}{${escapedCola[1]!}}`;
+    }
   } else if (escapedCola.length === 3) {
     // Three cola - first marker determines flex vs mediant for first separator
     const firstMarker = verse.cola[0]?.marker === "flex" ? "flex" : "mediant";
-    return `\\psalmVerse${numArg}[${firstMarker}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
+    if (verse.num) {
+      return `\\psalmVerse[${verse.num}][${firstMarker}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
+    } else {
+      return `\\psalmVerse*[${firstMarker}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
+    }
   } else {
     // More than 3 cola - shouldn't happen, but handle gracefully
     // Take first, middle, and last
-    return `\\psalmVerse${numArg}[mediant]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
+    if (verse.num) {
+      return `\\psalmVerse[${verse.num}][mediant]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
+    } else {
+      return `\\psalmVerse*[mediant]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
+    }
   }
 }
 
