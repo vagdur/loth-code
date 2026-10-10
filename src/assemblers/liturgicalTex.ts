@@ -383,29 +383,25 @@ function formatPsalmVerse(verse: { num?: string; cola: Array<{ text: string; mar
       return `\\psalmVerse{${escapedCola[0]!}}{}`;
     }
   } else if (escapedCola.length === 2) {
-    // Two cola - determine if it's flex or mediant
-    const marker = verse.cola[0]?.marker === "flex" ? "flex" : "mediant";
+    // Two cola: always A * B (mediant)
     if (verse.num) {
-      return `\\psalmVerse[${verse.num}][${marker}]{${escapedCola[0]!}}{${escapedCola[1]!}}`;
+      return `\\psalmVerse[${verse.num}]{${escapedCola[0]!}}{${escapedCola[1]!}}`;
     } else {
-      // No verse number - use star form to pass marker without number
-      return `\\psalmVerse*[${marker}]{${escapedCola[0]!}}{${escapedCola[1]!}}`;
+      return `\\psalmVerse*{${escapedCola[0]!}}{${escapedCola[1]!}}`;
     }
   } else if (escapedCola.length === 3) {
-    // Three cola - first marker determines flex vs mediant for first separator
-    const firstMarker = verse.cola[0]?.marker === "flex" ? "flex" : "mediant";
+    // Three cola: always A † B * C (flex then mediant)
     if (verse.num) {
-      return `\\psalmVerse[${verse.num}][${firstMarker}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
+      return `\\psalmVerse[${verse.num}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
     } else {
-      return `\\psalmVerse*[${firstMarker}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
+      return `\\psalmVerse*{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
     }
   } else {
     // More than 3 cola - shouldn't happen, but handle gracefully
-    // Take first, middle, and last
     if (verse.num) {
-      return `\\psalmVerse[${verse.num}][mediant]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
+      return `\\psalmVerse[${verse.num}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
     } else {
-      return `\\psalmVerse*[mediant]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
+      return `\\psalmVerse*{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
     }
   }
 }
