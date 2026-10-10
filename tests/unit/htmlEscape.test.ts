@@ -17,6 +17,17 @@ describe("escapeHtmlText", () => {
       "℣. Deus, in adiutórium — Halleluja.",
     );
   });
+
+  test("normalizes combining acute accents on pre-composed characters (NFD)", () => {
+    const textWithAccents = "hjä\u0301lp sjä\u0301l rö\u0301p bö\u0301ner";
+    const result = escapeHtmlText(textWithAccents);
+    expect(result).toBe("hja\u0308\u0301lp sja\u0308\u0301l ro\u0308\u0301p bo\u0308\u0301ner");
+  });
+
+  test("does not modify text without combining accents", () => {
+    const normalText = "hjälp själ röp böner";
+    expect(escapeHtmlText(normalText)).toBe(normalText);
+  });
 });
 
 describe("escapeHtmlAttr", () => {

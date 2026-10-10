@@ -4,7 +4,13 @@
 
 /** Escape for element content (`&`, `<`, `>`). */
 export function escapeHtmlText(text: string): string {
-  return text
+  let normalized = text;
+  
+  if (text.includes("\u0301")) {
+    normalized = text.normalize("NFD");
+  }
+  
+  return normalized
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
