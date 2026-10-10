@@ -292,7 +292,7 @@ export function texPsalmText(text: string): string {
     const lines = strophe.split("\n").filter((line) => line.trim());
     const verseCommands: string[] = [];
     
-    let currentVerse: { num?: string; cola: string[] } = { cola: [] };
+    let currentVerse: { num?: string; cola: Array<{ text: string; marker?: "flex" | "mediant" }> } = { cola: [] };
     
     for (const line of lines) {
       const trimmed = line.trim();
@@ -312,23 +312,41 @@ export function texPsalmText(text: string): string {
         // Start new verse
         currentVerse = { num, cola: [] };
         
-        // Remove markers and add the colon
+        // Determine marker type and clean text
+        const flexMatch = colonText.match(/\s*†\s*$/);
+        const mediantMatch = colonText.match(/\s*\*\s*$/);
         const cleanText = colonText.replace(/\s*[*†]\s*$/, "").trim();
-        currentVerse.cola.push(cleanText);
+        
+        if (flexMatch) {
+          currentVerse.cola.push({ text: cleanText, marker: "flex" });
+        } else if (mediantMatch) {
+          currentVerse.cola.push({ text: cleanText, marker: "mediant" });
+        } else {
+          currentVerse.cola.push({ text: cleanText });
+        }
         
         // Check if this colon is final (no marker)
-        if (!colonText.match(/[*†]\s*$/)) {
+        if (!flexMatch && !mediantMatch) {
           // Complete verse on one line
           verseCommands.push(formatPsalmVerse(currentVerse));
           currentVerse = { cola: [] };
         }
       } else {
         // Continuation colon (no verse number)
+        const flexMatch = trimmed.match(/\s*†\s*$/);
+        const mediantMatch = trimmed.match(/\s*\*\s*$/);
         const cleanText = trimmed.replace(/\s*[*†]\s*$/, "").trim();
-        currentVerse.cola.push(cleanText);
+        
+        if (flexMatch) {
+          currentVerse.cola.push({ text: cleanText, marker: "flex" });
+        } else if (mediantMatch) {
+          currentVerse.cola.push({ text: cleanText, marker: "mediant" });
+        } else {
+          currentVerse.cola.push({ text: cleanText });
+        }
         
         // Check if this is the final colon (no marker)
-        if (!trimmed.match(/[*†]\s*$/)) {
+        if (!flexMatch && !mediantMatch) {
           // Verse complete
           verseCommands.push(formatPsalmVerse(currentVerse));
           currentVerse = { cola: [] };
@@ -352,9 +370,9 @@ export function texPsalmText(text: string): string {
 }
 
 // Helper to format a single verse as a \psalmVerse command
-function formatPsalmVerse(verse: { num?: string; cola: string[] }): string {
+function formatPsalmVerse(verse: { num?: string; cola: Array<{ text: string; marker?: "flex" | "mediant" }> }): string {
   const numArg = verse.num ? `[${verse.num}]` : "";
-  const escapedCola = verse.cola.map((c) => escapeTexPlain(c));
+  const escapedCola = verse.cola.map((c) => escapeTexPlain(c.text));
   
   if (escapedCola.length === 0) return "";
   
@@ -362,15 +380,17 @@ function formatPsalmVerse(verse: { num?: string; cola: string[] }): string {
     // Single colon verse (shouldn't happen normally but handle it)
     return `\\psalmVerse${numArg}{${escapedCola[0]!}}{}`;
   } else if (escapedCola.length === 2) {
-    // Two cola (mediant)
-    return `\\psalmVerse${numArg}{${escapedCola[0]!}}{${escapedCola[1]!}}`;
+    // Two cola - determine if it's flex or mediant
+    const marker = verse.cola[0]?.marker === "flex" ? "flex" : "mediant";
+    return `\\psalmVerse${numArg}[${marker}]{${escapedCola[0]!}}{${escapedCola[1]!}}`;
   } else if (escapedCola.length === 3) {
-    // Three cola (flex + mediant)
-    return `\\psalmVerse${numArg}{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
+    // Three cola - first marker determines flex vs mediant for first separator
+    const firstMarker = verse.cola[0]?.marker === "flex" ? "flex" : "mediant";
+    return `\\psalmVerse${numArg}[${firstMarker}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
   } else {
     // More than 3 cola - shouldn't happen, but handle gracefully
     // Take first, middle, and last
-    return `\\psalmVerse${numArg}{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
+    return `\\psalmVerse${numArg}[mediant]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
   }
 }
 

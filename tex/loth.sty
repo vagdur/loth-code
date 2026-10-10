@@ -91,22 +91,35 @@
   #1\par
   \endgroup}
 
-% Semantic verse command: \psalmVerse[number]{first}{second}[{third}]
+% Semantic verse command: \psalmVerse[number][marker]{first}{second}[{third}]
 % Optional verse number shown as small red superscript.
-% Two or three arguments for the cola (mediant or flex+mediant).
+% Optional marker: 'flex' (†) or 'mediant' (*), defaults to 'mediant'.
+% Two or three arguments for the cola.
 \makeatletter
 \newcommand{\psalmVerse}[1][]{%
   \par
   \ifx\relax#1\relax\else
     {\textsuperscript{\scriptsize\color{lothrubric}#1}}%
   \fi
+  \loth@psalmVerseMarker
+}
+% Parse optional marker argument, default to 'mediant'
+\newcommand{\loth@psalmVerseMarker}[1][mediant]{%
+  \def\loth@currentMarker{#1}%
   \loth@psalmVerseParts
 }
 \newcommand{\loth@psalmVerseParts}[2]{%
-  #1 * #2%
+  #1 %
+  \ifx\loth@currentMarker\loth@flexMarker
+    †%
+  \else
+    *%
+  \fi
+  \ #2%
   \@ifnextchar\bgroup{\loth@psalmVerseThird}{}%
 }
 \newcommand{\loth@psalmVerseThird}[1]{ * #1}
+\def\loth@flexMarker{flex}
 \makeatother
 
 \newcommand{\intercessionsIntro}[1]{#1\LothVmed}
