@@ -8,7 +8,7 @@ strophes:
       - - n: 1
           text: '[psalm_94 — stub verse 1, first colon]'
           end: mediant
-        - text: '[psalm_94 — stub verse 1, second colon with acúte]'
+        - text: '[psalm_94 — stub verse 1, second colon with acúte]'
       - - n: 2
           text: '[psalm_94 — stub verse 2, with flex]'
           end: flex
@@ -25,13 +25,14 @@ strophes:
         - text: '[psalm_94 — continuation second colon]'
   - verses:
       - - n: 1
-          text: 'Glory be to the Fáther'
+          text: 'Glory be to the Fáther'
           end: mediant
         - text: 'and to the Son'
-      - - text: 'and to the Hóly'
+      - - text: 'and to the Hóly'
           end: mediant
         - text: 'Spirit.'
       - - n: 2
-          text: 'As it was in the beginning, is now, and ever sháll be'
+          text: 'As it was in the beginning, is now, and ever sháll be'
           end: mediant
         - text: 'world without end. Amen.'
+
