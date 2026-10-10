@@ -287,26 +287,123 @@ export function texPsalmText(text: string): string {
   
   if (strophes.length === 0) return "\\psalmText{}";
   
-  // If there's only one strophe, render it as before (no strophe separators).
-  if (strophes.length === 1 && strophes[0]) {
-    const verses = strophes[0]
-      .split("\n")
-      .filter((line) => line.trim())
-      .map((line) => escapeTexPlain(line))
-      .join("\\par\n");
-    return `\\psalmText{${verses}}`;
+  // Process each strophe into semantic \psalmVerse commands
+  const stropheCommands = strophes.map((strophe) => {
+    const lines = strophe.split("\n").filter((line) => line.trim());
+    const verseCommands: string[] = [];
+    
+    let currentVerse: { num?: string; cola: Array<{ text: string; marker?: "flex" | "mediant" }> } = { cola: [] };
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      // Check for verse number at start (e.g., "1. text" or "1. text *" or "1. text †")
+      const verseMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+      
+      if (verseMatch) {
+        // New verse starting - emit previous verse if any
+        if (currentVerse.cola.length > 0) {
+          verseCommands.push(formatPsalmVerse(currentVerse));
+        }
+        
+        const num = verseMatch[1] ?? "";
+        const colonText = verseMatch[2] ?? "";
+        
+        // Start new verse
+        currentVerse = { num, cola: [] };
+        
+        // Determine marker type and clean text
+        const flexMatch = colonText.match(/\s*†\s*$/);
+        const mediantMatch = colonText.match(/\s*\*\s*$/);
+        const cleanText = colonText.replace(/\s*[*†]\s*$/, "").trim();
+        
+        if (flexMatch) {
+          currentVerse.cola.push({ text: cleanText, marker: "flex" });
+        } else if (mediantMatch) {
+          currentVerse.cola.push({ text: cleanText, marker: "mediant" });
+        } else {
+          currentVerse.cola.push({ text: cleanText });
+        }
+        
+        // Check if this colon is final (no marker)
+        if (!flexMatch && !mediantMatch) {
+          // Complete verse on one line
+          verseCommands.push(formatPsalmVerse(currentVerse));
+          currentVerse = { cola: [] };
+        }
+      } else {
+        // Continuation colon (no verse number)
+        const flexMatch = trimmed.match(/\s*†\s*$/);
+        const mediantMatch = trimmed.match(/\s*\*\s*$/);
+        const cleanText = trimmed.replace(/\s*[*†]\s*$/, "").trim();
+        
+        if (flexMatch) {
+          currentVerse.cola.push({ text: cleanText, marker: "flex" });
+        } else if (mediantMatch) {
+          currentVerse.cola.push({ text: cleanText, marker: "mediant" });
+        } else {
+          currentVerse.cola.push({ text: cleanText });
+        }
+        
+        // Check if this is the final colon (no marker)
+        if (!flexMatch && !mediantMatch) {
+          // Verse complete
+          verseCommands.push(formatPsalmVerse(currentVerse));
+          currentVerse = { cola: [] };
+        }
+      }
+    }
+    
+    // Emit any remaining incomplete verse
+    if (currentVerse.cola.length > 0) {
+      verseCommands.push(formatPsalmVerse(currentVerse));
+    }
+    
+    return verseCommands.join("\n");
+  });
+  
+  if (stropheCommands.length === 1) {
+    return `\\psalmText{%\n${stropheCommands[0]}%\n}`;
   }
   
-  // Multiple strophes: join them with strophe separators for extra spacing.
-  const stropheTexts = strophes.map((strophe) =>
-    strophe
-      .split("\n")
-      .filter((line) => line.trim())
-      .map((line) => escapeTexPlain(line))
-      .join("\\par\n")
-  );
+  return `\\psalmText{%\n${stropheCommands.join("\\LothPsalmStropheSep\n")}%\n}`;
+}
+
+// Helper to format a single verse as a \psalmVerse command
+function formatPsalmVerse(verse: { num?: string; cola: Array<{ text: string; marker?: "flex" | "mediant" }> }): string {
+  const escapedCola = verse.cola.map((c) => escapeTexPlain(c.text));
   
-  return `\\psalmText{${stropheTexts.join("\\LothPsalmStropheSep\n")}}`;
+  if (escapedCola.length === 0) return "";
+  
+  if (escapedCola.length === 1) {
+    // Single colon verse (shouldn't happen normally but handle it)
+    if (verse.num) {
+      return `\\psalmVerse[${verse.num}]{${escapedCola[0]!}}{}`;
+    } else {
+      return `\\psalmVerse{${escapedCola[0]!}}{}`;
+    }
+  } else if (escapedCola.length === 2) {
+    // Two cola: always A * B (mediant)
+    if (verse.num) {
+      return `\\psalmVerse[${verse.num}]{${escapedCola[0]!}}{${escapedCola[1]!}}`;
+    } else {
+      return `\\psalmVerse*{${escapedCola[0]!}}{${escapedCola[1]!}}`;
+    }
+  } else if (escapedCola.length === 3) {
+    // Three cola: always A † B * C (flex then mediant)
+    if (verse.num) {
+      return `\\psalmVerse[${verse.num}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
+    } else {
+      return `\\psalmVerse*{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[2]!}}`;
+    }
+  } else {
+    // More than 3 cola - shouldn't happen, but handle gracefully
+    if (verse.num) {
+      return `\\psalmVerse[${verse.num}]{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
+    } else {
+      return `\\psalmVerse*{${escapedCola[0]!}}{${escapedCola[1]!}}{${escapedCola[escapedCola.length - 1]!}}`;
+    }
+  }
 }
 
 export function texScoreLine(basename: string): string {

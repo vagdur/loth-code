@@ -82,13 +82,47 @@
 
 % Each verse is its own paragraph (assemblers join them with \par) so the
 % hanging indent matches html/loth.css `.loth-psalm-verse`.
+% With the new semantic structure, verses use \psalmVerse commands instead.
 \newcommand{\psalmText}[1]{%
   \par\begingroup
-  \setlength{\parskip}{0.2em}%
+  \setlength{\parskip}{0pt}%
   \setlength{\parindent}{0pt}%
   \everypar{\hangindent=1.5em \hangafter=1}%
   #1\par
   \endgroup}
+
+% Semantic verse command: \psalmVerse[number]{first}{second}[{third}]
+%                     or: \psalmVerse*{first}{second}[{third}]
+% Optional verse number shown as small red superscript.
+% Two arguments: A * B (mediant)
+% Three arguments: A † B * C (flex then mediant)
+% Star form skips verse number but uses same marker logic.
+\makeatletter
+\newcommand{\psalmVerse}{\@ifstar\loth@psalmVerseStar\loth@psalmVerseNoStar}
+% Non-star form: \psalmVerse[number]{first}{second}[{third}]
+\newcommand{\loth@psalmVerseNoStar}[1][]{%
+  \par
+  \ifx\relax#1\relax\else
+    {\textsuperscript{\scriptsize\color{lothrubric}#1}}%
+  \fi
+  \loth@psalmVerseParts
+}
+% Star form: \psalmVerse*{first}{second}[{third}]
+\newcommand{\loth@psalmVerseStar}{%
+  \par
+  \loth@psalmVerseParts
+}
+% Parse two required arguments, check for optional third
+\newcommand{\loth@psalmVerseParts}[2]{%
+  #1 \loth@psalmVerseSecond{#2}%
+}
+% After second argument, check for third (determines flex vs mediant before it)
+\newcommand{\loth@psalmVerseSecond}[1]{%
+  \@ifnextchar\bgroup{† }{* }#1%
+  \@ifnextchar\bgroup{\loth@psalmVerseThird}{}%
+}
+\newcommand{\loth@psalmVerseThird}[1]{ * #1}
+\makeatother
 
 \newcommand{\intercessionsIntro}[1]{#1\LothVmed}
 \newcommand{\intercessionsResponse}[1]{\response{#1}\LothVmed}
