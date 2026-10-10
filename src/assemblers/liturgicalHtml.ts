@@ -35,7 +35,7 @@ import {
   formatComplineBlessingPlain,
   formatDismissalPlain,
   formatExaminationOfConsciencePlain,
-  formatGospelCanticlePlain,
+  formatGospelCanticleWithAccents,
   formatIntroductoryVersePlain,
   formatInvitatoryVersePlain,
   formatLordsPrayerPlain,
@@ -332,8 +332,8 @@ export function htmlGospelCanticle(
     );
   }
   
-  // Get the formatted text (handles both new and legacy formats)
-  const plain = formatGospelCanticlePlain(repo, kind);
+  // Get the formatted text (handles both new and legacy formats, preserving accents)
+  const plain = formatGospelCanticleWithAccents(repo, kind);
   const parts = plain.split("\n\n");
   if (parts.length < 2) {
     return wrap(

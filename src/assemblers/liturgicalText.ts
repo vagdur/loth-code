@@ -53,7 +53,31 @@ export function formatGospelCanticlePlain(
   
   // New format: render from strophes
   if (canticle.strophes && canticle.strophes.length > 0) {
-    const text = renderPsalmodyText({ strophes: canticle.strophes });
+    const text = renderPsalmodyTextPlain({ strophes: canticle.strophes });
+    return `${canticle.reference}\n\n${text}`;
+  }
+  
+  // Legacy format: use the text field
+  if (canticle.text) {
+    return `${canticle.reference}\n\n${canticle.text}`;
+  }
+  
+  return FALLBACK.gospel;
+}
+
+/**
+ * Format gospel canticle preserving stress accents for HTML/TeX rendering.
+ */
+export function formatGospelCanticleWithAccents(
+  repo: DataRepository,
+  kind: GospelCanticleKind,
+): string {
+  const canticle = repo.getGospelCanticle(kind);
+  if (!canticle) return FALLBACK.gospel;
+  
+  // New format: render from strophes with accents
+  if (canticle.strophes && canticle.strophes.length > 0) {
+    const text = renderPsalmodyTextWithAccents({ strophes: canticle.strophes });
     return `${canticle.reference}\n\n${text}`;
   }
   
@@ -117,12 +141,33 @@ function stripAccents(text: string): string {
  * that have `end`. Accents are stripped for plain text; strophe breaks produce
  * extra spacing (via blank lines).
  */
-function renderPsalmodyText(psalmodyText: { strophes: { verses: { text: string; end?: "flex" | "mediant"; n?: number }[][] }[] }): string {
+function renderPsalmodyTextPlain(psalmodyText: { strophes: { verses: { text: string; end?: "flex" | "mediant"; n?: number }[][] }[] }): string {
   const stropheLines = psalmodyText.strophes.map((strophe) => {
     const verseLines = strophe.verses.map((sungVerse) => {
       const colonLines = sungVerse.map((colon) => {
         const num = colon.n != null ? `${colon.n}. ` : "";
         const text = stripAccents(colon.text);
+        const marker = colon.end === "flex" ? " †" : colon.end === "mediant" ? " *" : "";
+        return `${num}${text}${marker}`;
+      });
+      return colonLines.join("\n");
+    });
+    return verseLines.join("\n");
+  });
+  return stropheLines.join("\n\n");
+}
+
+/**
+ * Render a PsalmodyText (new strophe structure) preserving stress accents:
+ * one line per colon, with verse numbers on the cola that carry `n`, and † / *
+ * after cola that have `end`. Used for HTML/TeX where accents should render.
+ */
+function renderPsalmodyTextWithAccents(psalmodyText: { strophes: { verses: { text: string; end?: "flex" | "mediant"; n?: number }[][] }[] }): string {
+  const stropheLines = psalmodyText.strophes.map((strophe) => {
+    const verseLines = strophe.verses.map((sungVerse) => {
+      const colonLines = sungVerse.map((colon) => {
+        const num = colon.n != null ? `${colon.n}. ` : "";
+        const text = colon.text; // Keep accents
         const marker = colon.end === "flex" ? " †" : colon.end === "mediant" ? " *" : "";
         return `${num}${text}${marker}`;
       });
@@ -147,7 +192,7 @@ export function resolvePsalmText(id: string, repo: DataRepository): string {
   if (psalm) {
     // New format
     if (psalm.strophes && psalm.strophes.length > 0) {
-      return renderPsalmodyText(psalm);
+      return renderPsalmodyTextPlain(psalm);
     }
     // Legacy format
     if (psalm.verses && psalm.verses.length > 0) {
@@ -159,7 +204,40 @@ export function resolvePsalmText(id: string, repo: DataRepository): string {
   if (canticle) {
     // New format
     if (canticle.strophes && canticle.strophes.length > 0) {
-      return renderPsalmodyText(canticle);
+      return renderPsalmodyTextPlain(canticle);
+    }
+    // Legacy format
+    if (canticle.verses && canticle.verses.length > 0) {
+      return renderLegacyVerses(canticle.verses);
+    }
+    return "";
+  }
+  return formatTextNotLoaded(repo, id);
+}
+
+/**
+ * Resolve psalm/canticle text preserving stress accents for HTML/TeX rendering.
+ * This is the internal version used by HTML and TeX assemblers.
+ */
+export function resolvePsalmTextWithAccents(id: string, repo: DataRepository): string {
+  if (id === PSALM_UNASSIGNED) return "";
+  const psalm = repo.getPsalm(id);
+  if (psalm) {
+    // New format
+    if (psalm.strophes && psalm.strophes.length > 0) {
+      return renderPsalmodyTextWithAccents(psalm);
+    }
+    // Legacy format
+    if (psalm.verses && psalm.verses.length > 0) {
+      return renderLegacyVerses(psalm.verses);
+    }
+    return "";
+  }
+  const canticle = repo.getCanticle(id);
+  if (canticle) {
+    // New format
+    if (canticle.strophes && canticle.strophes.length > 0) {
+      return renderPsalmodyTextWithAccents(canticle);
     }
     // Legacy format
     if (canticle.verses && canticle.verses.length > 0) {

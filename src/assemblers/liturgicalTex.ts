@@ -23,7 +23,7 @@ import {
   formatComplineBlessingPlain,
   formatDismissalPlain,
   formatExaminationOfConsciencePlain,
-  formatGospelCanticlePlain,
+  formatGospelCanticleWithAccents,
   formatIntroductoryVersePlain,
   formatInvitatoryVersePlain,
   formatLordsPrayerPlain,
@@ -206,8 +206,8 @@ export function texGospelCanticle(
     return `\\gospelCanticle{}{${escapeTexPlain("[Gospel canticle — text not loaded]")}}`;
   }
   
-  // Use formatGospelCanticlePlain which handles both new and legacy formats
-  const plain = formatGospelCanticlePlain(repo, kind);
+  // Use formatGospelCanticleWithAccents which handles both new and legacy formats
+  const plain = formatGospelCanticleWithAccents(repo, kind);
   const parts = plain.split("\n\n");
   if (parts.length < 2) {
     return `\\gospelCanticle{${escapeTexPlain(canticle.reference)}}{${escapeTexPlain("")}}`;
