@@ -391,7 +391,23 @@ export function htmlPsalmText(body: string): LothElement | null {
   const verses = body
     .split("\n")
     .filter((line) => line.trim())
-    .map((line) => p("loth-psalm-verse", line));
+    .map((line) => {
+      // Parse verse numbers at start of line (e.g., "1. " or "12. ")
+      const match = line.match(/^(\d+)\.\s+(.*)$/);
+      if (match) {
+        const num = match[1] ?? "";
+        const verseText = match[2] ?? "";
+        // Fix apostrophes after vowels with diacritics: convert to combining acute accent
+        const fixedText = verseText.replace(/([aeiouåäöAEIOUÅÄÖ])'(?=\s|$|[^aeiouåäö])/g, "$1\u0301");
+        return el(
+          "p",
+          { class: "loth-psalm-verse" },
+          el("span", { class: "loth-verse-number" }, text(num)),
+          ...rubricGlyphNodes(fixedText),
+        );
+      }
+      return p("loth-psalm-verse", line);
+    });
   return wrap("div", "loth-psalm", ...verses);
 }
 

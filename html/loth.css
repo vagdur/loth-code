@@ -170,6 +170,14 @@ body {
   text-indent: -1.5rem;
 }
 
+.loth-verse-number {
+  font-size: 0.65em;
+  vertical-align: super;
+  color: var(--loth-rubric);
+  font-weight: 500;
+  margin-right: 0.15em;
+}
+
 .loth-hymn-stanza + .loth-hymn-stanza {
   margin-top: 0.55rem;
 }
