@@ -101,7 +101,7 @@ import {
 import {
   formatComplineResponsoryFallbackPlain,
   getComplineResponsory,
-  resolvePsalmText,
+  resolvePsalmTextWithAccents,
 } from "./liturgicalText.js";
 
 /** Per-slot ResolveOptions carrying the day choices and this slot's option path. */
@@ -291,7 +291,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
-        const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
+        const psalmText = resolvePsalmTextWithAccents(assignment.psalmOrCanticleId, repo);
         psalmody.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
@@ -370,7 +370,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
-        const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
+        const psalmText = resolvePsalmTextWithAccents(assignment.psalmOrCanticleId, repo);
         psalmody.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
@@ -475,7 +475,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
-        const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
+        const psalmText = resolvePsalmTextWithAccents(assignment.psalmOrCanticleId, repo);
         psalmody.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
@@ -543,7 +543,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
     for (const [i, slot] of hour.psalmSlots.entries()) {
       const assignment = resolvePsalmAssignment(slot.assignmentRef, repo, hour.liturgicalDay, opt(`psalmSlots[${i}]`));
       if (assignment) {
-        const psalmText = resolvePsalmText(assignment.psalmOrCanticleId, repo);
+        const psalmText = resolvePsalmTextWithAccents(assignment.psalmOrCanticleId, repo);
         psalmody.push(this.htmlPsalmAssignment(assignment, psalmText, flags, repo));
       }
     }
@@ -680,8 +680,10 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
       invitatory, repo, invitatory.liturgicalDay, choices,
     );
     if (psalmody) {
+      // Re-resolve with accents for HTML output
+      const psalmTextWithAccents = resolvePsalmTextWithAccents(psalmody.assignment.psalmOrCanticleId, repo);
       parts.push(this.htmlPsalmAssignment(
-        psalmody.assignment, psalmody.psalmText, invitatory.flags, repo,
+        psalmody.assignment, psalmTextWithAccents, invitatory.flags, repo,
       ));
     }
     return parts;
@@ -820,7 +822,7 @@ export class HtmlAssembler implements Assembler<AssembledHour> {
       ? resolveAntiphonList(hour.properAntiphonsRef, repo, hour.liturgicalDay, opt("properAntiphons"))
       : undefined;
 
-    const psalmText = (a: PsalmAssignment) => resolvePsalmText(a.psalmOrCanticleId, repo);
+    const psalmText = (a: PsalmAssignment) => resolvePsalmTextWithAccents(a.psalmOrCanticleId, repo);
 
     // One antiphon wrapping all three psalms.
     if (proper && proper.length === 1) {

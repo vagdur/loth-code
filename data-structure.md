@@ -35,15 +35,30 @@ Psalm {
   number:           int             // 1–150
   title:            string
   christian_heading: string         // interpretive heading added for the Office
-  verses:           Verse[]
+  strophes:         Strophe[]       // paragraphs (groups of sung verses)
   omitted_verses:   int[]           // verse numbers excised from Office use (§10)
 }
 
-Verse {
-  number: int
-  text:   string
+Strophe {
+  verses: SungVerse[]                // sung verses in this paragraph
+}
+
+SungVerse = Colon[]                  // a sung verse is one or more cola
+
+Colon {
+  text:      string                  // the text of this colon
+  end?:      "flex" | "mediant"      // psalm tone marker: † (flex) or * (mediant)
+  n?:        int                     // Bible verse number printed at this colon (when present)
 }
 ```
+
+A **sung verse** is one or more cola ending at a mediant. The `n` field carries the Bible verse number when it appears at the start of that colon. A continuation verse (no `n`) follows when a Bible verse spans multiple sung verses. The `end` field marks where the psalm tone's flex (`†`) and mediant (`*`) fall.
+
+**Stress accents** are stored as U+0301 combining acute directly after the stressed vowel (e.g., `úpp`, `líf`), with base letters precomposed where Unicode has them (`å ä ö é`), never precomposed `á`/`ǻ`. Assemblers strip U+0301 for plain text and keep it for HTML/TeX (rendering as an acute).
+
+**Gloria Patri** is now included as the final strophe of every psalm (and of the Nunc dimittis), so assemblers render what is present rather than appending their own doxology. `fixed_texts.gloria_patri` holds the canonical text (as a `PsalmodyText` with `strophes`) that data files copy.
+
+**Legacy format** (`verses: [{ number, text }]`) is still supported for backward compatibility with locales that have not been converted. The loader wraps legacy verses as one strophe of one-colon sung verses with no markers.
 
 Three psalms are omitted from the Office entirely (Ps 57, 82, 108); they appear in this collection but are flagged via a convention (e.g., `omitted_entirely: true`). Ps 118 is split into 22 sections; each section is a separate `Psalm` entry with ids like `psalm_118_I` through `psalm_118_XXII`. Ps 77, 104, and 105 are reserved for privileged seasons and must not appear in ordinary-time psalmody slots.
 
@@ -55,17 +70,19 @@ Canticle {
   type:      "OT" | "NT" | "Gospel"
   source:    string   // e.g. "Is 12:1-6", "Eph 1:3-10", "Lk 1:68-79"
   title:     string
-  verses:    Verse[]
+  strophes:  Strophe[]  // same structure as Psalm (see §1.1)
   melody?:   Melody   // optional; mostly used for Gospel canticles with proper tones
   melody_refs?: MelodyRef[]
 }
 ```
 
-**OT canticles** — one per ferial day per psalter week (4 weeks × 6 weekdays = 24 ferial canticles), plus two Sunday variants (the two parts of the Canticle of the Three Children, Dan 3:57-88 / 3:52-56).
+Canticles use the same `strophes` > `verses` > `cola` structure as psalms (§1.1). Legacy `verses: [{ number, text }]` is supported for backward compatibility.
+
+**OT canticles** — one per ferial day per psalter week (4 weeks × 6 weekdays = 24 ferial canticles), plus two Sunday variants (the two parts of the Canticle of the Three Children, Dan 3:57-88 / 3:52-56). The Dan 3:57-88, 56 canticle (`ot_dn3_creatures`, Sunday Week I/III) is the only text that closes with its own doxology instead of the Gloria Patri.
 
 **NT canticles** — one per day of the week (7 canticles from Epistles or Revelation); with two substitutions: Sundays of Lent use a canticle from 1 Peter instead of the Revelation canticle; Epiphany and Transfiguration use a canticle from 1 Timothy.
 
-**Gospel canticles** — three fixed canticles: *Benedictus* (Lk 1:68-79), *Magnificat* (Lk 1:46-55), *Nunc dimittis* (Lk 2:29-32).
+**Gospel canticles** — three fixed canticles: *Benedictus* (Lk 1:68-79), *Magnificat* (Lk 1:46-55), *Nunc dimittis* (Lk 2:29-32). The Nunc dimittis ends with the Gloria Patri as its final strophe.
 
 ### 1.3 `FixedTexts`
 
@@ -75,12 +92,12 @@ Locale bundles live under `data/{locale}/` (e.g. `data/en/fixed_texts.yaml`). A 
 FixedTexts {
   invitatory_verse:          string   // "Lord, open our lips..."
   introductory_verse:        string   // "O God, come to our aid..."
-  gloria_patri:              string   // "Glory be to the Father..."
+  gloria_patri?:             PsalmodyText  // canonical doxology (strophes structure)
   alleluia:                  string
 
-  benedictus:                Canticle // ref to canticle "gospel_benedictus"
-  magnificat:                Canticle // ref to canticle "gospel_magnificat"
-  nunc_dimittis:             Canticle // ref to canticle "gospel_nunc_dimittis"
+  benedictus:                GospelCanticleFixed // ref + strophes or legacy text
+  magnificat:                GospelCanticleFixed
+  nunc_dimittis:             GospelCanticleFixed
 
   te_deum: {
     main_text:               string

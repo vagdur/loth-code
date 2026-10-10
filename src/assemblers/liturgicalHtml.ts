@@ -35,6 +35,7 @@ import {
   formatComplineBlessingPlain,
   formatDismissalPlain,
   formatExaminationOfConsciencePlain,
+  formatGospelCanticleWithAccents,
   formatIntroductoryVersePlain,
   formatInvitatoryVersePlain,
   formatLordsPrayerPlain,
@@ -330,11 +331,27 @@ export function htmlGospelCanticle(
       prose("loth-prose", "[Gospel canticle — text not loaded]"),
     );
   }
+  
+  // Get the formatted text (handles both new and legacy formats, preserving accents)
+  const plain = formatGospelCanticleWithAccents(repo, kind);
+  const parts = plain.split("\n\n");
+  if (parts.length < 2) {
+    return wrap(
+      "section",
+      "loth-gospel-canticle",
+      p("loth-reference", canticle.reference),
+      prose("loth-prose", ""),
+    );
+  }
+  
+  // Skip the reference (first part) and render the rest
+  const bodyText = parts.slice(1).join("\n\n");
+  
   return wrap(
     "section",
     "loth-gospel-canticle",
     p("loth-reference", canticle.reference),
-    prose("loth-prose", canticle.text),
+    prose("loth-prose", bodyText),
   );
 }
 
@@ -388,11 +405,30 @@ export function htmlIntercessions(repo: DataRepository, i: Intercessions): LothN
 
 /** Psalm body: one paragraph per verse, so verses can be styled individually. */
 export function htmlPsalmText(body: string): LothElement | null {
-  const verses = body
-    .split("\n")
-    .filter((line) => line.trim())
-    .map((line) => p("loth-psalm-verse", line));
-  return wrap("div", "loth-psalm", ...verses);
+  // Split by blank lines to identify strophes (paragraphs with extra spacing).
+  const strophes = body.split(/\n\n+/).filter((s) => s.trim());
+  
+  if (strophes.length === 0) return null;
+  
+  // If there's only one strophe, render it as before (no strophe wrappers).
+  if (strophes.length === 1 && strophes[0]) {
+    const verses = strophes[0]
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => p("loth-psalm-verse", line));
+    return wrap("div", "loth-psalm", ...verses);
+  }
+  
+  // Multiple strophes: wrap each strophe in a div for spacing.
+  const stropheElements = strophes.map((strophe) => {
+    const verses = strophe
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => p("loth-psalm-verse", line));
+    return wrap("div", "loth-psalm-strophe", ...verses);
+  });
+  
+  return wrap("div", "loth-psalm", ...stropheElements);
 }
 
 /** Plain prose with no liturgical role of its own (memoria addendum prayers). */

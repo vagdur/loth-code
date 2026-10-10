@@ -170,6 +170,10 @@ body {
   text-indent: -1.5rem;
 }
 
+.loth-psalm-strophe + .loth-psalm-strophe {
+  margin-top: 1rem;
+}
+
 .loth-hymn-stanza + .loth-hymn-stanza {
   margin-top: 0.85rem;
 }
