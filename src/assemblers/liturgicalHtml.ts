@@ -410,12 +410,29 @@ export function htmlPsalmText(body: string): LothElement | null {
   
   if (strophes.length === 0) return null;
   
+  // Helper to render a line with styled verse numbers
+  const renderVerse = (line: string): LothElement => {
+    // Parse verse numbers at start of line (e.g., "1. " or "12. ")
+    const match = line.match(/^(\d+)\.\s+(.*)$/);
+    if (match) {
+      const num = match[1] ?? "";
+      const verseText = match[2] ?? "";
+      return el(
+        "p",
+        { class: "loth-psalm-verse" },
+        el("span", { class: "loth-verse-number" }, text(num)),
+        ...rubricGlyphNodes(verseText),
+      );
+    }
+    return p("loth-psalm-verse", line);
+  };
+  
   // If there's only one strophe, render it as before (no strophe wrappers).
   if (strophes.length === 1 && strophes[0]) {
     const verses = strophes[0]
       .split("\n")
       .filter((line) => line.trim())
-      .map((line) => p("loth-psalm-verse", line));
+      .map(renderVerse);
     return wrap("div", "loth-psalm", ...verses);
   }
   
@@ -424,7 +441,7 @@ export function htmlPsalmText(body: string): LothElement | null {
     const verses = strophe
       .split("\n")
       .filter((line) => line.trim())
-      .map((line) => p("loth-psalm-verse", line));
+      .map(renderVerse);
     return wrap("div", "loth-psalm-strophe", ...verses);
   });
   
