@@ -50,7 +50,19 @@ export function formatGospelCanticlePlain(
 ): string {
   const canticle = repo.getGospelCanticle(kind);
   if (!canticle) return FALLBACK.gospel;
-  return `${canticle.reference}\n\n${canticle.text}`;
+  
+  // New format: render from strophes
+  if (canticle.strophes && canticle.strophes.length > 0) {
+    const text = renderPsalmodyText({ strophes: canticle.strophes });
+    return `${canticle.reference}\n\n${text}`;
+  }
+  
+  // Legacy format: use the text field
+  if (canticle.text) {
+    return `${canticle.reference}\n\n${canticle.text}`;
+  }
+  
+  return FALLBACK.gospel;
 }
 
 export function formatTeDeumPlain(repo: DataRepository): string {
@@ -91,11 +103,69 @@ export function formatExaminationOfConsciencePlain(repo: DataRepository): string
 /** Placeholder psalm id when proper psalm/canticle identity is not yet sourced. */
 export const PSALM_UNASSIGNED = "psalm_unassigned";
 
+/**
+ * Strip U+0301 combining acute accent for plain text (the stress accents are
+ * presentation only; keep the base letter).
+ */
+function stripAccents(text: string): string {
+  return text.replace(/\u0301/g, "");
+}
+
+/**
+ * Render a PsalmodyText (new strophe structure) as plain text: one line per
+ * colon, with verse numbers on the cola that carry `n`, and † / * after cola
+ * that have `end`. Accents are stripped for plain text; strophe breaks produce
+ * extra spacing (via blank lines).
+ */
+function renderPsalmodyText(psalmodyText: { strophes: { verses: { text: string; end?: "flex" | "mediant"; n?: number }[][] }[] }): string {
+  const stropheLines = psalmodyText.strophes.map((strophe) => {
+    const verseLines = strophe.verses.map((sungVerse) => {
+      const colonLines = sungVerse.map((colon) => {
+        const num = colon.n != null ? `${colon.n}. ` : "";
+        const text = stripAccents(colon.text);
+        const marker = colon.end === "flex" ? " †" : colon.end === "mediant" ? " *" : "";
+        return `${num}${text}${marker}`;
+      });
+      return colonLines.join("\n");
+    });
+    return verseLines.join("\n");
+  });
+  return stropheLines.join("\n\n");
+}
+
+/**
+ * Render legacy verses (backward compatibility for locales that haven't
+ * converted yet): wrap as one strophe of one-colon verses with no markers.
+ */
+function renderLegacyVerses(verses: { number: number; text: string }[]): string {
+  return verses.map((v) => `${v.number}. ${v.text}`).join("\n");
+}
+
 export function resolvePsalmText(id: string, repo: DataRepository): string {
   if (id === PSALM_UNASSIGNED) return "";
   const psalm = repo.getPsalm(id);
-  if (psalm) return psalm.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
+  if (psalm) {
+    // New format
+    if (psalm.strophes && psalm.strophes.length > 0) {
+      return renderPsalmodyText(psalm);
+    }
+    // Legacy format
+    if (psalm.verses && psalm.verses.length > 0) {
+      return renderLegacyVerses(psalm.verses);
+    }
+    return "";
+  }
   const canticle = repo.getCanticle(id);
-  if (canticle) return canticle.verses.map((v) => `${v.number}. ${v.text}`).join("\n");
+  if (canticle) {
+    // New format
+    if (canticle.strophes && canticle.strophes.length > 0) {
+      return renderPsalmodyText(canticle);
+    }
+    // Legacy format
+    if (canticle.verses && canticle.verses.length > 0) {
+      return renderLegacyVerses(canticle.verses);
+    }
+    return "";
+  }
   return formatTextNotLoaded(repo, id);
 }

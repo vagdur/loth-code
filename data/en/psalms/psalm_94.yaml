@@ -3,16 +3,35 @@ number: 94
 title: '[psalm_94 title]'
 christian_heading: '[psalm_94 heading]'
 omitted_verses: []
-verses:
-  - number: 1
-    text: |-
-      [psalm_94 — stub verse 1, first half] *
-      [psalm_94 — stub verse 1, second half]
-  - number: 2
-    text: |-
-      [psalm_94 — stub verse 2, first half] *
-      [psalm_94 — stub verse 2, second half]
-  - number: 3
-    text: |-
-      [psalm_94 — stub verse 3, first half] *
-      [psalm_94 — stub verse 3, second half]
+strophes:
+  - verses:
+      - - n: 1
+          text: '[psalm_94 — stub verse 1, first colon]'
+          end: mediant
+        - text: '[psalm_94 — stub verse 1, second colon with acúte]'
+      - - n: 2
+          text: '[psalm_94 — stub verse 2, with flex]'
+          end: flex
+        - text: '[psalm_94 — stub verse 2, middle colon]'
+          end: mediant
+        - text: '[psalm_94 — stub verse 2, final colon]'
+  - verses:
+      - - n: 3
+          text: '[psalm_94 — stub verse 3, first colon]'
+          end: mediant
+        - text: '[psalm_94 — stub verse 3, second colon]'
+      - - text: '[psalm_94 — continuation verse with no number]'
+          end: mediant
+        - text: '[psalm_94 — continuation second colon]'
+  - verses:
+      - - n: 1
+          text: 'Glory be to the Fáther'
+          end: mediant
+        - text: 'and to the Son'
+      - - text: 'and to the Hóly'
+          end: mediant
+        - text: 'Spirit.'
+      - - n: 2
+          text: 'As it was in the beginning, is now, and ever sháll be'
+          end: mediant
+        - text: 'world without end. Amen.'

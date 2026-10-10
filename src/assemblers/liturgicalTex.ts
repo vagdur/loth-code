@@ -23,6 +23,7 @@ import {
   formatComplineBlessingPlain,
   formatDismissalPlain,
   formatExaminationOfConsciencePlain,
+  formatGospelCanticlePlain,
   formatIntroductoryVersePlain,
   formatInvitatoryVersePlain,
   formatLordsPrayerPlain,
@@ -204,7 +205,42 @@ export function texGospelCanticle(
   if (!canticle) {
     return `\\gospelCanticle{}{${escapeTexPlain("[Gospel canticle — text not loaded]")}}`;
   }
-  return `\\gospelCanticle{${escapeTexPlain(canticle.reference)}}{${escapeTexPlain(canticle.text)}}`;
+  
+  // Use formatGospelCanticlePlain which handles both new and legacy formats
+  const plain = formatGospelCanticlePlain(repo, kind);
+  const parts = plain.split("\n\n");
+  if (parts.length < 2) {
+    return `\\gospelCanticle{${escapeTexPlain(canticle.reference)}}{${escapeTexPlain("")}}`;
+  }
+  
+  // First part is the reference, rest is the text (with potential strophes)
+  const reference = parts[0] ?? "";
+  const bodyText = parts.slice(1).join("\n\n");
+  
+  // Handle strophes in the canticle text
+  const strophes = bodyText.split(/\n\n+/).filter((s: string) => s.trim());
+  let formattedText: string;
+  
+  if (strophes.length <= 1) {
+    // Single strophe or no strophes: render lines with \par
+    formattedText = bodyText
+      .split("\n")
+      .filter((line: string) => line.trim())
+      .map((line: string) => escapeTexPlain(line))
+      .join("\\par\n");
+  } else {
+    // Multiple strophes: join with strophe separators
+    const stropheTexts = strophes.map((strophe: string) =>
+      strophe
+        .split("\n")
+        .filter((line: string) => line.trim())
+        .map((line: string) => escapeTexPlain(line))
+        .join("\\par\n")
+    );
+    formattedText = stropheTexts.join("\\LothPsalmStropheSep\n");
+  }
+  
+  return `\\gospelCanticle{${escapeTexPlain(reference ?? "")}}{${formattedText}}`;
 }
 
 export function texLordsPrayerSection(repo: DataRepository): string {
@@ -246,12 +282,31 @@ export function texIntercessions(repo: DataRepository, i: Intercessions): string
 }
 
 export function texPsalmText(text: string): string {
-  const verses = text
-    .split("\n")
-    .filter((line) => line.trim())
-    .map((line) => escapeTexPlain(line))
-    .join("\\par\n");
-  return `\\psalmText{${verses}}`;
+  // Split by blank lines to identify strophes (paragraphs with extra spacing).
+  const strophes = text.split(/\n\n+/).filter((s) => s.trim());
+  
+  if (strophes.length === 0) return "\\psalmText{}";
+  
+  // If there's only one strophe, render it as before (no strophe separators).
+  if (strophes.length === 1 && strophes[0]) {
+    const verses = strophes[0]
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => escapeTexPlain(line))
+      .join("\\par\n");
+    return `\\psalmText{${verses}}`;
+  }
+  
+  // Multiple strophes: join them with strophe separators for extra spacing.
+  const stropheTexts = strophes.map((strophe) =>
+    strophe
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => escapeTexPlain(line))
+      .join("\\par\n")
+  );
+  
+  return `\\psalmText{${stropheTexts.join("\\LothPsalmStropheSep\n")}}`;
 }
 
 export function texScoreLine(basename: string): string {

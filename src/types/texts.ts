@@ -11,6 +11,35 @@ export interface Verse {
 }
 
 /**
+ * A colon (cola) — one line in a sung verse. The `end` field marks the
+ * position of the psalm tone's flex or mediant. The `n` field carries the
+ * Bible verse number printed at the start of this colon, when present.
+ */
+export interface Colon {
+  text: string;
+  end?: "flex" | "mediant";
+  n?: number;
+}
+
+/** A sung verse — one or more cola ending at a mediant. */
+export type SungVerse = Colon[];
+
+/** A strophe (paragraph) — a group of sung verses with extra spacing after. */
+export interface Strophe {
+  verses: SungVerse[];
+}
+
+/**
+ * Psalmody text (psalms, canticles, Gloria Patri) structured as strophes of
+ * sung verses. The Gloria Patri is now included as the final strophe of every
+ * psalm and of the Nunc dimittis, so assemblers render what is present rather
+ * than appending their own doxology.
+ */
+export interface PsalmodyText {
+  strophes: Strophe[];
+}
+
+/**
  * Optional musical setting for a chanted or sung text. Present on the
  * subset of texts for which melodies are recorded; absent otherwise.
  *
@@ -67,24 +96,24 @@ export interface DialogueMelody extends MelodyParts {
   gabc?: string;
 }
 
-export interface Psalm {
+export interface Psalm extends PsalmodyText {
   id: string;           // e.g. "psalm_94", "psalm_118_i"
   number: number;       // 1–150
   title: string;
   christianHeading: string;
-  verses: Verse[];
   omittedVerses: number[];   // verse numbers excised from office use
   omittedEntirely?: true;    // Ps 57, 82, 108
+  verses?: Verse[];     // legacy field for backward compatibility with old data
 }
 
-export interface Canticle {
+export interface Canticle extends PsalmodyText {
   id: string;           // e.g. "ot_is12", "nt_eph1", "gospel_benedictus"
   type: "OT" | "NT" | "Gospel";
   source: string;       // e.g. "Is 12:1-6"
   title: string;
-  verses: Verse[];
   melody?: Melody;
   melodyRefs?: MelodyRef[];
+  verses?: Verse[];     // legacy field for backward compatibility with old data
 }
 
 export interface Antiphon {
@@ -223,9 +252,9 @@ export interface SungFixedText {
   melodyRefs?: MelodyRef[];
 }
 
-export interface GospelCanticleFixed {
+export interface GospelCanticleFixed extends Partial<PsalmodyText> {
   reference: string;
-  text: string;
+  text?: string;        // legacy field for backward compatibility
 }
 
 export interface TeDeumFixed {
@@ -426,6 +455,7 @@ export interface FixedTexts {
   introductoryVerse: IntroductoryVerse;
   invitatoryVerse: InvitatoryVerse;
   alleluia: string;
+  gloriaPatri?: PsalmodyText;  // canonical doxology text
   benedictus: GospelCanticleFixed;
   magnificat: GospelCanticleFixed;
   nuncDimittis: GospelCanticleFixed;
