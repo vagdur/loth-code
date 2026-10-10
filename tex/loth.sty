@@ -89,6 +89,24 @@
   #1\par
   \endgroup}
 
+% \psalmVerse[number]{first half}{second half}[third half]
+% Verse number is optional, shown as small red superscript
+% Two or three arguments for the half-verses (mediant or flex)
+\makeatletter
+\newcommand{\psalmVerse}[1][]{%
+  \par
+  \ifx\relax#1\relax\else
+    {\textsuperscript{\scriptsize\color{lothrubric}#1}}%
+  \fi
+  \loth@psalmVerseParts
+}
+\newcommand{\loth@psalmVerseParts}[2]{%
+  #1 * #2%
+  \@ifnextchar\bgroup{\loth@psalmVerseThird}{}%
+}
+\newcommand{\loth@psalmVerseThird}[1]{ * #1}
+\makeatother
+
 \newcommand{\intercessionsIntro}[1]{#1\LothVmed}
 \newcommand{\intercessionsResponse}[1]{\response{#1}\LothVmed}
 \newcommand{\intention}[2]{\versicle{#1}\LothVsmall\response{#2}\LothVmed}

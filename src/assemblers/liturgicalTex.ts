@@ -246,12 +246,104 @@ export function texIntercessions(repo: DataRepository, i: Intercessions): string
 }
 
 export function texPsalmText(text: string): string {
-  const verses = text
-    .split("\n")
-    .filter((line) => line.trim())
-    .map((line) => escapeTexPlain(line))
-    .join("\\par\n");
-  return `\\psalmText{${verses}}`;
+  const lines = text.split("\n").filter((line) => line.trim());
+  const verseCommands: string[] = [];
+  
+  // Fix apostrophes after vowels with diacritics: convert to combining acute accent
+  const fixApostrophes = (str: string) => 
+    str.replace(/([aeiouåäöAEIOUÅÄÖ])'(?=\s|$|[^aeiouåäö])/g, "$1\u0301");
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i]!;
+    // Parse verse number at start (e.g., "1. " or "12. ")
+    const match = line.match(/^(\d+)\.\s+(.*)$/);
+    
+    if (match) {
+      const num = match[1] ?? "";
+      let verseText = match[2] ?? "";
+      
+      // Check if this line ends with asterisk (meaning continuation on next line)
+      if (verseText.endsWith("*")) {
+        // Remove the asterisk and get the continuation line
+        const firstHalf = fixApostrophes(verseText.slice(0, -1).trim());
+        i++;
+        const secondHalf = i < lines.length ? fixApostrophes(lines[i]!.trim()) : "";
+        
+        // Check if there's a third half (flex)
+        if (secondHalf.endsWith("*") && i + 1 < lines.length) {
+          const cleanSecond = secondHalf.slice(0, -1).trim();
+          i++;
+          const thirdHalf = fixApostrophes(lines[i]!.trim());
+          verseCommands.push(
+            `\\psalmVerse[${num}]{${escapeTexPlain(firstHalf)}}{${escapeTexPlain(cleanSecond)}}{${escapeTexPlain(thirdHalf)}}`,
+          );
+        } else {
+          verseCommands.push(
+            `\\psalmVerse[${num}]{${escapeTexPlain(firstHalf)}}{${escapeTexPlain(secondHalf)}}`,
+          );
+        }
+      } else {
+        // Inline half-verses separated by asterisks (all on one line)
+        const parts = verseText.split("*").map((p) => fixApostrophes(p.trim())).filter((p) => p);
+        if (parts.length === 2) {
+          verseCommands.push(
+            `\\psalmVerse[${num}]{${escapeTexPlain(parts[0]!)}}{${escapeTexPlain(parts[1]!)}}`,
+          );
+        } else if (parts.length === 3) {
+          verseCommands.push(
+            `\\psalmVerse[${num}]{${escapeTexPlain(parts[0]!)}}{${escapeTexPlain(parts[1]!)}}{${escapeTexPlain(parts[2]!)}}`,
+          );
+        } else {
+          // No asterisk at all
+          verseCommands.push(
+            `\\psalmVerse[${num}]{${escapeTexPlain(fixApostrophes(verseText))}}{}`,
+          );
+        }
+      }
+    } else {
+      // No verse number (e.g., doxology or other standalone text)
+      const trimmed = line.trim();
+      if (trimmed) {
+        // Check for asterisk indicating continuation
+        if (trimmed.endsWith("*") && i + 1 < lines.length) {
+          const firstHalf = fixApostrophes(trimmed.slice(0, -1).trim());
+          i++;
+          const secondHalf = fixApostrophes(lines[i]!.trim());
+          
+          if (secondHalf.endsWith("*") && i + 1 < lines.length) {
+            const cleanSecond = secondHalf.slice(0, -1).trim();
+            i++;
+            const thirdHalf = fixApostrophes(lines[i]!.trim());
+            verseCommands.push(
+              `\\psalmVerse{${escapeTexPlain(firstHalf)}}{${escapeTexPlain(cleanSecond)}}{${escapeTexPlain(thirdHalf)}}`,
+            );
+          } else {
+            verseCommands.push(
+              `\\psalmVerse{${escapeTexPlain(firstHalf)}}{${escapeTexPlain(secondHalf)}}`,
+            );
+          }
+        } else {
+          // Check for inline asterisks
+          const parts = trimmed.split("*").map((p) => fixApostrophes(p.trim())).filter((p) => p);
+          if (parts.length >= 2) {
+            const escaped = parts.map((p) => escapeTexPlain(p));
+            if (parts.length === 2) {
+              verseCommands.push(`\\psalmVerse{${escaped[0]!}}{${escaped[1]!}}`);
+            } else {
+              verseCommands.push(`\\psalmVerse{${escaped[0]!}}{${escaped[1]!}}{${escaped[2]!}}`);
+            }
+          } else {
+            // Just raw text
+            verseCommands.push(`{${escapeTexPlain(fixApostrophes(trimmed))}}`);
+          }
+        }
+      }
+    }
+    i++;
+  }
+
+  return `\\psalmText{%\n${verseCommands.join("\n")}%\n}`;
 }
 
 export function texScoreLine(basename: string): string {
